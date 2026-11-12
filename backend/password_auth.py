@@ -13,7 +13,6 @@ from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
 from auth import (
-    SESSION_COOKIE,
     _ensure_indexes,
     _hash_token,
     _public_user,
@@ -21,6 +20,7 @@ from auth import (
     require_admin,
     start_session,
 )
+from clubs import session_cookie
 from database import get_db
 
 Username = Annotated[
@@ -256,7 +256,7 @@ async def change_password(body: PasswordChange, request: Request, user=Depends(c
     )
     await db.login_attempts.delete_one({"key": key})
     # Si alguien más tenía la sesión abierta con la contraseña anterior, se queda fuera.
-    token = request.cookies.get(SESSION_COOKIE, "")
+    token = request.cookies.get(session_cookie(), "")
     await db.sessions.delete_many({"user_id": user["id"], "token_hash": {"$ne": _hash_token(token)}})
     return _public_user(updated)
 

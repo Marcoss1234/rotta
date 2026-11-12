@@ -12,11 +12,11 @@ from google.oauth2 import id_token as google_id_token
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from pymongo import ASCENDING, ReturnDocument
 
+from clubs import session_cookie, with_club
 from database import get_db
 from roster_sync import sync_player_with_user
 from teams import TeamId
 
-SESSION_COOKIE = "tnt_session"
 SESSION_DAYS = 30
 
 Role = Literal["admin", "entrenador", "jugador", "familia"]
@@ -83,7 +83,7 @@ def picture_of(user):
     if (user.get("consent") or {}).get("photos") is False:
         return ""
     if user.get("avatar_version"):
-        return f"/api/users/{user['id']}/avatar?v={user['avatar_version']}"
+        return with_club(f"/api/users/{user['id']}/avatar?v={user['avatar_version']}")
     return user.get("picture", "")
 
 
@@ -177,7 +177,7 @@ async def start_session(db, user, response):
         }
     )
     response.set_cookie(
-        SESSION_COOKIE,
+        session_cookie(),
         token,
         max_age=SESSION_DAYS * 24 * 60 * 60,
         httponly=True,
@@ -193,7 +193,7 @@ def reject_if_password_must_change(user):
 
 
 async def current_user(request: Request, db=Depends(get_db)):
-    token = request.cookies.get(SESSION_COOKIE)
+    token = request.cookies.get(session_cookie())
     if not token:
         raise HTTPException(status_code=401, detail="Inicia sesión")
     session = await db.sessions.find_one(
@@ -273,10 +273,10 @@ async def me(user=Depends(current_user)):
 
 @router.post("/auth/logout", status_code=204)
 async def logout(request: Request, response: Response, db=Depends(get_db)):
-    token = request.cookies.get(SESSION_COOKIE)
+    token = request.cookies.get(session_cookie())
     if token:
         await db.sessions.delete_one({"token_hash": _hash_token(token)})
-    response.delete_cookie(SESSION_COOKIE, path="/api")
+    response.delete_cookie(session_cookie(), path="/api")
 
 
 @router.get("/users")

@@ -18,7 +18,10 @@ pip install -r backend/requirements-dev.txt
 ## Plan
 
 ### 1. Imprescindible antes de que entre un club
-- [ ] Varios clubs: datos separados por club, y nombre, escudo, colores, equipos y horarios configurables (ahora siguen escritos en el código: `backend/teams.py`, `src/app/teams.js`, `data/groups.js`).
+- [x] Varios clubs, fase 1: cada club con su propia base de datos (`backend/clubs.py`). Alta de clubs: `python tools/crear-club.py tnt "C.V. TNT Almería"`. El club sale de la cabecera `X-Club`, de `?club=` o del subdominio (`ROOT_DOMAIN` / `VITE_ROOT_DOMAIN`); sin club, `DEFAULT_CLUB` o `DB_NAME`.
+- [ ] Varios clubs, fase 2: equipos, horarios y grupos del ranking configurables por club (ahora siguen escritos en el código: `backend/teams.py`, `src/app/teams.js`, `data/groups.js`).
+- [ ] Varios clubs, fase 3: nombre y escudo de cada club en toda la app.
+- [ ] Varios clubs, fase 4: pantalla para dar de alta clubs.
 - [ ] Política de privacidad y aviso legal.
 - [ ] Borrar la cuenta y los datos desde la app.
 - [ ] Permiso de madre, padre o tutor para menores, y consentimiento para las fotos.

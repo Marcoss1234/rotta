@@ -1,10 +1,12 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { clubHeaders, clubSlug } from "@/app/club.js";
 import { buildTheme, hexToRgb, themeVariables } from "@/app/theme.js";
 
 // Pinta toda la app con los colores del club y el modo (claro u oscuro) que elige cada persona.
 // Los colores se guardan también en el móvil para que la app salga ya pintada al abrirla.
 
-const CLUB_KEY = "rotta-tema-club";
+// Cada club guarda sus colores aparte: en un móvil con dos clubs no se mezclan.
+const CLUB_KEY = `rotta-tema-club${clubSlug ? `-${clubSlug}` : ""}`;
 const MODE_KEY = "rotta-modo";
 const DEFAULT_CLUB = { brand: "#7C3AED", accent: "#22D3EE", mode: "dark" };
 export const MODE_CHOICES = ["club", "light", "dark", "auto"];
@@ -57,7 +59,7 @@ export function applyTheme(club, choice) {
 }
 
 export async function fetchClubTheme() {
-  const response = await fetch("/api/club/theme", { credentials: "include" });
+  const response = await fetch("/api/club/theme", { credentials: "include", headers: clubHeaders() });
   if (!response.ok) throw new Error("No se pudieron cargar los colores del club");
   return response.json();
 }
@@ -66,7 +68,7 @@ export async function saveClubTheme(club) {
   const response = await fetch("/api/club/theme", {
     method: "PUT",
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: clubHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(club),
   });
   const data = await response.json().catch(() => ({}));

@@ -10,6 +10,7 @@ from pymongo import ASCENDING, DESCENDING
 from pymongo.errors import DuplicateKeyError
 
 from auth import pictures_by_user
+from clubs import with_club
 from database import get_db
 from help_requests import help_cards, remove_help
 from notifications import send_notifications
@@ -94,7 +95,7 @@ def _summary_text(message):
 
 def _public_image(image):
     return image and {
-        "url": f"/api/chat/images/{image['id']}",
+        "url": with_club(f"/api/chat/images/{image['id']}"),
         "width": image["width"],
         "height": image["height"],
     }

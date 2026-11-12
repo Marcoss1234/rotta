@@ -1,3 +1,5 @@
+import { clubHeaders } from "@/app/club.js";
+
 export class ApiError extends Error {
   constructor(message, status) {
     super(message);
@@ -11,7 +13,7 @@ async function request(path, { method = "GET", body } = {}) {
     response = await fetch(`/api${path}`, {
       method,
       credentials: "same-origin",
-      headers: body ? { "Content-Type": "application/json" } : undefined,
+      headers: clubHeaders(body ? { "Content-Type": "application/json" } : {}),
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
@@ -58,7 +60,7 @@ export async function uploadAvatar(blob) {
     response = await fetch("/api/profile/avatar", {
       method: "PUT",
       credentials: "same-origin",
-      headers: { "Content-Type": blob.type },
+      headers: clubHeaders({ "Content-Type": blob.type }),
       body: blob,
     });
   } catch {
@@ -73,7 +75,7 @@ export const listUsers = () => request("/users");
 export async function downloadBackup() {
   let response;
   try {
-    response = await fetch("/api/admin/backup", { credentials: "same-origin" });
+    response = await fetch("/api/admin/backup", { credentials: "same-origin", headers: clubHeaders() });
   } catch {
     throw new ApiError("No se ha podido conectar con el servidor", 0);
   }
@@ -81,7 +83,7 @@ export async function downloadBackup() {
     const data = await response.json().catch(() => null);
     throw new ApiError(typeof data?.detail === "string" ? data.detail : "No se ha podido hacer la copia", response.status);
   }
-  const name = response.headers.get("content-disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "copia-tnt.json";
+  const name = response.headers.get("content-disposition")?.match(/filename="([^"]+)"/)?.[1] ?? "copia-club.json";
   return { blob: await response.blob(), name };
 }
 export const listPendingUsers = () => request("/users/pending");
@@ -114,7 +116,7 @@ export async function sendChatImage(channelId, { blob, width, height }, text = "
     response = await fetch(`/api/chat/channels/${encodeURIComponent(channelId)}/images?${params}`, {
       method: "POST",
       credentials: "same-origin",
-      headers: { "Content-Type": blob.type },
+      headers: clubHeaders({ "Content-Type": blob.type }),
       body: blob,
     });
   } catch {

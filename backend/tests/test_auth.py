@@ -55,7 +55,7 @@ def test_token_falso_no_entra(db):
 def test_correo_sin_verificar_no_entra(db):
     response = TestClient(app).post("/api/auth/google", json={"credential": "token-sin-verificar"})
     assert response.status_code == 401
-    assert "tnt_session" not in response.cookies
+    assert "rotta_session" not in response.cookies
 
 
 def test_sin_configurar_google_no_entra(db, monkeypatch):
@@ -73,7 +73,7 @@ def test_sin_sesion_no_hay_datos(db):
 
 def test_cookie_inventada_no_vale(db):
     client = TestClient(app)
-    client.cookies.set("tnt_session", "inventada", path="/api")
+    client.cookies.set("rotta_session", "inventada", path="/api")
     assert client.get("/api/auth/me").status_code == 401
 
 
@@ -96,7 +96,7 @@ def test_la_cookie_es_httponly_y_el_token_no_se_guarda_en_claro(db):
     header = response.headers["set-cookie"].lower()
     assert "httponly" in header
     assert "samesite=lax" in header
-    token = response.cookies["tnt_session"]
+    token = response.cookies["rotta_session"]
     assert token not in response.text
 
     import asyncio
@@ -196,11 +196,11 @@ def test_volver_a_entrar_no_cambia_el_rol(db):
 
 def test_cerrar_sesion_invalida_la_cookie(db):
     ana = client_for("token-ana")
-    cookie = ana.cookies["tnt_session"]
+    cookie = ana.cookies["rotta_session"]
     assert ana.post("/api/auth/logout").status_code == 204
 
     stale = TestClient(app)
-    stale.cookies.set("tnt_session", cookie, path="/api")
+    stale.cookies.set("rotta_session", cookie, path="/api")
     assert stale.get("/api/auth/me").status_code == 401
 
 

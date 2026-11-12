@@ -9,7 +9,8 @@ from typing import Literal, Optional
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
-from auth import SESSION_COOKIE, _admin_emails, _public_user, current_user
+from auth import _admin_emails, _public_user, current_user
+from clubs import session_cookie
 from database import get_db
 
 router = APIRouter(prefix="/api")
@@ -102,4 +103,4 @@ async def delete_account(body: DeleteAccount, response: Response, user=Depends(c
     await db.help_requests.update_many({"requested_by": user_id}, {"$set": {"requested_by": None}})
 
     await db.users.delete_one({"id": user_id})
-    response.delete_cookie(SESSION_COOKIE, path="/api")
+    response.delete_cookie(session_cookie(), path="/api")
