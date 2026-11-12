@@ -1,0 +1,16 @@
+{
+  "id": "/app",
+  "name": "Rotta · Gestor de clubs",
+  "short_name": "Rotta",
+  "description": "Plantillas, entrenamientos, partidos y chat de tu club.",
+  "lang": "es",
+  "start_url": "/app",
+  "scope": "/app",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0A0A0C",
+  "theme_color": "#0A0A0C",
+  "icons": [
+    { "src": "/rotta-logo.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

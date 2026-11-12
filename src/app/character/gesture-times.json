@@ -1,0 +1,177 @@
+{
+ "remate": {
+  "duration": 2410,
+  "keys": [
+   [
+    0,
+    "ready"
+   ],
+   [
+    0.39,
+    "spikeLoad"
+   ],
+   [
+    0.4523,
+    "extra_mwbdfsig"
+   ],
+   [
+    0.5685,
+    "extra_mwbczl3g"
+   ],
+   [
+    0.6929,
+    "spikeRise"
+   ],
+   [
+    0.7344,
+    "spikeArm"
+   ],
+   [
+    0.7884,
+    "spikeArm"
+   ],
+   [
+    0.8174,
+    "spikeHit"
+   ],
+   [
+    0.8838,
+    "spikeFollow"
+   ],
+   [
+    0.9544,
+    "land"
+   ],
+   [
+    1,
+    "ready"
+   ]
+  ],
+  "jumpKeys": [
+   3,
+   9
+  ],
+  "jump": [
+   0.5685,
+   0.9544,
+   1.2
+  ],
+  "hang": 0.706,
+  "bases": {
+   "extra_mwbcrgic": "spikeLoad",
+   "extra_mwbcs1k8": "spikeLoad",
+   "extra_mwbcscoc": "spikeLoad",
+   "extra_mwbcsp85": "spikeLoad",
+   "extra_mwbcxlnu": "spikeLoad",
+   "extra_mwbczl3g": "spikeLoad",
+   "extra_mwbdfsig": "spikeLoad"
+  },
+  "labels": {
+   "extra_mwbcrgic": "batida 2",
+   "extra_mwbcs1k8": "batida 3",
+   "extra_mwbcscoc": "batida 4",
+   "extra_mwbcsp85": "batida 5",
+   "extra_mwbcxlnu": "preparacion",
+   "extra_mwbczl3g": "batida 2",
+   "extra_mwbdfsig": "vatida"
+  }
+ },
+ "saque": {
+  "duration": 2400,
+  "keys": [
+   [
+    0,
+    "stand"
+   ],
+   [
+    0.3465,
+    "extra_mwbe60pj"
+   ],
+   [
+    0.4455,
+    "extra_mwbe1aun"
+   ],
+   [
+    0.4505,
+    "extra_mwbea0pw"
+   ],
+   [
+    0.7772,
+    "serveHit"
+   ],
+   [
+    0.9455,
+    "serveFollow"
+   ],
+   [
+    1,
+    "stand"
+   ]
+  ],
+  "jumpKeys": [
+   3,
+   5
+  ],
+  "jump": [
+   0.4505,
+   0.9455,
+   0.72
+  ],
+  "hang": 1,
+  "bases": {
+   "extra_mwbe1aun": "stand",
+   "extra_mwbe1ogc": "stand",
+   "extra_mwbe60pj": "stand",
+   "extra_mwbea0pw": "stand",
+   "extra_mwbec437": "stand"
+  },
+  "labels": {
+   "extra_mwbe1aun": "saque2",
+   "extra_mwbe1ogc": "saque 3",
+   "extra_mwbe60pj": "toss",
+   "extra_mwbea0pw": "otro",
+   "extra_mwbec437": "golpe 1"
+  }
+ },
+ "bloqueo": {
+  "duration": 850,
+  "keys": [
+   [
+    0,
+    "ready"
+   ],
+   [
+    0.15,
+    "blockLoad"
+   ],
+   [
+    0.3,
+    "block"
+   ],
+   [
+    0.72,
+    "block"
+   ],
+   [
+    0.88,
+    "land"
+   ],
+   [
+    1,
+    "ready"
+   ]
+  ],
+  "jumpKeys": [
+   1,
+   4
+  ],
+  "jump": [
+   0.16,
+   0.86,
+   1.08
+  ],
+  "hang": 1,
+  "bases": {},
+  "labels": {}
+ }
+}

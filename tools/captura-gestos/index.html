@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Captura de gestos</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0a0a0c; color: #f4f4f5; font-family: system-ui, sans-serif; }
+  #app { display: flex; height: 100%; }
+  #views { flex: 1; display: grid; grid-template-rows: 1fr 1fr; min-width: 0; }
+  #videoBox { position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+  #videoBox video, #videoBox canvas { position: absolute; max-width: 100%; max-height: 100%; }
+  #stage { position: relative; min-height: 0; border-top: 1px solid #ffffff1f; }
+  #stage canvas { display: block; }
+  #panel { width: 340px; overflow-y: auto; background: #16161c; border-left: 1px solid #ffffff1f; padding: 12px; box-sizing: border-box; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #a1a1aa; margin: 16px 0 6px; }
+  p.hint { font-size: 12px; color: #a1a1aa; margin: 0 0 8px; line-height: 1.4; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  button, select { min-height: 34px; border-radius: 8px; border: 1px solid #ffffff2e; background: #0a0a0c; color: #f4f4f5; padding: 0 10px; font-size: 13px; cursor: pointer; }
+  button:hover:not(:disabled) { border-color: #ffffff66; }
+  button:disabled { opacity: .45; cursor: default; }
+  button.primary { background: #ff3800; border-color: #ff3800; font-weight: 700; }
+  button.on { background: #ff3800; border-color: #ff3800; }
+  select { width: 100%; }
+  label.slider { display: grid; grid-template-columns: 96px 1fr 44px; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; }
+  label.slider output { font-variant-numeric: tabular-nums; text-align: right; color: #d4d4d8; }
+  label.check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; }
+  #timeline { width: 100%; }
+  .marks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; font-size: 12px; color: #d4d4d8; text-align: center; font-variant-numeric: tabular-nums; }
+  .marks b { display: block; font-size: 11px; color: #a1a1aa; font-weight: 600; }
+  #status { position: absolute; left: 12px; bottom: 12px; background: #000000b3; padding: 6px 10px; border-radius: 8px; font-size: 13px; }
+  #progress { width: 100%; height: 8px; accent-color: #ff3800; }
+  #drop { color: #a1a1aa; font-size: 14px; text-align: center; padding: 20px; }
+  @media (max-width: 900px) { #app { flex-direction: column; } #panel { width: 100%; height: 45%; border-left: 0; border-top: 1px solid #ffffff1f; } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="views">
+    <div id="videoBox">
+      <p id="drop">Elige un vídeo a la derecha</p>
+      <video id="video" muted playsinline preload="auto"></video>
+      <canvas id="overlay"></canvas>
+    </div>
+    <div id="stage"><p id="status">Cargando…</p></div>
+  </div>
+  <aside id="panel">
+    <h1>Captura de gestos</h1>
+    <p class="hint">Saca un gesto de un vídeo de verdad. El vídeo se analiza en este ordenador y no se sube a ningún sitio. Mejor grabado de lado, con el cuerpo entero y una sola persona.</p>
+
+    <h2>1. Vídeo y gesto</h2>
+    <select id="gesture" aria-label="Gesto"></select>
+    <div class="row" style="margin-top:6px">
+      <input id="file" type="file" accept="video/*" />
+    </div>
+    <label class="slider">Fotogramas/s<input id="fps" type="range" min="15" max="60" step="15" value="30" /><output id="fpsOut">30</output></label>
+    <div class="row"><button id="analyze" class="primary" disabled>Analizar vídeo</button></div>
+    <progress id="progress" max="1" value="0" hidden></progress>
+
+    <h2>2. Recorta y marca el golpe</h2>
+    <p class="hint">Mueve la barra hasta el momento y pulsa el botón. El golpe es cuando la mano toca el balón.</p>
+    <input id="timeline" type="range" min="0" max="0" value="0" step="1" aria-label="Fotograma" disabled />
+    <div class="row" style="margin:6px 0">
+      <button id="setStart" disabled>Empieza aquí</button>
+      <button id="setHit" disabled>Golpe aquí</button>
+      <button id="setEnd" disabled>Acaba aquí</button>
+    </div>
+    <div class="marks"><span><b>Empieza</b><span id="startOut">–</span></span><span><b>Golpe</b><span id="hitOut">–</span></span><span><b>Acaba</b><span id="endOut">–</span></span></div>
+
+    <h2>Salto</h2>
+    <label class="check"><input id="manualJump" type="checkbox" /> La cámara sigue al jugador (salto a mano)</label>
+    <p class="hint">Si la cámara se mueve, el salto no se puede medir en el vídeo: marca cuándo despega y cuándo cae, y su altura.</p>
+    <div class="row" style="margin:6px 0">
+      <button id="setTakeoff" disabled>Despega aquí</button>
+      <button id="setLanding" disabled>Cae aquí</button>
+    </div>
+    <div class="marks" style="grid-template-columns: repeat(2, 1fr)"><span><b>Despega</b><span id="takeoffOut">–</span></span><span><b>Cae</b><span id="landingOut">–</span></span></div>
+    <label class="slider">Altura<input id="jumpHeight" type="range" min="0" max="1.8" step="0.05" value="0.75" /><output id="jumpHeightOut">0,75 m</output></label>
+    <label class="slider">Aguantar arriba<input id="hang" type="range" min="0" max="1" step="0.05" value="0.5" /><output id="hangOut">0,5</output></label>
+    <label class="check"><input id="peakHit" type="checkbox" checked /> Golpear en el punto más alto del salto</label>
+    <label class="slider">Del despegue al golpe<input id="airTime" type="range" min="0.25" max="0.8" step="0.01" value="0.42" /><output id="airTimeOut">0,42 s</output></label>
+    <p class="hint">Con salto a mano, marca el ritmo de verdad: en un remate pasan unas 4 décimas desde que despega hasta que toca el balón. La cámara lenta se calcula sola.</p>
+
+    <h2>3. Ajustes</h2>
+    <label class="slider">Cámara lenta<input id="slowmo" type="range" min="1" max="30" step="0.5" value="1" /><output id="slowmoOut">no</output></label>
+    <label class="slider">Velocidad<input id="speed" type="range" min="0.5" max="2" step="0.05" value="1" /><output id="speedOut">1×</output></label>
+    <label class="slider">Suavizado<input id="smooth" type="range" min="0" max="4" step="0.5" value="1.5" /><output id="smoothOut">1,5</output></label>
+    <label class="check"><input id="mirror" type="checkbox" /> Zurdo (cambiar izquierda y derecha)</label>
+    <label class="check"><input id="travel" type="checkbox" /> Mover también hacia delante (carrera)</label>
+    <label class="check"><input id="bookends" type="checkbox" checked /> Empezar y acabar en la postura de espera (con batida y caída en remate y bloqueo)</label>
+
+    <h2>4. Ver y guardar</h2>
+    <div class="row">
+      <button id="play" disabled>▶ Ver gesto</button>
+      <button id="save" class="primary" disabled>Guardar para la app</button>
+      <button id="remove">Quitar captura</button>
+    </div>
+    <p class="hint" id="saveInfo" style="margin-top:8px"></p>
+  </aside>
+</div>
+<script type="module">
+import RefreshRuntime from "/@react-refresh";
+RefreshRuntime.injectIntoGlobalHook(window);
+window.$RefreshReg$ = () => {};
+window.$RefreshSig$ = () => (type) => type;
+window.__vite_plugin_react_preamble_installed__ = true;
+</script>
+<script type="module" src="./captura.js"></script>
+</body>
+</html>

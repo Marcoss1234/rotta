@@ -1,0 +1,4 @@
+Modelos de jugador: Universal Base Characters (versión gratuita) de Quaternius.
+Licencia CC0 1.0 (dominio público): https://creativecommons.org/publicdomain/zero/1.0/
+Origen: https://quaternius.com/packs/universalbasecharacters.html
+Texturas reducidas a WebP para la app.

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.env
+.env.local
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Vídeos de jugadores para capturar gestos: no se suben.
+tools/captura-gestos/videos/

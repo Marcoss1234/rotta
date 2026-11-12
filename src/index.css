@@ -1,0 +1,665 @@
+@import "./theme-palette.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Colores del tema (en RGB para poder usar transparencias). El color del club y el segundo color
+   los pone src/app/useTheme.js según los ajustes del club; claro u oscuro, según cada persona. */
+:root {
+  --c-white: 255 255 255;
+  --c-snow: 255 255 255;
+  --c-void: 11 12 15;
+  --c-surface: 18 19 24;
+  --c-panel: 21 23 28;
+  --c-tnt: 124 58 237;
+  --c-tntdeep: 93 43 178;
+  --c-ember: 34 211 238;
+  --c-onbrand: 255 255 255;
+  --c-onbrand-inverse: 15 17 21;
+  --c-onember: 15 17 21;
+  --void: rgb(var(--c-void));
+  --surface: rgb(var(--c-surface));
+  --tnt: rgb(var(--c-tnt));
+  --ember: rgb(var(--c-ember));
+  --background: 240 4% 4%;
+  --foreground: 0 0% 100%;
+  --card: 240 5% 9%;
+  --card-foreground: 0 0% 100%;
+  --popover: 240 5% 9%;
+  --popover-foreground: 0 0% 100%;
+  --primary: 16 100% 50%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 240 5% 14%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 240 5% 14%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 16 100% 50%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5% 15%;
+  --input: 240 5% 15%;
+  --ring: 16 100% 50%;
+  --radius: 0.25rem;
+}
+
+:root[data-theme="light"] {
+  /* En claro, "blanco" es el color del texto y los fondos son grises claros con tarjetas blancas. */
+  --c-white: 26 29 36;
+  --c-void: 222 226 232;
+  --c-surface: 244 245 248;
+  --c-panel: 244 245 248;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Dentro de una zona con el color del club, "blanco" es el color que se lee encima (y "void", su contrario).
+   Así los subtítulos, iconos y botones de dentro se leen igual en claro y en oscuro. */
+.text-onbrand {
+  --c-white: var(--c-onbrand);
+  --c-void: var(--c-onbrand-inverse);
+}
+
+/* La pista, la pizarra y el partido en directo van siempre en oscuro, también con la app en claro. */
+:root[data-theme="light"] .force-dark {
+  --c-white: 255 255 255;
+  --c-void: 11 12 15;
+  --c-surface: 18 19 24;
+  --c-panel: 21 23 28;
+  color-scheme: dark;
+  color: rgb(var(--c-white));
+}
+
+:root[data-theme="light"] .force-dark :is(.bg-panel, .bg-surface) {
+  box-shadow: none;
+}
+
+/* En claro, cada tarjeta se separa del fondo con un borde fino y una sombra suave: así no se junta todo. */
+:root[data-theme="light"] :is(.bg-panel, .bg-surface):is(.rounded-lg, .rounded-xl, .rounded-2xl) {
+  box-shadow:
+    0 0 0 1px rgb(15 23 42 / 0.07),
+    0 1px 2px rgb(15 23 42 / 0.08),
+    0 6px 16px -6px rgb(15 23 42 / 0.12);
+}
+
+/* Una tarjeta dentro de otra va en un gris algo más oscuro y sin sombra: si no, se funden. */
+:root[data-theme="light"] :is(.bg-panel, .bg-surface) :is(.bg-panel, .bg-surface) {
+  background-color: rgb(231 234 239);
+  box-shadow: none;
+}
+
+/* Sobre un color fuerte (rojo, verde, azul...) el texto es blanco siempre. */
+.text-snow {
+  --c-white: 255 255 255;
+  --c-void: 15 17 21;
+}
+
+html {
+  background: var(--void);
+  scroll-behavior: auto;
+  scroll-padding-top: 72px;
+  scrollbar-gutter: stable;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background: var(--void);
+  color: rgb(var(--c-white));
+  font-family: "Plus Jakarta Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: var(--tnt);
+  color: #fff;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--void);
+}
+
+::-webkit-scrollbar-thumb {
+  border: 2px solid var(--void);
+  border-radius: 8px;
+  background: rgb(var(--c-zinc-700));
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tnt);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+}
+
+@layer utilities {
+  /* El relleno se pinta encima del trazo para tapar las líneas internas de las letras.
+     Por eso el trazo es el doble de grueso: solo se ve su mitad exterior. */
+  .text-stroke {
+    -webkit-text-stroke: 3px rgba(255, 255, 255, 0.9);
+    color: var(--void);
+    paint-order: stroke fill;
+  }
+
+  .text-stroke-faint {
+    -webkit-text-stroke: 2px rgba(255, 255, 255, 0.14);
+    color: var(--void);
+    paint-order: stroke fill;
+  }
+
+  .grain {
+    position: relative;
+  }
+
+  .grain::after {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+    content: "";
+    opacity: 0.05;
+  }
+}
+
+/* Dentro de la app no se amplía. iPhone hace zoom al escribir en campos de menos de 16 px. */
+.app-no-zoom {
+  touch-action: pan-x pan-y;
+}
+
+.app-no-zoom input:not([type="checkbox"], [type="radio"], [type="range"]),
+.app-no-zoom select,
+.app-no-zoom textarea {
+  font-size: 16px;
+}
+
+/* En el móvil la página no se desplaza, solo el contenido: si no, iPhone arrastra el menú de abajo. */
+@media (max-width: 767px) {
+  html.app-shell,
+  html.app-shell body {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+}
+
+/* La barra de notas: alta para tocarla bien con el dedo, aunque la pista se vea fina. */
+.rating-range {
+  display: block;
+  width: 100%;
+  height: 2.75rem;
+  margin-top: -0.25rem;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.rating-range::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--tnt), var(--ember)) 0 / var(--fill) 100% no-repeat, rgba(255, 255, 255, 0.12);
+}
+
+.rating-range::-moz-range-track {
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--tnt), var(--ember)) 0 / var(--fill) 100% no-repeat, rgba(255, 255, 255, 0.12);
+}
+
+.rating-range::-webkit-slider-thumb {
+  width: 26px;
+  height: 26px;
+  margin-top: -9px;
+  border: 4px solid var(--tnt);
+  border-radius: 50%;
+  background: #fff;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.rating-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border: 4px solid var(--tnt);
+  border-radius: 50%;
+  background: #fff;
+}
+
+.rating-range:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee-track {
+  animation: marquee-scroll 42s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+    box-shadow: 0 0 0 0 rgba(255, 56, 0, 0.55);
+  }
+  50% {
+    opacity: 0.7;
+    box-shadow: 0 0 0 7px rgba(255, 56, 0, 0);
+  }
+}
+
+.pulse-dot {
+  animation: pulse-dot 1.8s ease-in-out infinite;
+}
+
+/* La banda (.marquee-track) se mueve siempre, por decisión del club; se pausa al pasar el ratón. */
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot {
+    animation: none;
+  }
+}
+
+/* Pizarra: efectos de las chapas y del balón. */
+.board-fx {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes board-jump {
+  0% { transform: scale(1); }
+  35% { transform: translateY(-4px) scale(1.35); }
+  70% { transform: scale(0.94); }
+  100% { transform: scale(1); }
+}
+.board-jump { animation: board-jump 460ms cubic-bezier(0.3, 1.4, 0.5, 1); }
+@keyframes board-bounce {
+  0% { transform: scale(1.3); }
+  40% { transform: scale(0.82); }
+  70% { transform: scale(1.08); }
+  100% { transform: scale(1); }
+}
+.board-bounce { animation: board-bounce 420ms ease-out; }
+@keyframes board-ring {
+  from { transform: scale(1); opacity: 0.85; }
+  to { transform: scale(3.2); opacity: 0; }
+}
+.board-ring { animation: board-ring 600ms ease-out forwards; }
+@keyframes board-pulse {
+  0%, 100% { opacity: 0.95; }
+  50% { opacity: 0.35; }
+}
+.board-pulse { animation: board-pulse 1.4s ease-in-out infinite; }
+.board-lifted { transform: scale(1.1); transition: transform 120ms ease-out; }
+/* Los muñecos respiran: suben y bajan un poco mientras esperan. */
+@keyframes board-idle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-0.5px); }
+}
+.board-idle { animation: board-idle 1.6s ease-in-out infinite; transform-origin: bottom center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .board-jump, .board-bounce, .board-pulse, .board-idle { animation: none; }
+  .board-ring { display: none; }
+  .board-lifted { transform: none; }
+}
+
+/* Club Coins: el +5 sube con un rebote y las monedas saltan alrededor; el -5 cae en rojo. */
+@keyframes coin-burst-up {
+  0% { opacity: 0; transform: translateY(6px) scale(0.5); }
+  18% { opacity: 1; transform: translateY(-6px) scale(1.18); }
+  32% { transform: translateY(-10px) scale(1); }
+  75% { opacity: 1; transform: translateY(-34px) scale(1); }
+  100% { opacity: 0; transform: translateY(-52px) scale(0.9); }
+}
+@keyframes coin-burst-down {
+  0% { opacity: 0; transform: translateY(-6px) scale(0.6); }
+  20% { opacity: 1; transform: translateY(0) scale(1.1); }
+  70% { opacity: 1; transform: translateY(14px) scale(1); }
+  100% { opacity: 0; transform: translateY(26px) scale(0.9); }
+}
+@keyframes coin-spark {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.3); }
+  20% { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(1); }
+}
+@keyframes coin-pill-pop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.18); box-shadow: 0 0 0 6px rgba(245, 197, 66, 0.35); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(245, 197, 66, 0); }
+}
+.coin-burst-up { animation: coin-burst-up 1500ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards; }
+.coin-burst-down { animation: coin-burst-down 1300ms ease-out forwards; }
+.coin-spark { opacity: 0; animation: coin-spark 750ms ease-out forwards; }
+.coin-pill-pop { animation: coin-pill-pop 600ms ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .coin-spark { display: none; }
+  .coin-burst-up, .coin-burst-down { animation-duration: 1800ms; animation-name: coin-fade; }
+  .coin-pill-pop { animation: none; }
+}
+@keyframes coin-fade {
+  0%, 80% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ---------- Movimiento de la app ---------- */
+
+/* Al pulsar, cualquier botón o enlace se hunde un poco: se nota que lo has tocado. `scale` se suma a
+   las transformaciones que ya tenga el elemento (centrados, giros...), no las pisa. */
+.app-shell button,
+.app-shell a,
+.app-shell [role="tab"] {
+  transition-property: color, background-color, border-color, box-shadow, opacity, scale;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.3, 0.7, 0.4, 1);
+}
+.app-shell button:not(:disabled):not([aria-disabled="true"]):not([data-no-press]):active,
+.app-shell a:not([data-no-press]):active,
+.app-shell [role="tab"]:active {
+  scale: 0.96;
+  transition-duration: 60ms;
+}
+
+/* Cambio de pantalla: el contenido entra en cascada, cada bloque un pelín después del anterior. */
+@keyframes page-fade {
+  from { opacity: 0; }
+}
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+.page-enter > * {
+  animation: page-fade 220ms ease-out backwards;
+}
+.page-enter > * > * {
+  animation: rise-in 420ms cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+.page-enter > * > :nth-child(2) { animation-delay: 40ms; }
+.page-enter > * > :nth-child(3) { animation-delay: 80ms; }
+.page-enter > * > :nth-child(4) { animation-delay: 120ms; }
+.page-enter > * > :nth-child(5) { animation-delay: 160ms; }
+.page-enter > * > :nth-child(6) { animation-delay: 200ms; }
+.page-enter > * > :nth-child(n + 7) { animation-delay: 240ms; }
+
+/* Listas que entran una a una (jugadas, mensajes...). */
+.stagger-in > * {
+  animation: rise-in 380ms cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+.stagger-in > :nth-child(2) { animation-delay: 35ms; }
+.stagger-in > :nth-child(3) { animation-delay: 70ms; }
+.stagger-in > :nth-child(4) { animation-delay: 105ms; }
+.stagger-in > :nth-child(5) { animation-delay: 140ms; }
+.stagger-in > :nth-child(6) { animation-delay: 175ms; }
+.stagger-in > :nth-child(7) { animation-delay: 210ms; }
+.stagger-in > :nth-child(n + 8) { animation-delay: 245ms; }
+
+/* Las ventanas aparecen con un pequeño rebote y el fondo se oscurece poco a poco. */
+@keyframes dialog-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.94); }
+}
+@keyframes backdrop-in {
+  from { opacity: 0; }
+}
+dialog[open] {
+  animation: dialog-in 260ms cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+dialog[open]::backdrop {
+  animation: backdrop-in 220ms ease-out;
+}
+
+/* Menú de abajo: el icono de la sección elegida da un saltito y la raya crece desde el centro. */
+@keyframes nav-pop {
+  0% { transform: scale(1); }
+  35% { transform: translateY(-3px) scale(1.22); }
+  70% { transform: translateY(0) scale(0.95); }
+  100% { transform: scale(1); }
+}
+@keyframes nav-bar-in {
+  from { transform: scaleX(0); opacity: 0; }
+}
+.nav-pop { animation: nav-pop 420ms cubic-bezier(0.3, 1.4, 0.5, 1); }
+.nav-bar-in { animation: nav-bar-in 260ms cubic-bezier(0.2, 0.8, 0.3, 1); }
+
+/* Un mensaje nuevo del chat sube desde abajo. */
+@keyframes message-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.97); }
+}
+.message-in { animation: message-in 260ms cubic-bezier(0.2, 0.9, 0.3, 1) backwards; }
+
+/* Pestañas y elecciones: el elegido aparece con un leve "pop". */
+@keyframes chosen-pop {
+  0% { scale: 0.92; }
+  60% { scale: 1.04; }
+  100% { scale: 1; }
+}
+.chosen-pop,
+.app-shell button[aria-pressed="true"],
+.app-shell [role="tab"][aria-selected="true"],
+.app-shell [role="radio"][aria-checked="true"] {
+  animation: chosen-pop 280ms cubic-bezier(0.3, 1.3, 0.5, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter > *,
+  .page-enter > * > *,
+  .stagger-in > *,
+  dialog[open],
+  dialog[open]::backdrop,
+  .nav-pop,
+  .nav-bar-in,
+  .message-in,
+  .chosen-pop,
+  .app-shell button[aria-pressed="true"],
+  .app-shell [role="tab"][aria-selected="true"],
+  .app-shell [role="radio"][aria-checked="true"] {
+    animation: none;
+  }
+  .app-shell button:active,
+  .app-shell a:active,
+  .app-shell [role="tab"]:active {
+    scale: none;
+  }
+}
+
+/* Splash al tocar: un balón blanco que aparece girando y un aro que se abre. Pequeño y rápido. */
+.tap-splash {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+.tap-splash-ball {
+  position: absolute;
+  left: 0;
+  top: 0;
+  translate: -50% -50%;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.45));
+  animation: tap-ball 560ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards;
+}
+.tap-splash-ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 46px;
+  height: 46px;
+  translate: -50% -50%;
+  border-radius: 9999px;
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  animation: tap-ring 480ms ease-out forwards;
+}
+@keyframes tap-ball {
+  0% { opacity: 0; scale: 0.3; rotate: -60deg; }
+  25% { opacity: 1; scale: 1.05; }
+  60% { opacity: 0.9; scale: 0.95; rotate: 80deg; }
+  100% { opacity: 0; scale: 0.7; rotate: 160deg; translate: -50% -110%; }
+}
+@keyframes tap-ring {
+  0% { opacity: 0.9; scale: 0.2; }
+  100% { opacity: 0; scale: 1; }
+}
+
+/* Menú lateral del móvil: entra desde la izquierda y sus opciones aparecen en cascada. */
+@keyframes side-menu-in {
+  from { transform: translateX(-100%); }
+}
+@keyframes side-menu-out {
+  to { transform: translateX(-100%); }
+}
+@keyframes side-backdrop-in {
+  from { opacity: 0; }
+}
+@keyframes side-backdrop-out {
+  to { opacity: 0; }
+}
+.side-menu-in { animation: side-menu-in 300ms cubic-bezier(0.2, 0.9, 0.3, 1); }
+.side-menu-out { animation: side-menu-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards; }
+.side-menu-backdrop-in { animation: side-backdrop-in 260ms ease-out; }
+.side-menu-backdrop-out { animation: side-backdrop-out 220ms ease-in forwards; }
+.side-menu-in .side-menu-items li {
+  animation: rise-in 360ms cubic-bezier(0.2, 0.8, 0.3, 1) backwards;
+}
+.side-menu-in .side-menu-items li:nth-child(2) { animation-delay: 30ms; }
+.side-menu-in .side-menu-items li:nth-child(3) { animation-delay: 60ms; }
+.side-menu-in .side-menu-items li:nth-child(4) { animation-delay: 90ms; }
+.side-menu-in .side-menu-items li:nth-child(5) { animation-delay: 120ms; }
+.side-menu-in .side-menu-items li:nth-child(n + 6) { animation-delay: 150ms; }
+@media (prefers-reduced-motion: reduce) {
+  .side-menu-in,
+  .side-menu-out,
+  .side-menu-backdrop-in,
+  .side-menu-backdrop-out,
+  .side-menu-in .side-menu-items li {
+    animation-duration: 1ms;
+  }
+}
+
+/* Botón "Menú" mientras nadie lo ha abierto: una onda naranja que late. Y el aviso entra con un rebote. */
+@keyframes menu-attention {
+  0% { box-shadow: 0 0 0 0 rgba(255, 56, 0, 0.55); }
+  70% { box-shadow: 0 0 0 12px rgba(255, 56, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 56, 0, 0); }
+}
+.menu-attention { animation: menu-attention 1.8s ease-out infinite; }
+@keyframes menu-hint-in {
+  0% { opacity: 0; transform: translateY(14px) scale(0.9); }
+  60% { opacity: 1; transform: translateY(-3px) scale(1.02); }
+  100% { transform: translateY(0) scale(1); }
+}
+@keyframes menu-hint-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.menu-hint { animation: menu-hint-in 420ms cubic-bezier(0.2, 0.9, 0.3, 1), menu-hint-bob 2.4s ease-in-out 1s infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .menu-attention,
+  .menu-hint {
+    animation: none;
+  }
+}
+
+/* Partido en directo: el número salta al sumar, el balón del saque bota y el aviso de set entra con fuerza. */
+@keyframes score-pop {
+  0% { scale: 0.6; opacity: 0.4; }
+  55% { scale: 1.18; opacity: 1; }
+  100% { scale: 1; }
+}
+.score-pop { animation: score-pop 380ms cubic-bezier(0.3, 1.5, 0.5, 1); }
+@keyframes live-serve {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px) rotate(40deg); }
+}
+.live-serve { animation: live-serve 1.1s ease-in-out infinite; }
+@keyframes live-banner {
+  0% { opacity: 0; transform: scale(0.6) rotate(-4deg); }
+  15% { opacity: 1; transform: scale(1.06) rotate(1deg); }
+  25% { transform: scale(1) rotate(0); }
+  85% { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.95) translateY(-10px); }
+}
+.live-banner { animation: live-banner 2600ms cubic-bezier(0.2, 0.9, 0.3, 1) forwards; }
+@media (prefers-reduced-motion: reduce) {
+  .score-pop,
+  .live-serve,
+  .live-banner {
+    animation: none;
+  }
+}
+
+/* Pantalla del partido en directo: fondo con luces de los dos equipos y la pista con brillo de parqué. */
+.live-screen {
+  background:
+    radial-gradient(60% 40% at 0% 0%, rgba(255, 56, 0, 0.22), transparent 70%),
+    radial-gradient(60% 40% at 100% 0%, rgba(14, 165, 233, 0.18), transparent 70%),
+    radial-gradient(80% 50% at 50% 100%, rgba(201, 121, 63, 0.12), transparent 70%),
+    #0a0a0c;
+}
+.live-score::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(115deg, rgba(255, 255, 255, 0.05) 0 2px, transparent 2px 14px);
+  pointer-events: none;
+}
+.live-score::after {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto;
+  height: 70%;
+  background: radial-gradient(closest-side, rgba(255, 255, 255, 0.25), transparent);
+  pointer-events: none;
+}
+.live-court {
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 60px rgba(201, 121, 63, 0.18);
+}
+.live-layout {
+  display: grid;
+  gap: 0.5rem;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
+  grid-template-areas: "score" "sets" "court" "controls";
+}
+@media (min-width: 768px) {
+  .live-layout {
+    gap: 1rem 1.25rem;
+    grid-template-columns: minmax(18rem, 26rem) minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    grid-template-areas: "score court" "sets court" "feed court" "controls court";
+  }
+}
+
+/* Tarjeta de efecto en la tienda: el balón cruza dejando su brillo. */
+/* Tarjetas de efectos: el icono late y el brillo respira. */
+@keyframes fx-card-glow {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 0.8; transform: scale(1.05); }
+}
+@keyframes fx-card-icon {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.12) rotate(-6deg); }
+}
+.fx-card-glow { animation: fx-card-glow 1.8s ease-in-out infinite; }
+.fx-card-icon { animation: fx-card-icon 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fx-card-glow, .fx-card-icon { animation: none; }
+}
