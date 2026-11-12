@@ -270,6 +270,9 @@ export default function LoginPage({ onSignedIn }) {
           {!DEMO && <a href="/" className="flex min-h-11 items-center justify-center text-sm font-semibold text-zinc-200 hover:text-white">
             Volver a la web del club
           </a>}
+          <a href="/app/privacidad" className="flex min-h-11 items-center justify-center text-xs font-semibold text-zinc-400 underline hover:text-white">
+            Política de privacidad
+          </a>
         </div>
       </div>
     </div>

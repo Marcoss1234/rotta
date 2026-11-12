@@ -8,6 +8,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 import CoinsCard from "@/app/components/CoinsCard.jsx";
 import InstallCard from "@/app/components/InstallCard.jsx";
 import NotificationsCard from "@/app/components/NotificationsCard.jsx";
+import PrivacyCard from "@/app/components/PrivacyCard.jsx";
 import ThemeSettingsCard from "@/app/components/ThemeSettingsCard.jsx";
 import { forgetPushSubscription } from "@/app/notifications.js";
 import PasswordChangeForm from "@/app/components/PasswordChangeForm.jsx";
@@ -533,6 +534,8 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
       <NotificationsCard />
 
       <InstallCard />
+
+      <PrivacyCard user={user} onUserChanged={onUserChanged} onSignedOut={onSignedOut} />
 
       <Card title="Cuenta">
         <dl className="space-y-1 text-sm">

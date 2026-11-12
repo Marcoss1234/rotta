@@ -79,7 +79,9 @@ def _hash_token(token):
 
 
 def picture_of(user):
-    """La foto subida a la app si la hay; si no, la de Google."""
+    """La foto subida a la app si la hay; si no, la de Google. Sin permiso para fotos, ninguna."""
+    if (user.get("consent") or {}).get("photos") is False:
+        return ""
     if user.get("avatar_version"):
         return f"/api/users/{user['id']}/avatar?v={user['avatar_version']}"
     return user.get("picture", "")
@@ -89,7 +91,7 @@ async def pictures_by_user(db, user_ids):
     ids = list({user_id for user_id in user_ids if user_id})
     if not ids:
         return {}
-    users = await db.users.find({"id": {"$in": ids}}, {"id": 1, "avatar_version": 1, "picture": 1}).to_list(len(ids))
+    users = await db.users.find({"id": {"$in": ids}}, {"id": 1, "avatar_version": 1, "picture": 1, "consent": 1}).to_list(len(ids))
     return {user["id"]: picture_of(user) for user in users}
 
 
@@ -127,7 +129,15 @@ def _public_user(user):
         "also_plays": bool(user.get("also_plays")),
         "coached_team_ids": user.get("coached_team_ids", []),
         "match_editor": bool(user.get("match_editor")),
+        "consent": _public_consent(user.get("consent")),
     }
+
+
+def _public_consent(consent):
+    """Lo que la app necesita saber del permiso aceptado (la fecha y el tutor se quedan en el servidor)."""
+    if not consent:
+        return None
+    return {"version": consent.get("version"), "adult": consent.get("adult"), "photos": consent.get("photos")}
 
 
 def verify_google_token(credential):

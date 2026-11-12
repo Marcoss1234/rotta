@@ -50,6 +50,8 @@ export const buyShopItem = (itemId) => request("/shop/buy", { method: "POST", bo
 export const getRankingHonors = (groupId) => request(`/ranking/honors?group_id=${encodeURIComponent(groupId)}`);
 export const updateProfile = (changes) => request("/profile", { method: "PATCH", body: changes });
 export const deleteAvatar = () => request("/profile/avatar", { method: "DELETE" });
+export const saveConsent = (consent) => request("/profile/consent", { method: "PUT", body: { accepted: true, ...consent } });
+export const deleteAccount = () => request("/profile", { method: "DELETE", body: { confirm: "BORRAR" } });
 export async function uploadAvatar(blob) {
   let response;
   try {

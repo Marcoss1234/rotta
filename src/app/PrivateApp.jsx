@@ -8,6 +8,8 @@ import ShopPage from "@/app/pages/ShopPage.jsx";
 import AccessStatusPage from "@/app/pages/AccessStatusPage.jsx";
 import ChangePasswordPage from "@/app/pages/ChangePasswordPage.jsx";
 import ChatPage from "@/app/pages/ChatPage.jsx";
+import ConsentPage from "@/app/pages/ConsentPage.jsx";
+import { consentIsCurrent } from "@/app/privacy.js";
 import EventsPage from "@/app/pages/EventsPage.jsx";
 import HomePage from "@/app/pages/HomePage.jsx";
 import LoginPage from "@/app/pages/LoginPage.jsx";
@@ -83,6 +85,10 @@ export default function PrivateApp() {
   }
   if (session.user.must_change_password) {
     return <ChangePasswordPage onChanged={signedIn} onSignedOut={signedOut} />;
+  }
+  // Antes de nada, aceptar la privacidad (y el permiso de su madre, padre o tutor si es menor de 14).
+  if (!consentIsCurrent(session.user)) {
+    return <ConsentPage user={session.user} onSaved={signedIn} onSignedOut={signedOut} />;
   }
   if (session.user.status !== "approved") {
     return <AccessStatusPage user={session.user} onSignedOut={signedOut} onRefresh={refresh} />;

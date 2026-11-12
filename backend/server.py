@@ -25,6 +25,7 @@ from matches import router as matches_router
 from notifications import router as notifications_router
 from password_auth import router as password_auth_router
 from players import router as players_router
+from privacy import router as privacy_router
 from ranking import router as ranking_router
 from schedules import router as schedules_router
 from user_profile import router as profile_router
@@ -110,6 +111,7 @@ app.include_router(auth_router)
 app.include_router(backup_router)
 app.include_router(password_auth_router)
 app.include_router(players_router)
+app.include_router(privacy_router)
 app.include_router(attendance_router)
 app.include_router(chat_router)
 app.include_router(club_settings_router)

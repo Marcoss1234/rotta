@@ -147,6 +147,8 @@ async def update_profile(body: ProfileUpdate, user=Depends(require_approved), db
 
 @router.put("/profile/avatar")
 async def upload_avatar(request: Request, user=Depends(require_approved), db=Depends(get_db)):
+    if (user.get("consent") or {}).get("photos") is False:
+        raise HTTPException(status_code=403, detail="No hay permiso para fotos: cámbialo en tu perfil si quieres subir una")
     data = await request.body()
     if len(data) > MAX_AVATAR_BYTES:
         raise HTTPException(status_code=413, detail="La foto es demasiado grande")

@@ -40,6 +40,7 @@ import auth  # noqa: E402
 import coins as coins_module  # noqa: E402
 import honors  # noqa: E402
 import players as players_module  # noqa: E402
+import privacy  # noqa: E402
 import ranking  # noqa: E402
 from database import get_db  # noqa: E402
 from roster_sync import ensure_user_index, sync_player_with_user  # noqa: E402
@@ -126,6 +127,8 @@ async def add_user(key, name, email, role, team, coached, created):
         "team_id": team,
         "coached_team_ids": coached,
         "created_at": created,
+        # Las cuentas de la demo ya han aceptado la privacidad: así se entra directo.
+        "consent": {"version": privacy.POLICY_VERSION, "accepted_at": created, "adult": True, "guardian_name": None, "photos": True},
     }
     await db.users.insert_one(user)
     await sync_player_with_user(db, user)

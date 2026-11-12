@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/app/useTheme.js";
 const PrivateApp = lazy(() => import("@/app/PrivateApp.jsx"));
 // Prueba de temas: se ve sin entrar en la app.
 const ThemeLabPage = lazy(() => import("@/app/pages/ThemeLabPage.jsx"));
+// La política de privacidad se ve sin iniciar sesión.
+const PrivacyPage = lazy(() => import("@/app/pages/PrivacyPage.jsx"));
 
 // De momento Rotta es solo la app; la web de presentación vendrá más adelante.
 export default function App() {
@@ -14,6 +16,14 @@ export default function App() {
       <MotionConfig reducedMotion="user">
         <BrowserRouter>
           <Routes>
+            <Route
+              path="/app/privacidad"
+              element={
+                <Suspense fallback={<div className="min-h-screen bg-void" />}>
+                  <PrivacyPage />
+                </Suspense>
+              }
+            />
             <Route
               path="/app/*"
               element={
