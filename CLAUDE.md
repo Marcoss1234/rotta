@@ -1,0 +1,28 @@
+# Contexto para Claude
+
+Rotta es la versión general de la app del C.V. TNT Almería, para venderla a otros clubs de voley. El usuario (Marcos) habla en español y quiere las explicaciones sencillas.
+
+## Decisiones
+- La app del TNT (repo `proyecto-voley-tnt`, rama `app-privada`) se queda en mantenimiento: solo cambios que pida David o arreglos. Lo nuevo va a Rotta. Un arreglo de un fallo que existe en las dos apps se hace en ambas.
+- Más adelante el TNT podría pasar a ser un club más dentro de Rotta.
+- Commit y push solo cuando el usuario lo pide. Nunca subir `backend/.env` ni dejarlo en un ordenador compartido.
+
+## Hecho
+- Sin nada del TNT: nombre, logo provisional `public/rotta-logo.svg`, donde ponía TNT pone Club.
+- Temas: cada club elige sus dos colores (Perfil > Apariencia, solo administradores; `backend/club_settings.py`, `src/app/useTheme.js`, `src/app/theme.js`). Cada persona elige claro, oscuro o automático. Colores con significado fijos (calendario rojo, Voy verde, coins dorado, podio oro/plata/bronce). Pista, pizarra y partido en directo siempre en oscuro (`.force-dark`). Las clases de Tailwind van por variables CSS (`src/theme-palette.css`, generado con `tools/generar-colores-tema.mjs`).
+- Privacidad: política en `/app/privacidad`, permisos al entrar (menores de 14 con tutor, fotos aparte) y borrar la cuenta (`backend/privacy.py`).
+- Demo con un club inventado: `npm run demo` (puertos 5180 y 8100), guion en `demo/README.md`.
+- Varios clubs, fase 1: una base de datos por club (`backend/clubs.py`). El club sale de la cabecera `X-Club`, de `?club=` o del subdominio (`ROOT_DOMAIN`); sin club, `DEFAULT_CLUB` o `DB_NAME`. Alta: `python tools/crear-club.py codigo "Nombre"`. Tests en `backend/tests/test_clubs.py`.
+
+## Siguiente: varios clubs, fase 2 (sin empezar)
+Equipos, horarios y grupos del ranking configurables por club. Ahora están escritos para el TNT en `backend/teams.py`, los `GROUPS` de `backend/ranking.py`, los `DEFAULT_SCHEDULES` de `backend/schedules.py`, `src/app/teams.js` y `data/groups.js`.
+Diseño previsto:
+- Guardar la estructura en `club_settings` de la base de cada club; si no hay, valen los equipos del TNT (así los tests y la demo siguen igual).
+- `get_db` carga la estructura y la deja en una `ContextVar`. `TeamId`, `GroupId` y `ChannelId` pasan de `Literal` a `str` con un validador que la comprueba (FastAPI resuelve las dependencias antes de validar el cuerpo).
+- `TEAMS`, `TEAM_WEEKDAYS`, `match_teams`, `GROUPS`, `DEFAULT_SCHEDULES` y los `TEAM_NAMES` de `live.py` y `help_requests.py` pasan a ser funciones.
+- Web: un endpoint con la estructura del club; `src/app/teams.js` la carga al arrancar.
+Después: fase 3 (nombre y escudo de cada club en la app) y fase 4 (pantalla para dar de alta clubs).
+
+## Probar
+- Tests: `cd backend && python -m pytest -q` (566 pasan). Web: `npm run build`.
+- Coste: MongoDB Atlas gratis aguanta unos 15-18 clubs (límite de colecciones) y 512 MB; las fotos del chat son lo que más ocupa.
