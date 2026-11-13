@@ -53,7 +53,7 @@ function soundEvenOnSilentMode() {
       silentLoop.setAttribute("x-webkit-airplay", "deny");
       silentLoop.setAttribute("playsinline", "");
     }
-    if (silentLoop.paused) {
+    if (silentLoop.paused && !usedMedia) {
       silentLoop
         .play()
         .then(() => {
@@ -147,7 +147,7 @@ export function unlockSound() {
         if (current === context && current.state === "running") stoppedSince = null;
       })
       .catch((error) => {
-        problems.resume = error?.name ?? "error";
+        if (current === context) problems.resume = error?.name ?? "error";
       });
   } else {
     stoppedSince = null;
@@ -182,13 +182,14 @@ function preparePlayers() {
     players.push(player);
   }
   players.forEach((player) => {
-    if (player.dataset.ready) return;
+    if (player.dataset.primed) return;
+    player.dataset.primed = "1";
     player.src = SILENT_AUDIO;
     player
       .play()
       .then(() => {
-        player.pause();
-        player.dataset.ready = "1";
+        // Si mientras tanto ya le han puesto un sonido de verdad, no se toca.
+        if (player.src === SILENT_AUDIO) player.pause();
       })
       .catch(() => {});
   });
@@ -241,16 +242,24 @@ function playThroughMedia(seconds, draw) {
     room = saved.room;
     noise = saved.noise;
   }
+  stopSilentLoop();
+  const play = (player, url) => {
+    if (player.dataset.url && player.dataset.url !== url) URL.revokeObjectURL(player.dataset.url);
+    player.dataset.url = url;
+    player.src = url;
+    return player.play();
+  };
   offline
     .startRendering()
     .then((buffer) => {
-      const player = players[nextPlayer % Math.max(1, players.length)] ?? new window.Audio();
-      nextPlayer += 1;
-      if (player.dataset.url) URL.revokeObjectURL(player.dataset.url);
       const url = URL.createObjectURL(wavOf(buffer));
-      player.dataset.url = url;
-      player.src = url;
-      return player.play();
+      const player = players.length ? players[nextPlayer % players.length] : new window.Audio();
+      nextPlayer += 1;
+      return play(player, url).catch(() => {
+        const fresh = new window.Audio();
+        fresh.setAttribute("playsinline", "");
+        return play(fresh, url);
+      });
     })
     .then(() => {
       problems.media = null;
@@ -304,7 +313,7 @@ export function soundStatus() {
   if (problems.resume) lines.push(`No ha dejado encender el sonido (${problems.resume}).`);
   if (problems.media) lines.push(`El plan B tampoco ha podido sonar (${problems.media}).`);
   if (problems.silent) lines.push(`El truco para el modo silencio ha fallado (${problems.silent}).`);
-  if (silentLoop && silentLoop.paused && !problems.silent) lines.push("El audio para el modo silencio está parado.");
+  if (silentLoop && silentLoop.paused && !problems.silent && !usedMedia) lines.push("El audio para el modo silencio está parado.");
   const session = typeof navigator !== "undefined" && navigator.audioSession ? navigator.audioSession.type : null;
   if (ios && !session) lines.push(`iOS ${ios[1]}.${ios[2]}: el modo de sonido de iOS 17 no está disponible.`);
   if (lines.length === 0) lines.push("Todo en marcha: si no lo has oído, sube el volumen con los botones del lateral con la app abierta y mira que no tengas auriculares conectados.");
@@ -314,6 +323,7 @@ export function soundStatus() {
     `bucle: ${silentLoop ? (silentLoop.paused ? "parado" : "sonando") : "no"}`,
     `rehecho: ${problems.rebuilt ?? 0}`,
     `plan B: ${usedMedia ? "sí" : "no"}${problems.media ? ` (${problems.media})` : ""}`,
+    navigator.standalone || window.matchMedia?.("(display-mode: standalone)").matches ? "abierta desde el icono" : "abierta en el navegador",
     ios ? `iOS ${ios[1]}.${ios[2]}` : "no iPhone",
   ].join(" · ");
   return { lines, technical };
