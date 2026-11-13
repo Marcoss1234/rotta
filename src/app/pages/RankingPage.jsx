@@ -1,13 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Crown, PenLine } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
-import { getPlayerRatings, getRanking, getRankingHonors, listRankingGroups } from "@/app/api.js";
+import { getPlayerProfile, getPlayerRatings, getRanking, getRankingHonors, listRankingGroups } from "@/app/api.js";
 import HonorsBanner from "@/app/components/HonorsBanner.jsx";
 import Avatar from "@/app/components/Avatar.jsx";
 import PlayerRatingHistory from "@/app/components/PlayerRatingHistory.jsx";
+import { lookOf } from "@/app/components/PlayerProfileDialog.jsx";
 import { AnimatedBar, GroupPicker, MovementPill, OverallNumber, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { formatOverall, weekLabel } from "@/app/ranking.js";
+
+const AvatarStage = lazy(() => import("@/app/character/AvatarStage.jsx"));
 
 // Oro, plata y bronce de verdad: no cambian con el tema.
 const MEDALS = [
@@ -106,6 +109,19 @@ function PositionFilter({ positions, value, onChange }) {
 function PlayerDialog({ player, groupId, onClose, onError }) {
   const dialogRef = useRef(null);
   const [history, setHistory] = useState(null);
+  // Su personaje (de su ficha); si no carga, se ven igual las notas.
+  const [person, setPerson] = useState(null);
+  useEffect(() => {
+    let cancelled = false;
+    getPlayerProfile(player.player_id)
+      .then((data) => {
+        if (!cancelled) setPerson(data.player);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [player.player_id]);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -137,6 +153,13 @@ function PlayerDialog({ player, groupId, onClose, onError }) {
       }}
       className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-panel p-5 font-body text-white backdrop:bg-black/80"
     >
+      {person && (
+        <div className="-mx-5 -mt-5 mb-4 h-64 bg-gradient-to-b from-tnt/25 via-panel to-panel">
+          <Suspense fallback={null}>
+            <AvatarStage look={lookOf(person)} name={person.name.split(" ")[0]} number={person.number} position={person.position} heightCm={person.height_cm} crown={person.crown} />
+          </Suspense>
+        </div>
+      )}
       <h2 id="player-history-title" className="mb-4 break-words font-display text-2xl font-black uppercase italic">{player.name}</h2>
       {history ? <PlayerRatingHistory history={history} /> : <p role="status" className="text-zinc-300">Cargando…</p>}
       <button type="button" onClick={onClose} className="mt-5 min-h-11 w-full rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5">

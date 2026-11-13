@@ -29,6 +29,12 @@ export function setSoundEnabled(on) {
 // reproduciendo un audio mudo cortísimo al tocar, que cambia el móvil al modo "reproducción".
 const SILENT_AUDIO = "data:audio/wav;base64,UklGRt0BAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YbkBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
 let playbackSession = false;
+// Al volver a la app (después de otra app o de bloquear el móvil) se repite el truco del modo silencio.
+if (typeof document !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") playbackSession = false;
+  });
+}
 function soundEvenOnSilentMode() {
   if (playbackSession) return;
   playbackSession = true;
@@ -76,7 +82,9 @@ export function unlockSound() {
     const data = noise.getChannelData(0);
     for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
   }
-  if (context.state === "suspended") context.resume().catch(() => {});
+  // El iPhone deja el sonido "suspended" o "interrupted" (tras una llamada, otra app con audio o volver de
+  // segundo plano): con cualquiera de los dos, el siguiente toque lo vuelve a encender.
+  if (context.state !== "running") context.resume().catch(() => {});
   return context;
 }
 

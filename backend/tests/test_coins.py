@@ -212,3 +212,19 @@ def test_el_ranking_dice_lo_que_se_gana_por_puesto(admin):  # noqa: F811
     prizes = admin.get("/api/ranking/honors?group_id=masculino").json()["prizes"]
     assert prizes["week"] == [{"place": 1, "coins": 100}, {"place": 2, "coins": 60}, {"place": 3, "coins": 40}]
     assert [prize["coins"] for prize in prizes["month"]] == [250, 150, 100]
+
+
+def test_ficha_del_jugador_con_titulos_y_ranking(admin, db):  # noqa: F811
+    ana = member(admin)
+    luis = member(admin, "token-luis")
+    rate_ok(admin, player_of(db, ana), scores(9))
+    rate_ok(admin, player_of(db, luis), scores(6))
+    publish_ok(admin)
+    # La ve cualquiera del club, no solo los entrenadores.
+    profile = luis.get(f"/api/players/{player_of(db, ana)}/profile")
+    assert profile.status_code == 200, profile.text
+    data = profile.json()
+    assert data["player"]["name"] == "Ana" and data["counts"]["week_wins"] == 1
+    assert data["titles"][0]["title"] == "Jugador de la semana" or data["titles"][0]["place"] == 1
+    assert data["ranking"]["rank"] == 1 and data["ranking"]["of"] == 2
+    assert luis.get("/api/players/nadie/profile").status_code == 404

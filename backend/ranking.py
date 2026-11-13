@@ -7,9 +7,9 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_vali
 from pymongo import ASCENDING
 from pymongo.errors import DuplicateKeyError
 
-from auth import _admin_emails, pictures_by_user
+from auth import _admin_emails, characters_by_user, heights_by_user, pictures_by_user
 from database import get_db
-from honors import give_honor
+from honors import crowns_by_user, give_honor
 from notifications import send_notifications, team_member_ids
 from players import Position, require_approved
 
@@ -503,3 +503,61 @@ async def publish_week(body: WeekPublish, user=Depends(require_approved), db=Dep
             },
         )
     return {"group_id": body.group_id, "week": week_key, "published": True}
+
+
+@router.get("/players/{player_id}/profile")
+async def get_player_profile(player_id: str, user=Depends(require_approved), db=Depends(get_db)):
+    """La ficha de un jugador que ve todo el club: su personaje, sus títulos (semana, mes, MVP) y cómo va en el ranking."""
+    player = await db.players.find_one({"id": player_id})
+    if not player:
+        raise HTTPException(status_code=404, detail="Jugador no encontrado")
+    user_id = player.get("user_id")
+    pictures = await pictures_by_user(db, [user_id])
+    characters = await characters_by_user(db, [user_id])
+    heights = await heights_by_user(db, [user_id])
+    crowns = await crowns_by_user(db, [user_id])
+    honors = await db.honors.find({"player_id": player_id}).to_list(300)
+    honors.sort(key=lambda honor: honor.get("created_at") or datetime.min, reverse=True)
+    titles = [
+        {"title": honor["title"], "kind": honor["kind"], "place": honor["place"], "period": honor["period"], "current": bool(honor.get("current"))}
+        for honor in honors
+    ]
+    counts = {
+        "week_wins": sum(1 for honor in honors if honor["kind"] == "week" and honor["place"] == 1),
+        "week_podiums": sum(1 for honor in honors if honor["kind"] == "week"),
+        "month_wins": sum(1 for honor in honors if honor["kind"] == "month" and honor["place"] == 1),
+        "mvp": sum(1 for honor in honors if honor["kind"] == "mvp"),
+    }
+    ranking = None
+    group_id = next((group for group, data in GROUPS.items() if player["team_id"] in data["teams"]), None)
+    if group_id and _can_view(user, group_id):
+        board = await get_ranking(group_id=group_id, user=user, db=db)
+        entry = next((item for item in board["entries"] if item["player_id"] == player_id), None)
+        if entry:
+            ranking = {
+                "group_id": group_id,
+                "group_name": GROUPS[group_id]["name"],
+                "rank": entry["rank"],
+                "of": len(board["entries"]),
+                "overall": entry["overall"],
+                "week_overall": entry["week_overall"],
+                "movement": entry["movement"],
+                "week": board["week"],
+            }
+    return {
+        "player": {
+            "id": player["id"],
+            "team_id": player["team_id"],
+            "name": player["name"],
+            "position": player["position"],
+            "number": player.get("number"),
+            "picture": pictures.get(user_id, ""),
+            "character": characters.get(user_id),
+            "height_cm": heights.get(user_id),
+            "crown": crowns.get(user_id),
+            "linked": bool(user_id),
+        },
+        "titles": titles,
+        "counts": counts,
+        "ranking": ranking,
+    }

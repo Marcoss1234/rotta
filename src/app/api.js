@@ -177,6 +177,7 @@ export const deleteLive = (id) => request(`/live/${encodeURIComponent(id)}`, { m
 export const createPlayer = (player) => request("/players", { method: "POST", body: player });
 export const updatePlayer = (id, changes) => request(`/players/${id}`, { method: "PATCH", body: changes });
 export const deletePlayer = (id) => request(`/players/${id}`, { method: "DELETE" });
+export const getPlayerProfile = (id) => request(`/players/${encodeURIComponent(id)}/profile`);
 export const listBoardLineups = (teamId) => request(`/board-lineups?team_id=${encodeURIComponent(teamId)}`);
 export const createBoardLineup = (lineup) => request("/board-lineups", { method: "POST", body: lineup });
 export const deleteBoardLineup = (id) => request(`/board-lineups/${encodeURIComponent(id)}`, { method: "DELETE" });

@@ -7,6 +7,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 import CourtBoard from "@/app/components/CourtBoard.jsx";
 import RosterTabs from "@/app/components/board/RosterTabs.jsx";
 import PlayerDialog from "@/app/components/PlayerDialog.jsx";
+import PlayerProfileDialog from "@/app/components/PlayerProfileDialog.jsx";
 import { GroupPicker, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { isStaff, POSITIONS } from "@/app/roles.js";
 
@@ -80,7 +81,9 @@ export default function RosterPage({ user, onAccessLost }) {
   const [players, setPlayers] = useState(null);
   const [family, setFamily] = useState([]);
   const [error, setError] = useState("");
+  // `editing` solo para añadir un jugador nuevo; tocar a uno abre su ficha (`viewing`), que ve todo el club.
   const [editing, setEditing] = useState(null);
+  const [viewing, setViewing] = useState(null);
   const canEdit = isStaff(user);
   const [searchParams] = useSearchParams();
   const requestedTeam = searchParams.get("equipo") ?? user.team_id;
@@ -184,8 +187,13 @@ export default function RosterPage({ user, onAccessLost }) {
   };
 
   const remove = async () => {
-    await guarded(() => deletePlayer(editing.player.id));
-    finishEditing(teamId);
+    try {
+      await guarded(() => deletePlayer(viewing.id));
+      setViewing(null);
+      load(teamId);
+    } catch (requestError) {
+      setError(requestError.message);
+    }
   };
 
   return (
@@ -236,20 +244,14 @@ export default function RosterPage({ user, onAccessLost }) {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.3 }}
               >
-                {canEdit ? (
-                  <button
-                    type="button"
-                    onClick={() => setEditing({ player })}
-                    aria-label={`Editar a ${player.name}`}
-                    className={`${CARD_CLASS} hover:border-white/25`}
-                  >
-                    <PlayerCardContent player={player} />
-                  </button>
-                ) : (
-                  <div className={CARD_CLASS}>
-                    <PlayerCardContent player={player} />
-                  </div>
-                )}
+                <button
+                  type="button"
+                  onClick={() => setViewing(player)}
+                  aria-label={`Ver la ficha de ${player.name}`}
+                  className={`${CARD_CLASS} hover:border-white/25`}
+                >
+                  <PlayerCardContent player={player} />
+                </button>
               </motion.li>
             ))}
           </ul>
@@ -258,14 +260,15 @@ export default function RosterPage({ user, onAccessLost }) {
 
       {editing && (
         <PlayerDialog
-          player={editing.player}
+          player={null}
           teams={teams}
           defaultTeamId={teamId}
           onSave={save}
-          onDelete={remove}
+          onDelete={() => {}}
           onClose={() => setEditing(null)}
         />
       )}
+      {viewing && <PlayerProfileDialog player={viewing} onClose={() => setViewing(null)} onDelete={canEdit ? remove : null} onError={handleError} />}
     </div>
   );
 }
