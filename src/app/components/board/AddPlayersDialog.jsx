@@ -7,7 +7,8 @@ import { POSITIONS } from "@/app/roles.js";
 const POSITION_ORDER = [...POSITIONS.filter((position) => position !== "Sin definir"), "Sin definir"];
 
 function groupByPosition(players) {
-  return POSITION_ORDER.map((position) => ({
+  // Los entrenadores van todos juntos; los jugadores, por posición.
+  return [...POSITION_ORDER, "Entrenador"].map((position) => ({
     position,
     players: players.filter((player) => player.position === position),
   })).filter((group) => group.players.length > 0);

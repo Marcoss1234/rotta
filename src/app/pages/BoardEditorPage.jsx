@@ -1,11 +1,12 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ArrowLeft, BookmarkPlus, Check, ChevronDown, Download, Film, ListOrdered, Maximize2, MoreHorizontal, MousePointer2, Play, RotateCcw, RotateCw, Share2, X, UserPlus, MoveUpRight, Pencil, Redo2, RectangleHorizontal, Trash2, Type, Undo2, Users } from "lucide-react";
+import { ArrowLeft, BookmarkPlus, Check, ChevronDown, Download, Film, ListOrdered, Maximize2, MoreHorizontal, MousePointer2, Play, Repeat, RotateCcw, RotateCw, Share2, X, UserPlus, MoveUpRight, Pencil, Redo2, RectangleHorizontal, Trash2, Type, Undo2, Users } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { createBoardLineup, deleteBoard, deleteBoardLineup, getBoard, listBoardLineups, renameBoardLineup, updateBoard, updatePlayer } from "@/app/api.js";
 import AddPlayersDialog from "@/app/components/board/AddPlayersDialog.jsx";
 import ConfirmDialog from "@/app/components/board/ConfirmDialog.jsx";
 import LineupsDialog from "@/app/components/board/LineupsDialog.jsx";
 import NameDialog from "@/app/components/board/NameDialog.jsx";
+import LineDialog from "@/app/components/board/LineDialog.jsx";
 import RecordingBar from "@/app/components/board/RecordingBar.jsx";
 import BoardCanvas from "@/app/components/board/BoardCanvas.jsx";
 import { CourtFrame } from "@/app/components/board/BoardScene.jsx";
@@ -24,8 +25,8 @@ const HAS_WEBGL = (() => {
 import TokenDialog from "@/app/components/board/TokenDialog.jsx";
 import { COUNTDOWN_SECONDS, MAX_RECORDING_MS, actionDuration, actionLabel, actionsAt, createRecorder, finishRecorder, recordAction, recordPosition, recorderElapsed, useBoardPlayback, withAction } from "@/app/boardRecording.js";
 import ActionDialog from "@/app/components/board/ActionDialog.jsx";
-import { buildPlay, planPreview } from "@/app/boardPlanner.js";
-import { COURT_HEIGHT, COURT_WIDTH, BOARD_KINDS, applyLineup, blendElements, boardKindLabel, canRotate, lineupTokens, loadClubPlayers, newBall, nextLineupName, rivalToken, rotateElements, rotationZones, roundCoord, tokenFromPlayer } from "@/app/boards.js";
+import { buildPlay, inLine, lineMarks, lineRuleOf, planPositions, planPreview, repeatInLines } from "@/app/boardPlanner.js";
+import { COURT_HEIGHT, COURT_WIDTH, BOARD_KINDS, applyLineup, blendElements, boardKindLabel, canRotate, lineupTokens, loadClubPlayers, newBall, newLine, newProp, nextLineupName, rivalToken, rotateElements, rotationZones, roundCoord, tokenFromPlayer } from "@/app/boards.js";
 import { recordBoardVideo, videoFileName, videoType } from "@/app/boardVideo.js";
 
 const SAVE_DELAY_MS = 900;
@@ -183,6 +184,10 @@ const headerIconClass = "flex h-10 w-10 shrink-0 items-center justify-center rou
 const chipClass = "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-zinc-100 hover:bg-white/10";
 const segmentClass = (on) => `min-h-9 rounded-md px-3 text-xs font-extrabold ${on ? "bg-white text-void" : "text-zinc-300 hover:text-white"}`;
 
+// Botón de una opción entre dos (Se queda / Vuelve a la fila…).
+const choiceClass = (on) =>
+  `flex min-h-9 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-extrabold ${on ? "bg-tnt text-onbrand" : "text-zinc-300"}`;
+
 export default function BoardEditorPage({ onAccessLost }) {
   const { boardId } = useParams();
   const navigate = useNavigate();
@@ -199,6 +204,10 @@ export default function BoardEditorPage({ onAccessLost }) {
   const [showingLineups, setShowingLineups] = useState(false);
   const [savingLineup, setSavingLineup] = useState(false);
   const [namingLineup, setNamingLineup] = useState(false);
+  // Fila nueva: primero cuántos jugadores (diálogo) y luego se toca dónde va.
+  const [lineDialog, setLineDialog] = useState(false);
+  const [lineSize, setLineSize] = useState(null);
+  const [lineRule, setLineRule] = useState("toque");
   const [lineupSaveError, setLineupSaveError] = useState("");
   const [zonesFlash, setZonesFlash] = useState(false);
   const rotation = useRef(null);
@@ -595,7 +604,7 @@ export default function BoardEditorPage({ onAccessLost }) {
     const last = saved.at(-1);
     // Si terminaba en un jugador sin mandar el balón, se retoma justo ahí: solo falta tocar adónde lo manda.
     if (!last.target) {
-      setPlanner({ steps: saved.slice(0, -1), playerId: last.playerId, action: last.action, tempo: last.tempo ?? null, moves: last.moves ?? [], resumed: true });
+      setPlanner({ steps: saved.slice(0, -1), playerId: last.playerId, action: last.action, tempo: last.tempo ?? null, moves: last.moves ?? [], fresh: Boolean(last.fresh), resumed: true });
     } else {
       setPlanner({ steps: saved, playerId: null, action: null, moves: [], resumed: true });
     }
@@ -610,9 +619,12 @@ export default function BoardEditorPage({ onAccessLost }) {
         setNotice(planner.steps.length === 0 ? "Toca a un jugador: el que tiene el balón" : "Toca al jugador que juega el balón");
         return;
       }
-      setPlanner({ ...planner, playerId: tokenId });
+      // Por defecto se queda donde juega: la fila solo se usa si se pulsa "Vuelve a la fila".
+      // El entrenador, a partir del segundo paso, suele lanzar un balón nuevo.
+      const coach = elements.find((element) => element.id === tokenId)?.side === "coach";
+      setPlanner({ ...planner, playerId: tokenId, fresh: planner.steps.length > 0 && coach });
     } else if (plannerStage === "target") {
-      setPlanner({ ...planner, steps: [...planner.steps, { playerId: planner.playerId, action: planner.action, tempo: planner.tempo ?? null, target: point, moves: planner.moves ?? [] }], playerId: null, action: null, tempo: null, moves: [] });
+      setPlanner({ ...planner, steps: [...planner.steps, { playerId: planner.playerId, action: planner.action, tempo: planner.tempo ?? null, target: point, moves: planner.moves ?? [], fresh: Boolean(planner.fresh) }], playerId: null, action: null, tempo: null, moves: [], fresh: false });
     }
   };
 
@@ -624,6 +636,14 @@ export default function BoardEditorPage({ onAccessLost }) {
     setInfo(`${name} se moverá en el paso ${planner.steps.length + 1}`);
   };
 
+  // Ejercicio en fila: con el primer pase de cada fila hecho, se completa solo hasta que pasan todos.
+  const repeated = planner && plannerStage === "player" && !planner.moves?.length ? repeatInLines(planner.steps, elements) : null;
+  const repeatPlan = () => {
+    if (!repeated) return;
+    setPlanner({ ...planner, steps: repeated });
+    setInfo(`${repeated.length} pasos: ya han pasado todos`);
+  };
+
   const undoPlanStep = () => {
     if (!planner.playerId && planner.moves?.length) setPlanner({ ...planner, moves: planner.moves.slice(0, -1) });
     else if (planner.action) setPlanner({ ...planner, action: null, playerId: null });
@@ -633,7 +653,7 @@ export default function BoardEditorPage({ onAccessLost }) {
 
   // Crea la grabación con los pasos. "Terminar aquí" cierra con el último jugador sin mandar el balón a ningún sitio.
   const finishPlanner = (endHere = false) => {
-    let steps = endHere && planner.action ? [...planner.steps, { playerId: planner.playerId, action: planner.action, tempo: planner.tempo ?? null, target: null, moves: planner.moves ?? [] }] : planner.steps;
+    let steps = endHere && planner.action ? [...planner.steps, { playerId: planner.playerId, action: planner.action, tempo: planner.tempo ?? null, target: null, moves: planner.moves ?? [], fresh: Boolean(planner.fresh) }] : planner.steps;
     // Movimientos marcados después del último paso: van con ese último paso.
     if (!(endHere && planner.action) && planner.moves?.length && steps.length > 0) {
       const last = steps.at(-1);
@@ -648,7 +668,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         next = [...next, ball];
       }
       const { recording: played, ballStart } = buildPlay(steps, next, ball.id);
-      const built = { ...played, plan: steps.map((step) => ({ playerId: step.playerId, action: step.action, ...(step.action === "colocacion" && step.tempo ? { tempo: step.tempo } : {}), target: step.target ? { x: roundCoord(step.target.x), y: roundCoord(step.target.y) } : null, moves: (step.moves ?? []).map((move) => ({ playerId: move.playerId, target: { x: roundCoord(move.target.x), y: roundCoord(move.target.y) } })) })) };
+      const built = { ...played, plan: steps.map((step) => ({ playerId: step.playerId, action: step.action, ...(step.action === "colocacion" && step.tempo ? { tempo: step.tempo } : {}), target: step.target ? { x: roundCoord(step.target.x), y: roundCoord(step.target.y) } : null, moves: (step.moves ?? []).map((move) => ({ playerId: move.playerId, target: { x: roundCoord(move.target.x), y: roundCoord(move.target.y) } })), ...(step.fresh ? { fresh: true } : {}) })) };
       next = next.map((element) => (element.id === ball.id ? { ...element, x: ballStart.x, y: ballStart.y } : element));
       commit(next);
       changeBoard({ recording: built });
@@ -823,12 +843,32 @@ export default function BoardEditorPage({ onAccessLost }) {
   const placed = new Set(elements.map((element) => element.player_id).filter(Boolean));
   const rivals = elements.filter((element) => element.type === "token" && element.side === "rival").length;
   const balls = elements.filter((element) => element.type === "ball").length;
+  const cones = elements.filter((element) => element.type === "prop" && element.kind === "cone").length;
   const homeOnCourt = lineupTokens(elements).length;
   // Altura del balón y destellos de cada toque mientras se reproduce la jugada.
   const ballState = playback.active
     ? ballStateAt(board.recording, playback.time, new Set(elements.filter((element) => element.type === "ball").map((element) => element.id)))
     : { heights: new Map(), flashes: new Map() };
   const editingToken = elements.find((element) => element.id === editingTokenId);
+  // Arrastrar en el 3D: mientras se mueve solo se pinta; al soltar se guarda (y se puede deshacer).
+  const move3d = (id, x, y, finished) => {
+    const next = elements.map((element) => (element.id === id ? { ...element, x, y } : element));
+    if (finished) commit(next);
+    else setElements(next);
+  };
+  // Fila nueva donde se ha tocado, con jugadores de la plantilla que aún no están en la pista.
+  const placeLine = (point) => {
+    const size = lineSize;
+    setLineSize(null);
+    if (!size) return;
+    const own = club.players.filter((player) => player.team_id === board.team_id);
+    const others = club.players.filter((player) => player.team_id !== board.team_id);
+    const tokens = newLine(size, point, [...own, ...others], committed.current, lineRule);
+    commit([...committed.current, ...tokens]);
+    setSelectedId(null);
+    setInfo(`Fila de ${size} puesta. Arrastra el recuadro para moverla entera`);
+  };
+
   const addElement = (element) => {
     commit([...committed.current, element]);
     setTool("move");
@@ -946,6 +986,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               actions={playback.active ? actionsAt(board.recording, playback.time) : null}
               beach={board.team_id === "playa"}
               teamId={board.team_id}
+              onMove={editable && !playback.active && !recording && !presenting && countdown === null ? move3d : null}
             />
           </Suspense>
         )}
@@ -971,9 +1012,9 @@ export default function BoardEditorPage({ onAccessLost }) {
         {!view3d && courtWidth > 0 && (
           <CourtFrame half={half} beach={board.team_id === "playa"} className="shadow-[0_12px_40px_rgba(0,0,0,0.65)] ring-1 ring-white/10" style={{ width: courtWidth }}>
             <BoardCanvas
-              elements={playback.shown}
+              elements={planner ? planPositions(planner.steps, playback.shown) : playback.shown}
               rosterById={rosterById}
-              tool={tool}
+              tool={lineSize ? "place-line" : tool}
               arrowStyle={arrowStyle}
               textValue={textValue}
               selectedId={planner ? planner.playerId : selectedId}
@@ -983,7 +1024,8 @@ export default function BoardEditorPage({ onAccessLost }) {
               planning={Boolean(planner)}
               onPlanTap={planTap}
               onPlanMove={planMove}
-              extraDraft={planner ? planPreview(planner.steps, elements, planner.moves) : []}
+              onPlaceLine={placeLine}
+              extraDraft={planner ? [...lineMarks(elements), ...planPreview(planner.steps, elements, planner.moves)] : []}
               actions={playback.active ? actionsAt(board.recording, playback.time) : null}
               heights={ballState.heights}
               flashes={ballState.flashes}
@@ -1048,7 +1090,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         <div className="shrink-0 border-t border-white/10 bg-panel px-2 pb-[env(safe-area-inset-bottom)] pt-2">
           <p aria-live="polite" className="px-1 text-sm font-bold text-white">
             <span className="mr-1.5 rounded-full bg-tnt px-2 py-0.5 text-[11px] font-black text-onbrand">Paso {planner.steps.length + 1}</span>
-            {plannerStage === "player" && (planner.steps.length === 0 ? "Toca al jugador que tiene el balón" : "¿Quién juega el balón donde cae? Tócalo")}
+            {plannerStage === "player" && (planner.steps.length === 0 ? "Toca al jugador que tiene el balón" : "¿Quién juega ahora? Tócalo")}
             {plannerStage === "action" && "Elige qué hace"}
             {plannerStage === "target" && "Toca en la pista dónde manda el balón"}
           </p>
@@ -1056,6 +1098,38 @@ export default function BoardEditorPage({ onAccessLost }) {
             Mantén pulsado a un jugador y arrástralo para que se coloque en este paso
             {planner.moves?.length ? ` · ${planner.moves.length} ${planner.moves.length === 1 ? "movimiento" : "movimientos"}` : ""}
           </p>
+          {/* Opciones del toque: en su propia fila, siempre a la vista (en el móvil no se pierden por la derecha). */}
+          {plannerStage === "target" && inLine(elements, planner.playerId) && (
+            <p className="px-1 pt-1 text-xs font-semibold text-orange-300">
+              {lineRuleOf(elements, planner.playerId) === "remate"
+                ? "Es de una fila «al rematar»: si remata, se cambia por el último de la fila."
+                : "Es de una fila: tras su último toque vuelve al final y avanzan los demás."}
+            </p>
+          )}
+          {plannerStage === "target" && planner.steps.length > 0 && (
+            <div className="mt-2 space-y-1.5 px-1">
+              {planner.steps.length > 0 && (
+                <div role="group" aria-label="Qué balón juega" className="flex items-center gap-2">
+                  <span className="w-20 shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-zinc-400">Balón</span>
+                  <div className="flex flex-1 gap-0.5 rounded-full bg-void p-0.5 ring-1 ring-white/10">
+                    <button type="button" aria-pressed={!planner.fresh} onClick={() => setPlanner({ ...planner, fresh: false })} className={choiceClass(!planner.fresh)}>
+                      El que viene
+                    </button>
+                    <button type="button" aria-pressed={Boolean(planner.fresh)} onClick={() => setPlanner({ ...planner, fresh: true })} className={choiceClass(Boolean(planner.fresh))}>
+                      <span aria-hidden="true" className="h-3 w-3 rounded-full bg-[conic-gradient(#0F8A3C_0_33%,#D7262E_0_66%,#fff_0)] ring-1 ring-white" />
+                      Balón nuevo
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+          {repeated && (
+            <button type="button" onClick={repeatPlan} className="mx-1 mt-2 flex min-h-11 w-[calc(100%-0.5rem)] items-center justify-center gap-1.5 rounded-full border border-tnt bg-tnt/15 text-xs font-extrabold text-white">
+              <Repeat aria-hidden="true" className="h-4 w-4" />
+              Repetir hasta que pasen todos
+            </button>
+          )}
           <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <button type="button" onClick={() => setPlanner(null)} className={`${chipClass} text-zinc-300`}>Cancelar</button>
             <button type="button" onClick={undoPlanStep} disabled={planner.steps.length === 0 && !planner.playerId && !planner.moves?.length} className={`${chipClass} disabled:opacity-40`}>
@@ -1131,13 +1205,29 @@ export default function BoardEditorPage({ onAccessLost }) {
                   <UserPlus aria-hidden="true" className="h-4 w-4" />
                   Jugadores
                 </button>
+                <button type="button" onClick={() => setLineDialog(true)} className={chipClass}>
+                  <span aria-hidden="true" className="flex flex-col gap-px">
+                    <span className="h-1 w-3 rounded-full bg-orange-400" />
+                    <span className="h-1 w-3 rounded-full bg-orange-400" />
+                    <span className="h-1 w-3 rounded-full bg-orange-400" />
+                  </span>
+                  Fila
+                </button>
                 <button type="button" onClick={() => addElement(rivalToken(rivals))} className={chipClass}>
-                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-tnt ring-1 ring-white text-onbrand" />
+                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-tnt ring-1 ring-white" />
                   Rival
                 </button>
                 <button type="button" onClick={() => addElement(newBall(balls))} className={chipClass}>
                   <span aria-hidden="true" className="h-3 w-3 rounded-full bg-[conic-gradient(#0F8A3C_0_33%,#D7262E_0_66%,#fff_0)] ring-1 ring-white" />
                   Balón
+                </button>
+                <button type="button" onClick={() => addElement(newProp("cone", cones))} className={chipClass}>
+                  <span aria-hidden="true" className="h-0 w-0 border-x-[6px] border-b-[11px] border-x-transparent border-b-orange-500" />
+                  Cono
+                </button>
+                <button type="button" onClick={() => addElement(newProp("box"))} className={chipClass}>
+                  <span aria-hidden="true" className="h-2.5 w-3.5 rounded-[2px] bg-[#C08A4E] ring-1 ring-white" />
+                  Cajón
                 </button>
                 {!board.private && (
                 <div className="relative">
@@ -1260,6 +1350,7 @@ export default function BoardEditorPage({ onAccessLost }) {
           name={elements.find((element) => element.id === planner.playerId)?.name || elements.find((element) => element.id === planner.playerId)?.label || "este jugador"}
           time={null}
           actions={[]}
+          coach={elements.find((element) => element.id === planner.playerId)?.side === "coach"}
           onChoose={(action, tempo = null) => setPlanner({ ...planner, action, tempo })}
           onRemove={() => {}}
           onClose={() => setPlanner({ ...planner, playerId: null })}
@@ -1271,6 +1362,7 @@ export default function BoardEditorPage({ onAccessLost }) {
           name={elements.find((element) => element.id === actionTarget.id)?.name || elements.find((element) => element.id === actionTarget.id)?.label || "este jugador"}
           time={actionTarget.time}
           actions={targetActions()}
+          coach={elements.find((element) => element.id === actionTarget.id)?.side === "coach"}
           onChoose={chooseAction}
           onRemove={removeAction}
           onClose={() => setActionTarget(null)}
@@ -1295,6 +1387,18 @@ export default function BoardEditorPage({ onAccessLost }) {
         />
       )}
 
+      {lineDialog && (
+        <LineDialog
+          onCancel={() => setLineDialog(false)}
+          onConfirm={(size, rule) => {
+            setLineDialog(false);
+            setLineSize(size);
+            setLineRule(rule);
+            setTool("move");
+            setInfo("Toca en la pista dónde va el primero de la fila");
+          }}
+        />
+      )}
       {addingPlayers && (
         <AddPlayersDialog
           teams={club.teams}

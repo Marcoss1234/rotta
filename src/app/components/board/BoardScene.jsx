@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
-import { COURT_HEIGHT as H, COURT_WIDTH as W, tokenPosition } from "@/app/boards.js";
+import { BOX_DRAW, COURT_HEIGHT as H, COURT_WIDTH as W, tokenPosition } from "@/app/boards.js";
 import { actionLabel } from "@/app/boardRecording.js";
 
 const JUMPING_ACTIONS = new Set(["remate", "bloqueo", "saque"]);
@@ -31,14 +31,16 @@ export function TokenShape({ element, player, clipId, selected, zone, lifted, ph
   const cx = element.x * W;
   const cy = element.y * H;
   const rival = element.side === "rival";
-  const position = tokenPosition(element, player);
+  const coach = element.side === "coach";
+  const position = coach ? null : tokenPosition(element, player);
   const libero = !rival && position === "Líbero";
-  const fill = rival ? "#FF3800" : libero ? "#FCD34D" : "#09090B";
-  const border = libero ? "#FCD34D" : "#FFFFFF";
+  // El entrenador: gris oscuro con borde naranja y su cartelito "ENT".
+  const fill = rival ? "#FF3800" : coach ? "#27272A" : libero ? "#FCD34D" : "#09090B";
+  const border = coach ? "#FF3800" : libero ? "#FCD34D" : "#FFFFFF";
   const number = player?.number ?? null;
   const center = number ?? element.label;
   // Una sola línea corta ("Ana · REC") para que las de al lado no se pisen.
-  const role = position && position !== "Sin definir" ? ROLE_SHORT[position] ?? "" : "";
+  const role = coach ? "ENT" : position && position !== "Sin definir" ? ROLE_SHORT[position] ?? "" : "";
   const name = (element.name ?? "").trim().split(/\s+/)[0] ?? "";
   const pillWidth = Math.max((name.length + (role ? role.length + 1.2 : 0)) * 2.15, 7) + 2.6;
   const pillHeight = 5.2;
@@ -149,10 +151,84 @@ export function BallShape({ element, selected, lifted, height = 0, flash = 0 }) 
   );
 }
 
+// Cono (naranja, visto desde arriba) y cajón (de madera, con el que se sube a dar balones).
+export function PropShape({ element, selected }) {
+  const cx = element.x * W;
+  const cy = element.y * H;
+  const edge = selected ? "#FFD400" : "#0A0A0C";
+  if (element.kind === "cone") {
+    return (
+      <g data-el={element.id} style={{ cursor: "grab" }}>
+        <circle cx={cx} cy={cy} r="5" fill="transparent" />
+        <circle cx={cx + 0.4} cy={cy + 0.6} r="2.6" fill="rgba(0,0,0,0.3)" />
+        <circle cx={cx} cy={cy} r="2.5" fill="#FF6A13" stroke={edge} strokeWidth={selected ? 0.9 : 0.5} />
+        <circle cx={cx} cy={cy} r="1.5" fill="none" stroke="#FFFFFF" strokeWidth="0.45" />
+        <circle cx={cx} cy={cy} r="0.6" fill="#B33D00" />
+      </g>
+    );
+  }
+  const { w, h } = BOX_DRAW;
+  return (
+    <g data-el={element.id} style={{ cursor: "grab" }}>
+      <rect x={cx - w / 2 + 0.6} y={cy - h / 2 + 0.9} width={w} height={h} rx="0.8" fill="rgba(0,0,0,0.3)" />
+      <rect x={cx - w / 2} y={cy - h / 2} width={w} height={h} rx="0.8" fill="#C08A4E" stroke={edge} strokeWidth={selected ? 1 : 0.55} />
+      <rect x={cx - w / 2 + 1} y={cy - h / 2 + 1} width={w - 2} height={h - 2} rx="0.5" fill="none" stroke="#8A5A2B" strokeWidth="0.4" />
+      <rect x={cx - w / 2 + 2.2} y={cy - 0.8} width="2.6" height="1.6" rx="0.8" fill="#6B4320" />
+      <rect x={cx + w / 2 - 4.8} y={cy - 0.8} width="2.6" height="1.6" rx="0.8" fill="#6B4320" />
+    </g>
+  );
+}
+
+// Las filas mientras se dibuja: un recuadro discontinuo con su nombre. Arrastrándolo se mueve la fila entera.
+const LINE_PAD = 11;
+function LineBoxes({ elements }) {
+  const groups = new Map();
+  elements.forEach((element) => {
+    if (element.type === "token" && element.line) groups.set(element.line, [...(groups.get(element.line) ?? []), element]);
+  });
+  return [...groups].map(([line, members], index) => {
+    const xs = members.map((member) => member.x * W);
+    const ys = members.map((member) => member.y * H);
+    const x = Math.min(...xs) - LINE_PAD;
+    const y = Math.min(...ys) - LINE_PAD;
+    const width = Math.max(...xs) - Math.min(...xs) + LINE_PAD * 2;
+    const height = Math.max(...ys) - Math.min(...ys) + LINE_PAD * 2;
+    const label = `FILA ${index + 1}${members[0].line_rule === "remate" ? " · REMATE" : ""}`;
+    const labelWidth = label.length * 2.3 + 4;
+    return (
+      <g key={line} data-line={line} style={{ cursor: "grab" }}>
+        <rect x={x} y={y} width={width} height={height} rx="5" fill="rgba(255,138,61,0.12)" stroke="#FF8A3D" strokeWidth="1.1" strokeDasharray="2.4 1.8" />
+        <rect x={x + width / 2 - labelWidth / 2} y={y - 3.4} width={labelWidth} height="5.4" rx="2.7" fill="#FF8A3D" />
+        <text x={x + width / 2} y={y + 0.6} textAnchor="middle" fontSize="3.4" fontWeight="900" fill="#0A0A0C">
+          {label}
+        </text>
+      </g>
+    );
+  });
+}
+
 function ElementShape({ element, player, uid, selected, zone, progress, lifted = false, photos = true, height = 0, flash = 0 }) {
   switch (element.type) {
     case "token":
       return <TokenShape element={element} player={player} clipId={`${uid}-clip-${element.id}`} selected={selected} zone={zone} lifted={lifted} photos={photos} />;
+    case "prop":
+      return <PropShape element={element} selected={selected} />;
+    case "line-mark":
+      // Una fila al preparar la jugada por pasos (solo se ve, no se toca).
+      return (
+        <rect
+          x={element.x * W}
+          y={element.y * H}
+          width={element.w * W}
+          height={element.h * H}
+          rx="5"
+          fill="rgba(255,138,61,0.08)"
+          stroke="#FF8A3D"
+          strokeWidth="1.3"
+          strokeDasharray="2.4 1.8"
+          pointerEvents="none"
+        />
+      );
     case "ball":
       return <BallShape element={element} selected={selected} lifted={lifted} height={height} flash={flash} />;
     case "arrow":
@@ -216,7 +292,7 @@ function Handles({ element }) {
   ));
 }
 
-const LAYERS = ["zone", "stroke", "arrow", "token", "ball", "text"];
+const LAYERS = ["zone", "stroke", "arrow", "prop", "token", "ball", "text"];
 const TRAIL_MS = 420;
 // Un salto así de grande no es un movimiento (deshacer, poner una alineación…): no deja estela.
 const TRAIL_JUMP = 0.2;
@@ -355,7 +431,7 @@ function useNetCrossing(elements, enabled) {
 
 // Solo dibuja: la pizarra interactiva y las miniaturas de la biblioteca usan esto mismo.
 // `effects` lleva los efectos del momento: el salto de una chapa y el bote de un balón.
-export default function BoardScene({ elements, rosterById = {}, selectedId = null, draft = [], svgRef, svgProps, label, trails: showTrails = false, arrowProgress = null, zones = null, liftedId = null, effects = null, photos = true, actions = null, heights = null, flashes = null }) {
+export default function BoardScene({ elements, rosterById = {}, selectedId = null, draft = [], lineBoxes = false, svgRef, svgProps, label, trails: showTrails = false, arrowProgress = null, zones = null, liftedId = null, effects = null, photos = true, actions = null, heights = null, flashes = null }) {
   const uid = useId().replace(/:/g, "");
   const trails = useBallTrails(elements, showTrails);
   const [shake, clearShake] = useNetCrossing(elements, showTrails);
@@ -372,6 +448,7 @@ export default function BoardScene({ elements, rosterById = {}, selectedId = nul
         ))}
       </defs>
       {shake && <NetShake key={shake.key} x={shake.x} onDone={clearShake} />}
+      {lineBoxes && <LineBoxes elements={elements} />}
       {ordered.map((element) => {
         const jump = effects?.jump?.id === element.id ? effects.jump : null;
         const bounce = effects?.bounce?.id === element.id ? effects.bounce : null;

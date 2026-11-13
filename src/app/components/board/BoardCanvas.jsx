@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import BoardScene from "@/app/components/board/BoardScene.jsx";
 import { isRecordable } from "@/app/boardRecording.js";
-import { COURT_HEIGHT, COURT_WIDTH, moveHandle, newElementId, roundCoord, translateElement } from "@/app/boards.js";
+import { COURT_HEIGHT, COURT_WIDTH, moveHandle, moveLine, newElementId, roundCoord, translateElement } from "@/app/boards.js";
 
 const TAP_DISTANCE = 0.006;
 // Dos toques en menos de esto sobre la misma chapa son un doble toque.
@@ -26,7 +26,7 @@ function zoneBetween(start, end, id) {
 }
 
 // Convierte los gestos sobre la pista en cambios. Quien la usa guarda el resultado y lleva el deshacer.
-export default function BoardCanvas({ elements, rosterById, tool, arrowStyle, textValue, selectedId, readOnly, label, onChange, onSelect, onTextPlaced, onTokenTap, onTokenDoubleTap, onBallDrop, onActionTap, actionTaps = false, planning = false, onPlanTap, onPlanMove, extraDraft = [], recording, onRecordMove, trails, arrowProgress, zones, effects, photos, actions, heights, flashes }) {
+export default function BoardCanvas({ elements, rosterById, tool, arrowStyle, textValue, selectedId, readOnly, label, onChange, onSelect, onTextPlaced, onTokenTap, onTokenDoubleTap, onBallDrop, onActionTap, actionTaps = false, planning = false, onPlanTap, onPlanMove, onPlaceLine, extraDraft = [], recording, onRecordMove, trails, arrowProgress, zones, effects, photos, actions, heights, flashes }) {
   const svgRef = useRef(null);
   // Uno por dedo: al grabar se puede mover a dos jugadores a la vez.
   const gestures = useRef(new Map());
@@ -115,6 +115,12 @@ export default function BoardCanvas({ elements, rosterById, tool, arrowStyle, te
       return;
     }
     if (tool === "move") {
+      const lineHit = event.target.closest?.("[data-line]")?.dataset.line;
+      if (!hit && lineHit) {
+        onSelect(null);
+        gestures.current.set(event.pointerId, { type: "line", id: lineHit, start: point, last: point, moved: false });
+        return;
+      }
       if (handle && selectedId) {
         gestures.current.set(event.pointerId, { type: "handle", id: selectedId, handle, moved: false });
       } else if (hit) {
@@ -165,6 +171,13 @@ export default function BoardCanvas({ elements, rosterById, tool, arrowStyle, te
       current.moved = true;
       const { last } = current;
       update(current.id, (element) => translateElement(element, point.x - last.x, point.y - last.y));
+      current.last = point;
+    } else if (current.type === "line") {
+      if (!current.moved && distance(point, current.start) < TAP_DISTANCE) return;
+      current.moved = true;
+      const next = moveLine(latest.current, current.id, point.x - current.last.x, point.y - current.last.y);
+      latest.current = next;
+      onChange(next, false);
       current.last = point;
     } else if (current.type === "handle") {
       current.moved = true;
@@ -222,7 +235,8 @@ export default function BoardCanvas({ elements, rosterById, tool, arrowStyle, te
     const point = pointAt(event);
     const far = distance(point, current.start ?? point) >= MIN_SHAPE;
 
-    if ((current.type === "move" || current.type === "handle") && current.moved) onChange(latest.current, true);
+    if ((current.type === "move" || current.type === "handle" || current.type === "line") && current.moved) onChange(latest.current, true);
+    if (current.type === "place-line" && !far) onPlaceLine?.(point);
     if (current.type === "move" && !current.moved && latest.current.find((element) => element.id === current.id)?.type === "token") {
       tapToken(current.id);
     }
@@ -245,6 +259,7 @@ export default function BoardCanvas({ elements, rosterById, tool, arrowStyle, te
       rosterById={rosterById}
       selectedId={selectedId}
       draft={[...extraDraft, ...draft]}
+      lineBoxes={tool === "move" && !planning && !recording && !actions}
       trails={trails}
       arrowProgress={arrowProgress}
       zones={zones}

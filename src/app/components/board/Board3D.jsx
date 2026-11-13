@@ -2,7 +2,7 @@ import { useId, useRef } from "react";
 import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
 import BoardScene, { BALL_RADIUS, BallShape } from "@/app/components/board/BoardScene.jsx";
 import { COURT_HEIGHT as H, COURT_WIDTH as W, tokenPosition } from "@/app/boards.js";
-import { actionDuration, actionLabel, contactTime } from "@/app/boardRecording.js";
+import { actionDuration, actionLabel, contactTime, poseOf } from "@/app/boardRecording.js";
 
 // El nombre de la acción encima del jugador mientras la hace.
 export function ActionTag({ action, y, scale = 1 }) {
@@ -28,7 +28,7 @@ const NET_Y = 95;
 const NET_HEIGHT = 33;
 const PAD_TOP = 46;
 const PAD_BOTTOM = 10;
-const FLOOR_TYPES = new Set(["zone", "stroke", "arrow", "text"]);
+const FLOOR_TYPES = new Set(["zone", "stroke", "arrow", "text", "prop"]);
 // En 3D las chapas de cerca crecen: un poco más pequeñas para que no tapen la pista.
 const STANDING_SIZE = 0.82;
 // Los muñecos, algo más altos que una chapa para que se lean bien.
@@ -238,13 +238,13 @@ const OVERHEAD = new Set(["saque", "remate", "colocacion", "bloqueo"]);
 function handHeight(action) {
   const top = pose(0, 0).shoulderY;
   const progress = contactTime(action) / actionDuration(action);
-  const shape = actionShape(action, progress, top);
+  const shape = actionShape(poseOf(action), progress, top);
   const hand = shape.strikeHand !== undefined ? shape.hands[shape.strikeHand] : { y: (shape.hands[0].y + shape.hands[1].y) / 2 };
   const reach = (-hand.y + (shape.jump ?? 0)) * FIGURE_SIZE;
   // Por arriba el balón queda justo encima de la mano; con los antebrazos, apoyado encima.
-  return Math.max(0, reach - (OVERHEAD.has(action) ? 2 : 1));
+  return Math.max(0, reach - (OVERHEAD.has(poseOf(action)) ? 2 : 1));
 }
-const CONTACT_HEIGHT = Object.fromEntries(["saque", "recepcion", "colocacion", "remate", "bloqueo", "defensa"].map((action) => [action, handHeight(action)]));
+const CONTACT_HEIGHT = Object.fromEntries(["saque", "recepcion", "colocacion", "remate", "bloqueo", "defensa", "free", "fuerte"].map((action) => [action, handHeight(action)]));
 const TOSS_EXTRA = 16;
 
 // Altura en mitad del vuelo según quién lo toca: recepción y colocación bombeadas, remate hacia abajo.
@@ -266,6 +266,11 @@ function middleHeight(action, from, to, distance) {
       return (from + to) / 2 - 4;
     case "bloqueo":
       return (from + to) / 2 + 6;
+    // Entrenador: la free sale bombeada y fácil; la fuerte, tensa y hacia abajo.
+    case "free":
+      return Math.max(from, to) + 40;
+    case "fuerte":
+      return (from + to) / 2 - 2;
     default:
       return Math.max(from, to) + Math.min(40, distance * 0.45);
   }
@@ -377,11 +382,11 @@ function Limb({ from, joint, to, width }) {
 
 export function PlayerFigure({ element, player, position, zone, stride = 0, crouch = 0, run = 0, action = null, photos, clipId }) {
   const rival = element.side === "rival";
-  const jersey = rival ? JERSEYS.rival : position === "Líbero" ? JERSEYS.libero : JERSEYS.home;
+  const jersey = rival ? JERSEYS.rival : element.side === "coach" ? JERSEYS.coach : position === "Líbero" ? JERSEYS.libero : JERSEYS.home;
   const number = player?.number ?? element.label;
   const picture = photos ? player?.picture : null;
   // Si está haciendo una acción, el gesto manda sobre el andar o correr.
-  const shape = action ? actionShape(action.action, action.progress, pose(0, 0).shoulderY) : null;
+  const shape = action ? actionShape(poseOf(action.action), action.progress, pose(0, 0).shoulderY) : null;
   const body = pose(shape ? stride * (1 - shape.weight) : stride, shape?.crouch ?? crouch, shape ? 0 : run);
   if (shape) {
     body.arms = body.arms.map(([x, y, elbow, hand], index) => [x, y, mix(elbow, shape.elbows[index], shape.weight), mix(hand, shape.hands[index], shape.weight)]);

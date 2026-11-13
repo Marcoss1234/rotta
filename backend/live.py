@@ -14,7 +14,7 @@ from pymongo import ASCENDING, DESCENDING
 
 from attendance import answer_lists
 from database import get_db
-from honors import give_honor
+from honors import give_coins, give_honor
 from matches import _today, can_manage_matches
 from notifications import send_notifications, team_member_ids
 from players import require_approved
@@ -22,6 +22,8 @@ from teams import TEAMS, TeamId, match_teams
 
 MAX_EVENTS = 1500
 MVP_COINS = 15
+# Ganar el partido: para cada jugador de la plantilla con cuenta.
+WIN_COINS = 50
 MAX_LINEUP = 20
 TIMEOUTS_PER_SET = 2
 RECENT_FINISHED = 10
@@ -44,6 +46,13 @@ class LiveCreate(BaseModel):
     best_of: Literal[3, 5] = 5
     first_serve: Side = "us"
     lineup: Annotated[list[Annotated[str, StringConstraints(min_length=1, max_length=64)]], Field(min_length=1, max_length=MAX_LINEUP)]
+
+
+class LiveOrder(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    # Quién va en cada sitio: los 12 primeros en la pista y el resto en el banquillo.
+    order: Annotated[list[Annotated[str, StringConstraints(max_length=64)]], Field(max_length=200)]
 
 
 class LiveFinish(BaseModel):
@@ -134,6 +143,137 @@ def scoreboard(live):
     }
 
 
+SKILLS = ["saque", "recepcion", "colocacion", "ataque", "bloqueo", "defensa"]
+
+
+def match_report(live, lineup):
+    """Todo lo que ha pasado en el partido, ordenado para leerlo (y debatirlo) al terminar."""
+    names = {item["player_id"]: item for item in lineup}
+    players = {}
+    skills = {skill: {"good": 0, "bad": 0, "players": {}} for skill in SKILLS}
+    team = {"good": 0, "bad": 0}
+    # Cómo llegó cada punto: nuestros (por acierto nuestro o fallo suyo) y suyos (por fallo nuestro o acierto suyo).
+    origin = {"us_by_us": 0, "us_by_them": 0, "them_by_us": 0, "them_by_them": 0}
+    timeouts = {"us": 0, "them": 0}
+    sets, current, finished = [], {"us": 0, "them": 0}, False
+    set_detail = [{"us_by_us": 0, "us_by_them": 0, "them_by_us": 0, "them_by_them": 0, "good": 0, "bad": 0}]
+    runs = {"us": 0, "them": 0}
+    run_side, run_length = None, 0
+    lead = {"us": 0, "them": 0}
+    for event in live.get("events", []):
+        detail = set_detail[-1]
+        if event["type"] == "stat":
+            result = event["result"]
+            detail[result] += 1
+            player_id = event.get("player_id")
+            skill = event.get("skill")
+            if player_id:
+                row = players.setdefault(player_id, {"good": 0, "bad": 0, "points": 0, "errors": 0, "skills": {}})
+                row[result] += 1
+                if event.get("point") == "us" and result == "good":
+                    row["points"] += 1
+                if event.get("point") == "them" and result == "bad":
+                    row["errors"] += 1
+                if skill:
+                    per = row["skills"].setdefault(skill, {"good": 0, "bad": 0})
+                    per[result] += 1
+            else:
+                team[result] += 1
+            if skill:
+                skills[skill][result] += 1
+                if player_id:
+                    per = skills[skill]["players"].setdefault(player_id, {"good": 0, "bad": 0})
+                    per[result] += 1
+        elif event["type"] == "timeout":
+            timeouts[event["side"]] += 1
+        scored = event.get("side") if event["type"] == "point" else event.get("point") if event["type"] == "stat" else None
+        if not scored or finished:
+            continue
+        if event["type"] == "stat":
+            key = f"{scored}_by_us"
+        else:
+            # Un punto sin acción apuntada: si es nuestro, lo ha fallado el rival; si es suyo, lo ha acertado él.
+            key = f"{scored}_by_them"
+        origin[key] += 1
+        detail[key] += 1
+        current[scored] += 1
+        run_length = run_length + 1 if run_side == scored else 1
+        run_side = scored
+        runs[scored] = max(runs[scored], run_length)
+        lead[scored] = max(lead[scored], current[scored] - current[_other(scored)])
+        target_points = 15 if len(sets) == live["best_of"] - 1 else 25
+        if current[scored] >= target_points and current[scored] - current[_other(scored)] >= 2:
+            sets.append(dict(current))
+            current = {"us": 0, "them": 0}
+            run_side, run_length = None, 0
+            finished = sum(1 for item in sets if item[scored] > item[_other(scored)]) == live["best_of"] // 2 + 1
+            if not finished:
+                set_detail.append({"us_by_us": 0, "us_by_them": 0, "them_by_us": 0, "them_by_them": 0, "good": 0, "bad": 0})
+    if current["us"] or current["them"]:
+        sets.append(dict(current))
+
+    def person(player_id):
+        item = names.get(player_id, {})
+        return {"player_id": player_id, "name": item.get("name", "Jugador"), "number": item.get("number"), "position": item.get("position")}
+
+    def ratio(good, bad):
+        return round(good * 100 / (good + bad)) if good + bad else None
+
+    player_rows = []
+    for player_id, row in players.items():
+        player_rows.append({
+            **person(player_id),
+            "good": row["good"],
+            "bad": row["bad"],
+            "points": row["points"],
+            "errors": row["errors"],
+            "balance": row["good"] - row["bad"],
+            "percent": ratio(row["good"], row["bad"]),
+            "skills": [{"skill": skill, **row["skills"][skill], "percent": ratio(**row["skills"][skill])} for skill in SKILLS if skill in row["skills"]],
+        })
+    player_rows.sort(key=lambda row: (-row["balance"], -row["good"], row["name"]))
+    # Los que jugaron sin nada apuntado también salen, al final.
+    for item in lineup:
+        if item["player_id"] not in players:
+            player_rows.append({**person(item["player_id"]), "good": 0, "bad": 0, "points": 0, "errors": 0, "balance": 0, "percent": None, "skills": []})
+
+    skill_rows = []
+    for skill in SKILLS:
+        data = skills[skill]
+        if not data["good"] and not data["bad"]:
+            continue
+        by_player = data["players"]
+        best = max(by_player.items(), key=lambda item: (item[1]["good"], -item[1]["bad"]), default=None)
+        worst = max(by_player.items(), key=lambda item: (item[1]["bad"], -item[1]["good"]), default=None)
+        skill_rows.append({
+            "skill": skill,
+            "good": data["good"],
+            "bad": data["bad"],
+            "percent": ratio(data["good"], data["bad"]),
+            "best": {**person(best[0]), "count": best[1]["good"]} if best and best[1]["good"] else None,
+            "worst": {**person(worst[0]), "count": worst[1]["bad"]} if worst and worst[1]["bad"] else None,
+        })
+    return {
+        "sets": [{**item, **set_detail[index]} if index < len(set_detail) else item for index, item in enumerate(sets)],
+        "origin": origin,
+        "team": team,
+        "timeouts": timeouts,
+        "runs": runs,
+        "max_lead": lead,
+        "players": player_rows,
+        "skills": skill_rows,
+        "total": {"good": sum(row["good"] for row in player_rows) + team["good"], "bad": sum(row["bad"] for row in player_rows) + team["bad"]},
+    }
+
+
+def status_of(live):
+    """"pending" (sin empezar), "live" o "finished". Los que se abrieron antes de existir el botón de empezar
+    y no tienen nada apuntado cuentan como sin empezar: entrar al partido ya no lo empieza."""
+    if live["status"] == "live" and not live.get("started_at") and not live.get("events"):
+        return "pending"
+    return live["status"]
+
+
 def _can_watch(user):
     return user.get("status") == "approved"
 
@@ -146,7 +286,7 @@ async def _lineup(db, live):
     """Quién juega. En un partido de la agenda, los que han dicho "Voy" (se actualiza solo); los que ya
     tienen acciones apuntadas siguen aunque luego cambien de idea."""
     if not live.get("match_id"):
-        return live["lineup"]
+        return _ordered(live["lineup"], live)
     answers = await db.match_answers.find({"match_id": live["match_id"], "status": "going"}).to_list(200)
     lists = await answer_lists(db, match_teams(live["team_id"]), {answer["user_id"]: "going" for answer in answers})
     lineup = [
@@ -155,11 +295,18 @@ async def _lineup(db, live):
     ]
     shown = {item["player_id"] for item in lineup}
     lineup += [item for item in live.get("lineup", []) if item["player_id"] not in shown]
-    return lineup
+    return _ordered(lineup, live)
+
+
+def _ordered(lineup, live):
+    """Los sitios que ha colocado el entrenador arrastrando; los que no ha colocado van detrás, como venían."""
+    order = {player_id: index for index, player_id in enumerate(live.get("order") or [])}
+    return sorted(lineup, key=lambda item: order.get(item["player_id"], len(order)))
 
 
 async def _public(db, live, user):
     board = scoreboard(live)
+    lineup = await _lineup(db, live)
     return {
         "id": live["id"],
         "team_id": live["team_id"],
@@ -167,13 +314,16 @@ async def _public(db, live, user):
         "opponent": live["opponent"],
         "match_id": live.get("match_id"),
         "best_of": live["best_of"],
-        "status": live["status"],
-        "lineup": await _lineup(db, live),
+        "status": status_of(live),
+        "lineup": lineup,
         "events": live.get("events", [])[-12:],
         "event_count": len(live.get("events", [])),
         "created_at": live["created_at"],
-        "can_score": _can_score(user, live) and live["status"] == "live",
+        "can_score": _can_score(user, live) and status_of(live) == "live",
+        "can_start": _can_score(user, live) and status_of(live) == "pending",
         "mvp": live.get("mvp"),
+        # Al terminar: el informe completo del partido.
+        "report": match_report(live, lineup) if status_of(live) == "finished" else None,
         **board,
     }
 
@@ -185,7 +335,7 @@ def _summary(live):
         "team_id": live["team_id"],
         "team_name": TEAM_NAMES.get(live["team_id"], ""),
         "opponent": live["opponent"],
-        "status": live["status"],
+        "status": status_of(live),
         "won": board["won"],
         "current": board["current"],
         "sets": board["sets"],
@@ -203,6 +353,8 @@ async def _find(db, live_id):
 def _require_scorer(user, live):
     if not can_manage_matches(user):
         raise HTTPException(status_code=403, detail="Solo entrenadores, administradores y editores llevan el marcador")
+    if status_of(live) == "pending":
+        raise HTTPException(status_code=409, detail="El partido aún no ha empezado: dale a «Empezar partido»")
     if live["status"] != "live":
         raise HTTPException(status_code=409, detail="Este partido ya ha terminado")
 
@@ -212,8 +364,8 @@ async def list_live(team_id: Optional[TeamId] = Query(default=None), user=Depend
     """Los partidos en directo ahora y los últimos terminados (de un equipo, o de todo el club)."""
     query = {"team_id": {"$in": list(match_teams(team_id))}} if team_id else {}
     found = await db.live_matches.find(query).sort("created_at", DESCENDING).to_list(60)
-    live = [_summary(item) for item in found if item["status"] == "live"]
-    finished = [_summary(item) for item in found if item["status"] != "live"][:RECENT_FINISHED]
+    live = [_summary(item) for item in found if status_of(item) == "live"]
+    finished = [_summary(item) for item in found if status_of(item) == "finished"][:RECENT_FINISHED]
     return {"live": live, "finished": finished, "can_create": can_manage_matches(user)}
 
 
@@ -249,6 +401,7 @@ async def start_live(body: LiveCreate, user=Depends(require_approved), db=Depend
         "lineup": lineup,
         "events": [],
         "status": "live",
+        "started_at": now,
         "created_by": user["id"],
         "created_at": now,
         "updated_at": now,
@@ -293,24 +446,38 @@ async def enter_match(match_id: str, user=Depends(require_approved), db=Depends(
         "first_serve": "us",
         "lineup": [],
         "events": [],
-        "status": "live",
+        # Se abre sin empezar: el marcador arranca cuando se pulsa «Empezar partido».
+        "status": "pending",
         "created_by": user["id"],
         "created_at": now,
         "updated_at": now,
     }
     await db.live_matches.insert_one(live)
+    return await _public(db, live, user)
+
+
+@router.post("/{live_id}/start")
+async def start_match(live_id: str, user=Depends(require_approved), db=Depends(get_db)):
+    """«Empezar partido»: arranca el marcador y avisa al equipo de que está en directo."""
+    live = await _find(db, live_id)
+    if not _can_score(user, live):
+        raise HTTPException(status_code=403, detail="Solo entrenadores, administradores y editores llevan el marcador")
+    if status_of(live) != "pending":
+        return await _public(db, live, user)
+    now = datetime.now(timezone.utc)
+    await db.live_matches.update_one({"id": live_id}, {"$set": {"status": "live", "started_at": now, "updated_at": now}})
     await send_notifications(
         db,
-        await team_member_ids(db, list(match_teams(match["team_id"])), user["id"]),
+        await team_member_ids(db, list(match_teams(live["team_id"])), user["id"]),
         "matches",
         {
             "title": "¡Partido en directo!",
-            "body": f"{TEAM_NAMES.get(match['team_id'], 'Club')} contra {match['opponent']}: sigue el marcador punto a punto",
-            "url": f"/app/directo/{live['id']}",
-            "tag": f"directo-{live['id']}",
+            "body": f"{TEAM_NAMES.get(live['team_id'], 'Club')} contra {live['opponent']}: sigue el marcador punto a punto",
+            "url": f"/app/directo/{live_id}",
+            "tag": f"directo-{live_id}",
         },
     )
-    return await _public(db, live, user)
+    return await _public(db, await _find(db, live_id), user)
 
 
 @router.get("/{live_id}")
@@ -353,6 +520,18 @@ async def undo_event(live_id: str, user=Depends(require_approved), db=Depends(ge
     return await _public(db, await _find(db, live_id), user)
 
 
+@router.put("/{live_id}/order")
+async def set_order(live_id: str, body: LiveOrder, user=Depends(require_approved), db=Depends(get_db)):
+    """Cambiar a los jugadores de sitio (arrastrando uno encima de otro, o del banquillo a la pista)."""
+    live = await _find(db, live_id)
+    if not _can_score(user, live):
+        raise HTTPException(status_code=403, detail="Solo entrenadores, administradores y editores colocan a los jugadores")
+    if status_of(live) == "finished":
+        raise HTTPException(status_code=409, detail="Este partido ya ha terminado")
+    await db.live_matches.update_one({"id": live_id}, {"$set": {"order": list(dict.fromkeys(body.order)), "updated_at": datetime.now(timezone.utc)}})
+    return await _public(db, await _find(db, live_id), user)
+
+
 @router.post("/{live_id}/finish")
 async def finish_live(live_id: str, body: Optional[LiveFinish] = None, user=Depends(require_approved), db=Depends(get_db)):
     """Da el partido por terminado. Si estaba enlazado a un partido de la agenda, se le guarda el resultado.
@@ -380,7 +559,31 @@ async def finish_live(live_id: str, body: Optional[LiveFinish] = None, user=Depe
         await db.matches.update_one({"id": live["match_id"]}, {"$set": match_changes})
     if mvp:
         await _reward_mvp(db, live, mvp)
+    if board["winner"] == "us":
+        await _reward_win(db, live)
     return await _public(db, await _find(db, live_id), user)
+
+
+async def _reward_win(db, live):
+    """Victoria: cada jugador de la plantilla gana sus coins (una sola vez por partido, aunque se termine dos veces)."""
+    lineup = await _lineup(db, live)
+    if live.get("match_id"):
+        user_ids = [item["player_id"] for item in lineup]
+    else:
+        players = await db.players.find({"id": {"$in": [item["player_id"] for item in lineup]}}).to_list(200)
+        user_ids = [player["user_id"] for player in players if player.get("user_id")]
+    label = f"Victoria contra {live['opponent']}"[:80]
+    rewarded = []
+    for user_id in dict.fromkeys(user_ids):
+        if await give_coins(db, user_id, WIN_COINS, "win", label, f"win:{live['id']}:{user_id}"):
+            rewarded.append(user_id)
+    if rewarded:
+        await send_notifications(
+            db,
+            rewarded,
+            "matches",
+            {"title": f"¡{label}!", "body": f"Habéis ganado: +{WIN_COINS} Club Coins para cada uno", "url": "/app/perfil", "tag": f"win-{live['id']}"},
+        )
 
 
 async def _reward_mvp(db, live, mvp):

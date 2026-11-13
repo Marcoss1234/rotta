@@ -1,10 +1,13 @@
-import { listPlayers, listTeams } from "@/app/api.js";
+import { listCoaches, listPlayers, listTeams } from "@/app/api.js";
 
 // En la pizarra se puede usar a cualquier jugador del club, sea del equipo que sea.
+// Los entrenadores salen como un "equipo" más, para meterlos en la pizarra con su personaje.
+export const COACHES_TEAM = { id: "entrenadores", name: "Entrenadores" };
+
 export async function loadClubPlayers() {
   const teams = await listTeams();
-  const rosters = await Promise.all(teams.map((team) => listPlayers(team.id)));
-  return { teams, players: rosters.flat() };
+  const [rosters, coaches] = await Promise.all([Promise.all(teams.map((team) => listPlayers(team.id))), listCoaches().catch(() => [])]);
+  return { teams: coaches.length ? [...teams, COACHES_TEAM] : teams, players: [...rosters.flat(), ...coaches] };
 }
 
 // Las jugadas se guardan de 0 a 1 sobre la pista entera; al dibujar se pasan a estas unidades.
@@ -76,7 +79,7 @@ export function tokenFromPlayer(player, index) {
   return {
     id: newElementId(),
     type: "token",
-    side: "home",
+    side: player.coach ? "coach" : "home",
     player_id: player.id,
     label: player.number !== null && player.number !== undefined ? String(player.number) : initialsOf(player.name),
     name: firstName(player.name),
@@ -96,6 +99,56 @@ export const newBall = (count = 0) => ({
   x: roundCoord(0.5 + ((count % 5) - 2) * 0.16),
   y: roundCoord(0.9 - Math.floor(count / 5) * 0.05),
 });
+
+// Material de entreno. Medidas en unidades de pista (10 cm): el cajón es de 90 × 60 cm y 60 cm de alto.
+export const BOX_SIZE = { w: 9, h: 6 };
+export const BOX_HEIGHT_M = 0.6;
+// En la pizarra plana se pinta más grande, para que asome por debajo de quien está encima.
+export const BOX_DRAW = { w: 18, h: 12 };
+export const newProp = (kind, count = 0) => ({
+  id: newElementId(),
+  type: "prop",
+  kind,
+  x: roundCoord(kind === "box" ? 0.5 : 0.3 + (count % 5) * 0.1),
+  y: roundCoord(kind === "box" ? 0.25 : 0.75 + Math.floor(count / 5) * 0.04),
+});
+
+// El cajón sobre el que está alguien (con un poco de margen, para no tener que clavarlo justo encima).
+export function boxUnder(elements, x, y) {
+  return elements.find(
+    (item) => item.type === "prop" && item.kind === "box" && Math.abs((x - item.x) * COURT_WIDTH) <= BOX_DRAW.w / 2 && Math.abs((y - item.y) * COURT_HEIGHT) <= BOX_DRAW.h / 2,
+  ) ?? null;
+}
+
+// Una fila nueva: el primero donde se toca y los demás detrás, alejándose de la red, a unos 85 cm.
+const LINE_SPACING = 0.045;
+export function newLine(count, point, players, elements, rule = "toque") {
+  const used = new Set(elements.map((element) => element.player_id).filter(Boolean));
+  const lines = new Set(elements.map((element) => element.line).filter(Boolean));
+  let number = lines.size + 1;
+  while (lines.has(`fila${number}`)) number += 1;
+  const line = `fila${number}`;
+  const free = players.filter((player) => !player.coach && !used.has(player.id));
+  const away = point.y >= 0.5 ? 1 : -1;
+  // Si no cabe hacia atrás, el primero se acerca a la red lo justo.
+  const room = away > 0 ? 0.98 - point.y : point.y - 0.02;
+  const start = Math.max(0.02, Math.min(0.98, point.y - away * Math.max(0, (count - 1) * LINE_SPACING - room)));
+  return Array.from({ length: count }, (_, index) => {
+    const player = free[index];
+    const spot = { x: roundCoord(point.x), y: roundCoord(start + away * index * LINE_SPACING) };
+    const token = player ? tokenFromPlayer(player, 0) : { id: newElementId(), type: "token", side: "home", player_id: null, label: `J${index + 1}`, name: "" };
+    return { ...token, ...spot, line, ...(rule === "remate" ? { line_rule: "remate" } : {}) };
+  });
+}
+
+// Mueve una fila entera sin que nadie se salga de la pista.
+export function moveLine(elements, line, deltaX, deltaY) {
+  const members = elements.filter((element) => element.line === line);
+  if (members.length === 0) return elements;
+  const dx = clamp(deltaX, -Math.min(...members.map((member) => member.x)), 1 - Math.max(...members.map((member) => member.x)));
+  const dy = clamp(deltaY, -Math.min(...members.map((member) => member.y)), 1 - Math.max(...members.map((member) => member.y)));
+  return elements.map((element) => (element.line === line ? { ...element, x: roundCoord(element.x + dx), y: roundCoord(element.y + dy) } : element));
+}
 
 export const emptyBoard = (teamId, name = "Jugada nueva") => ({
   team_id: teamId,

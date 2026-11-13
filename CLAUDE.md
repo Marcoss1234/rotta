@@ -14,6 +14,8 @@ Rotta es la versión general de la app del C.V. TNT Almería, para venderla a ot
 - Demo con un club inventado: `npm run demo` (puertos 5180 y 8100), guion en `demo/README.md`.
 - Varios clubs, fase 1: una base de datos por club (`backend/clubs.py`). El club sale de la cabecera `X-Club`, de `?club=` o del subdominio (`ROOT_DOMAIN`); sin club, `DEFAULT_CLUB` o `DB_NAME`. Alta: `python tools/crear-club.py codigo "Nombre"`. Tests en `backend/tests/test_clubs.py`.
 
+- Traído del TNT (13-11-2026): pizarra con entrenadores (Free/Fuerte), conos, cajones y arrastrar en 3D; filas con el botón «Fila» y su condición: «con cualquier toque» (vuelven solas al final tras su último toque) o «al rematar (japo)» (solo el que remata se cambia por el último de la fila), «Balón nuevo» y «Repetir hasta que pasen todos». Partido en directo: botón «Empezar partido», media pista con 6 titulares y banquillo, arrastrar para cambiar, guía ⓘ, +50 Club Coins por ganar e informe completo al terminar (`src/app/components/MatchReport.jsx`, `match_report` en `backend/live.py`).
+
 ## Siguiente: varios clubs, fase 2 (sin empezar)
 Equipos, horarios y grupos del ranking configurables por club. Ahora están escritos para el TNT en `backend/teams.py`, los `GROUPS` de `backend/ranking.py`, los `DEFAULT_SCHEDULES` de `backend/schedules.py`, `src/app/teams.js` y `data/groups.js`.
 Diseño previsto:
@@ -24,5 +26,5 @@ Diseño previsto:
 Después: fase 3 (nombre y escudo de cada club en la app) y fase 4 (pantalla para dar de alta clubs).
 
 ## Probar
-- Tests: `cd backend && python -m pytest -q` (566 pasan). Web: `npm run build`.
+- Tests: `cd backend && python -m pytest -q` (576 pasan). Web: `npm run build`.
 - Coste: MongoDB Atlas gratis aguanta unos 15-18 clubs (límite de colecciones) y 512 MB; las fotos del chat son lo que más ocupa.

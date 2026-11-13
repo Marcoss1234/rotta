@@ -40,7 +40,8 @@ class Token(_Element):
     type: Literal["token"]
     x: Coord
     y: Coord
-    side: Literal["home", "rival"]
+    # "coach": un entrenador en la pista (lanza frees y balones fuertes en los ejercicios).
+    side: Literal["home", "rival", "coach"]
     player_id: Optional[Annotated[str, StringConstraints(max_length=64)]] = None
     label: Annotated[str, StringConstraints(max_length=3)] = ""
     name: Annotated[str, StringConstraints(max_length=20)] = ""
@@ -48,6 +49,10 @@ class Token(_Element):
     position: Optional[Position] = None
     # Marcado con doble toque: quien ataca en esta jugada.
     highlight: bool = False
+    # La fila en la que está (ejercicios en fila): vuelve al final tras su último toque.
+    line: Optional[Annotated[str, StringConstraints(max_length=12)]] = None
+    # Cuándo se cambia: con cualquier toque (vuelve al final) o solo al rematar (se cambia por el último).
+    line_rule: Optional[Literal["toque", "remate"]] = None
 
 
 class Ball(_Element):
@@ -80,12 +85,20 @@ class Text(_Element):
     text: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=60)]
 
 
+class Prop(_Element):
+    # Material de entreno: conos y cajones (al cajón se sube un entrenador o un jugador).
+    type: Literal["prop"]
+    kind: Literal["cone", "box"]
+    x: Coord
+    y: Coord
+
+
 class Stroke(_Element):
     type: Literal["stroke"]
     points: Annotated[list[tuple[Coord, Coord]], Field(min_length=2, max_length=MAX_STROKE_POINTS)]
 
 
-Element = Annotated[Union[Token, Ball, Arrow, Zone, Text, Stroke], Field(discriminator="type")]
+Element = Annotated[Union[Token, Ball, Arrow, Zone, Text, Stroke, Prop], Field(discriminator="type")]
 
 
 class Step(BaseModel):
@@ -110,7 +123,8 @@ class Track(BaseModel):
 
 
 MAX_ACTIONS = 200
-ActionKind = Literal["saque", "recepcion", "colocacion", "remate", "bloqueo", "defensa"]
+# "free" y "fuerte" son de los entrenadores: un balón fácil y uno fuerte para defender.
+ActionKind = Literal["saque", "recepcion", "colocacion", "remate", "bloqueo", "defensa", "free", "fuerte"]
 # Tiempo de la colocación: 3 (alta), 2, 1 (rápida) y "menos" (la más rápida, directa a la mano del atacante).
 SetTempo = Literal["3", "2", "1", "menos"]
 
@@ -167,6 +181,10 @@ class PlanStep(BaseModel):
     # Sin destino: la jugada termina en este jugador.
     target: Optional[Spot] = None
     moves: Annotated[list[PlanMove], Field(max_length=MAX_TRACKS)] = []
+    # Ejercicio en fila: al jugar, vuelve al final de su fila y los demás avanzan.
+    back: bool = False
+    # Balón nuevo: no juega el que venía, sino otro que saca este jugador (un entrenador lanzando, etc.).
+    fresh: bool = False
 
 
 class Recording(BaseModel):

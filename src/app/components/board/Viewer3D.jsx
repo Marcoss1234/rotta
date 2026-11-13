@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
-import { COURT_HEIGHT as H, COURT_WIDTH as W, tokenPosition } from "@/app/boards.js";
-import { actionDuration, actionLabel, contactTime, takeoffTime } from "@/app/boardRecording.js";
+import { BOX_HEIGHT_M, BOX_SIZE, COURT_HEIGHT as H, COURT_WIDTH as W, boxUnder, roundCoord, tokenPosition } from "@/app/boards.js";
+import { actionDuration, actionLabel, contactTime, poseOf, takeoffTime } from "@/app/boardRecording.js";
 import { playBounce, playHit, playStep, setSoundEnabled, soundEnabled, unlockSound } from "@/app/components/board/boardSounds.js";
 import { UP, canvasTexture, createPlayer, labelSprite, posePlayer, studioLighting, turnTowards } from "@/app/character/character3D.js";
 
@@ -52,6 +52,8 @@ export function webglAvailable() {
 }
 
 const toWorld = (x, y) => new THREE.Vector3((x * W - W / 2) * M, 0, (y * H - H / 2) * M);
+// Al revés: un punto del suelo a coordenadas de la pizarra (de 0 a 1).
+const fromWorld = (point) => ({ x: point.x / M / W + 0.5, y: point.z / M / H + 0.5 });
 
 // ---------- Texturas dibujadas en un lienzo ----------
 // Balón Molten: paneles verdes, rojos y blancos en espiral.
@@ -228,11 +230,12 @@ function buildNet(scene, top) {
 // ---------- Componente ----------
 // `teamId`: el equipo de la jugada. En el femenino, las rivales también son chicas.
 // `showcase`: cámara fija ({ position, target }) y sin botones, para enseñar un gesto (la tienda).
-export default function Viewer3D({ elements, rosterById, heights, flashes, actions, beach, teamId, showcase = null }) {
+// `onMove(id, x, y, terminado)`: si llega, se pueden arrastrar jugadores, conos y cajónes con el dedo.
+export default function Viewer3D({ elements, rosterById, heights, flashes, actions, beach, teamId, showcase = null, onMove = null }) {
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
-  const latest = useRef({ elements, rosterById, heights, flashes, actions, teamId });
-  latest.current = { elements, rosterById, heights, flashes, actions, teamId };
+  const latest = useRef({ elements, rosterById, heights, flashes, actions, teamId, onMove });
+  latest.current = { elements, rosterById, heights, flashes, actions, teamId, onMove };
   const [camera, setCamera] = useState("detras");
   const [sound, setSound] = useState(soundEnabled);
   const [hint, setHint] = useState(() => {
@@ -312,7 +315,7 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
     const ballMaterial = new THREE.MeshStandardMaterial({ map: moltenTexture(), roughness: 0.45 });
     const flashMaterial = new THREE.SpriteMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false });
 
-    const state = { renderer, scene, view, controls, players: new Map(), balls: new Map(), flight: null, frame: 0, effects: [], shake: 0, lastNow: 0 };
+    const state = { renderer, scene, view, controls, players: new Map(), balls: new Map(), props: new Map(), drag: null, flight: null, frame: 0, effects: [], shake: 0, lastNow: 0 };
     sceneRef.current = state;
     // Solo en el ordenador (npm run dev), para revisar la escena desde la consola.
     if (import.meta.env.DEV) window.__visor3d = state;
@@ -671,7 +674,7 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
     // Golpe al balón: los fuertes (remate, saque, bloqueo) con onda de choque y líneas de fuerza;
     // los suaves, solo un destello.
     const burst = (point, action, direction = new THREE.Vector3(0, -0.4, -1).normalize()) => {
-      const strong = { remate: 1, saque: 0.7, bloqueo: 0.6 }[action];
+      const strong = { remate: 1, fuerte: 0.9, saque: 0.7, bloqueo: 0.6 }[action];
       if (strong) {
         forceImpact(point, direction, strong, [0xffffff, 0xf4f4f5, 0xe0f2fe]);
         state.shake = Math.max(state.shake, strong >= 1 ? 0.12 : strong >= 0.7 ? 0.06 : 0);
@@ -793,6 +796,9 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         }
 
         rig.group.position.copy(at);
+        // Subido a un cajón: de pie encima (un entrenador dando balones, un jugador bloqueando…).
+        rig.group.position.y = boxUnder(current.elements, element.x, element.y) ? BOX_HEIGHT_M : 0;
+        rig.group.userData.elementId = element.id;
         // Hacia dónde mira: a donde corre si va rápido; si no, al balón (sin dar la espalda a la red).
         // Mira hacia la red de la mitad en la que está (un rival puesto en tu campo también mira a la red).
         const baseYaw = at.z >= 0 ? 0 : Math.PI;
@@ -820,7 +826,9 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         rig.group.rotation.y = rig.yaw;
         rig.ring.visible = Boolean(element.highlight);
         const action = current.actions?.get(element.id) ?? null;
-        const strikeHand = posePlayer(rig, { stride: Math.sin(phase), run, amount, action, time: now, lookAt: ballInSight && ballNow ? ballNow.clone() : null });
+        // Las acciones del entrenador se hacen con el gesto de un jugador (free = colocar, fuerte = golpe por arriba).
+        const poseAction = action ? { ...action, action: poseOf(action.action) } : null;
+        const strikeHand = posePlayer(rig, { stride: Math.sin(phase), run, amount, action: poseAction, time: now, lookAt: ballInSight && ballNow ? ballNow.clone() : null });
         // El golpe suena justo al tocar el balón (si se salta o se rebobina, no).
         if (action) {
           const before = rig.lastAction;
@@ -872,7 +880,7 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
             rig.group.updateMatrixWorld(true);
             const hands = rig.joints.hands.map((hand) => hand.getWorldPosition(new THREE.Vector3()));
             const point = strikeHand === null ? hands[0].clone().lerp(hands[1], 0.5) : hands[strikeHand];
-            const overhead = ["saque", "remate", "colocacion", "bloqueo"].includes(action.action);
+            const overhead = ["saque", "remate", "colocacion", "bloqueo"].includes(poseOf(action.action));
             point.y += overhead ? 0.13 : 0.1;
             state.strikes.push({ at, point, weight: 1 - gap / 0.14 });
           }
@@ -903,6 +911,118 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         }
       });
     };
+
+    // Conos y cajónes.
+    const coneMaterial = new THREE.MeshStandardMaterial({ color: 0xff6a13, roughness: 0.55 });
+    const stripeMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 });
+    const woodMaterial = new THREE.MeshStandardMaterial({ color: 0xc08a4e, roughness: 0.8 });
+    const woodDark = new THREE.MeshStandardMaterial({ color: 0x8a5a2b, roughness: 0.85 });
+    const buildProp = (kind) => {
+      const group = new THREE.Group();
+      if (kind === "cone") {
+        const base = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.025, 0.24), coneMaterial);
+        base.position.y = 0.0125;
+        const cone = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.3, 24), coneMaterial);
+        cone.position.y = 0.175;
+        const stripe = new THREE.Mesh(new THREE.CylinderGeometry(0.047, 0.06, 0.05, 24), stripeMaterial);
+        stripe.position.y = 0.2;
+        group.add(base, cone, stripe);
+      } else {
+        const width = BOX_SIZE.w * M;
+        const depth = BOX_SIZE.h * M;
+        const body = new THREE.Mesh(new THREE.BoxGeometry(width, BOX_HEIGHT_M, depth), woodMaterial);
+        body.position.y = BOX_HEIGHT_M / 2;
+        const top = new THREE.Mesh(new THREE.BoxGeometry(width + 0.02, 0.03, depth + 0.02), woodDark);
+        top.position.y = BOX_HEIGHT_M - 0.015;
+        group.add(body, top);
+        // Asas a los lados, como los cajónes de pliometría.
+        [-1, 1].forEach((side) => {
+          const grip = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.06, 0.012), woodDark);
+          grip.position.set(0, BOX_HEIGHT_M * 0.72, side * (depth / 2 + 0.002));
+          group.add(grip);
+        });
+      }
+      group.traverse((object) => {
+        object.castShadow = true;
+        object.receiveShadow = true;
+      });
+      return group;
+    };
+    const syncProps = (current) => {
+      const seen = new Set();
+      current.elements.forEach((element) => {
+        if (element.type !== "prop") return;
+        seen.add(element.id);
+        let prop = state.props.get(element.id);
+        if (prop && prop.kind !== element.kind) {
+          scene.remove(prop.group);
+          prop = null;
+        }
+        if (!prop) {
+          prop = { kind: element.kind, group: buildProp(element.kind) };
+          prop.group.userData.elementId = element.id;
+          scene.add(prop.group);
+          state.props.set(element.id, prop);
+        }
+        prop.group.position.copy(toWorld(element.x, element.y));
+      });
+      [...state.props.keys()].forEach((id) => {
+        if (!seen.has(id)) {
+          scene.remove(state.props.get(id).group);
+          state.props.delete(id);
+        }
+      });
+    };
+
+    // Arrastrar con el dedo: si se toca a un jugador (o un cono, un cajón), se mueve por el suelo
+    // y la cámara se queda quieta; si se toca la pista, la cámara gira como siempre.
+    const raycaster = new THREE.Raycaster();
+    const floor = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    const pointerRay = (event) => {
+      const rect = renderer.domElement.getBoundingClientRect();
+      const pointer = new THREE.Vector2(((event.clientX - rect.left) / rect.width) * 2 - 1, -((event.clientY - rect.top) / rect.height) * 2 + 1);
+      raycaster.setFromCamera(pointer, view);
+      return raycaster;
+    };
+    const floorPoint = (event) => pointerRay(event).ray.intersectPlane(floor, new THREE.Vector3());
+    const onDragStart = (event) => {
+      if (!latest.current.onMove || state.drag || (event.pointerType === "mouse" && event.button !== 0)) return;
+      const targets = [...[...state.players.values()].map((rig) => rig.group), ...[...state.props.values()].map((prop) => prop.group)];
+      const hit = pointerRay(event).intersectObjects(targets, true).find((item) => !item.object.isSprite);
+      if (!hit) return;
+      let object = hit.object;
+      while (object && !object.userData.elementId) object = object.parent;
+      const element = object && latest.current.elements.find((item) => item.id === object.userData.elementId);
+      const start = floorPoint(event);
+      if (!element || !start) return;
+      // Que no le llegue a la cámara.
+      event.stopPropagation();
+      mount.setPointerCapture?.(event.pointerId);
+      state.drag = { id: element.id, pointerId: event.pointerId, offset: new THREE.Vector3().subVectors(toWorld(element.x, element.y), start), moved: false, last: null };
+    };
+    const onDragMove = (event) => {
+      const drag = state.drag;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      event.stopPropagation();
+      const point = floorPoint(event);
+      if (!point) return;
+      const spot = fromWorld(point.add(drag.offset));
+      drag.moved = true;
+      drag.last = { x: roundCoord(spot.x), y: roundCoord(spot.y) };
+      latest.current.onMove?.(drag.id, drag.last.x, drag.last.y, false);
+    };
+    const onDragEnd = (event) => {
+      const drag = state.drag;
+      if (!drag || event.pointerId !== drag.pointerId) return;
+      event.stopPropagation();
+      state.drag = null;
+      if (drag.moved && drag.last) latest.current.onMove?.(drag.id, drag.last.x, drag.last.y, true);
+    };
+    // En fase de captura, en el contenedor: así llega antes que a los controles de la cámara.
+    mount.addEventListener("pointerdown", onDragStart, true);
+    mount.addEventListener("pointermove", onDragMove, true);
+    mount.addEventListener("pointerup", onDragEnd, true);
+    mount.addEventListener("pointercancel", onDragEnd, true);
 
     const TRAIL = 18;
     // Cuánto tiempo y a qué distancia se apartan los textos tras un golpe fuerte.
@@ -939,6 +1059,8 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         const lift = Math.max(0, ((height + 2) / 1.3) * FIG - 0.11);
         const at = toWorld(element.x, element.y);
         at.y = BALL_R + lift;
+        // Un balón encima de un cajón (el del entrenador antes de lanzarlo) no se mete dentro.
+        if (boxUnder(current.elements, element.x, element.y)) at.y = Math.max(at.y, BOX_HEIGHT_M + BALL_R);
         // Bote: venía cayendo y ya no baja, pegado al suelo. Suena más cuanto más alto venía.
         if (current.actions && ball.lift !== undefined) {
           const fall = ball.lift - lift;
@@ -1044,6 +1166,7 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
 
     const tick = (now) => {
       const current = latest.current;
+      syncProps(current);
       syncPlayers(current, now);
       syncBalls(current, now);
       const frameDt = Math.min(0.05, Math.max(0, (now - (state.lastNow || now)) / 1000));
@@ -1087,6 +1210,10 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
       observer.disconnect();
       window.removeEventListener("pointerdown", unlock);
       window.removeEventListener("keydown", unlock);
+      mount.removeEventListener("pointerdown", onDragStart, true);
+      mount.removeEventListener("pointermove", onDragMove, true);
+      mount.removeEventListener("pointerup", onDragEnd, true);
+      mount.removeEventListener("pointercancel", onDragEnd, true);
       controls.dispose();
       scene.traverse((object) => {
         object.geometry?.dispose?.();

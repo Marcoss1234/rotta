@@ -15,13 +15,14 @@ const shortName = (name) => name.trim().split(/\s+/)[0];
 const initials = (name) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join("");
 
-export function CourtDrawing({ beach, horizontal = false, showZones = true }) {
+// `stretch`: llena el hueco aunque la pista quede algo más ancha de lo real (el directo en el móvil).
+export function CourtDrawing({ beach, horizontal = false, showZones = true, stretch = false }) {
   const floor = beach ? "#e8cf95" : "#c9793f";
   const frontZone = beach ? "#e8cf95" : "#d98b4f";
   const line = beach ? "#1d4ed8" : "#ffffff";
 
   return (
-    <svg viewBox={horizontal ? "0 0 190 100" : "0 0 100 190"} aria-hidden="true" className="absolute inset-0 h-full w-full">
+    <svg viewBox={horizontal ? "0 0 190 100" : "0 0 100 190"} preserveAspectRatio={stretch ? "none" : undefined} aria-hidden="true" className="absolute inset-0 h-full w-full">
       <g transform={horizontal ? "translate(0 100) rotate(-90)" : undefined}>
       <rect x="0" y="0" width="100" height="190" fill={beach ? "#d8bb78" : "#1f2937"} />
       <rect x="5" y="5" width="90" height="180" fill={floor} />

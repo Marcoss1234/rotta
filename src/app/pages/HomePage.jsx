@@ -396,7 +396,7 @@ function LiveMatchButton({ match, onError }) {
       onClick={enter}
       disabled={busy}
       className={`relative flex min-h-14 w-full items-center gap-3 overflow-hidden rounded-xl px-4 text-left text-white disabled:opacity-70 ${
-        playing || !live ? "bg-gradient-to-r from-red-600 via-tnt to-ember shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow" : "bg-panel ring-1 ring-white/15"
+        playing || !live || live.status === "pending" ? "bg-gradient-to-r from-red-600 via-tnt to-ember shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow" : "bg-panel ring-1 ring-white/15"
       }`}
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/25">
@@ -404,13 +404,13 @@ function LiveMatchButton({ match, onError }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="block font-display text-lg font-black uppercase italic leading-tight">
-          {!live ? "Entrar al partido" : playing ? (match.can_edit ? "Seguir el partido" : "Ver en directo") : "Ver el partido"}
+          {!live || live.status === "pending" ? (match.can_edit ? "Entrar al partido" : "Ver el partido") : playing ? (match.can_edit ? "Seguir el partido" : "Ver en directo") : "Ver el partido"}
         </span>
         <span className="block text-xs font-semibold text-white/80">
-          {!live ? "Marcador punto a punto y aciertos y fallos" : playing ? "En directo ahora" : "Terminado"}
+          {!live ? "Marcador punto a punto y aciertos y fallos" : live.status === "pending" ? "Aún no ha empezado" : playing ? "En directo ahora" : "Terminado"}
         </span>
       </span>
-      {live && (
+      {live && live.status !== "pending" && (
         <span className="shrink-0 text-right font-display font-black italic leading-none tabular-nums">
           <span className="block text-2xl">
             {live.won.us}-{live.won.them}

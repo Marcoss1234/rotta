@@ -141,6 +141,38 @@ async def list_team_family(team_id: TeamId, _user=Depends(require_approved), db=
     return [{"id": person["id"], "name": person["name"], "picture": picture_of(person)} for person in family]
 
 
+COACHES_TEAM = "entrenadores"
+
+
+@router.get("/coaches")
+async def list_coaches(_user=Depends(require_approved), db=Depends(get_db)):
+    """Los entrenadores del club, para meterlos en la pizarra con su personaje (como un jugador más)."""
+    coaches = await db.users.find({"status": "approved", "role": "entrenador"}).to_list(100)
+    coaches.sort(key=lambda person: person["name"].casefold())
+    ids = [person["id"] for person in coaches]
+    characters = await characters_by_user(db, ids)
+    heights = await heights_by_user(db, ids)
+    crowns = await crowns_by_user(db, ids)
+    return [
+        {
+            "id": f"coach-{person['id']}",
+            "team_id": COACHES_TEAM,
+            "name": person["name"],
+            "position": "Entrenador",
+            "preferred_positions": [],
+            "number": None,
+            "court": None,
+            "linked": True,
+            "coach": True,
+            "picture": picture_of(person),
+            "character": characters.get(person["id"]),
+            "height_cm": heights.get(person["id"]),
+            "crown": crowns.get(person["id"]),
+        }
+        for person in coaches
+    ]
+
+
 @router.get("/players")
 async def list_players(
     team_id: TeamId = Query(...),

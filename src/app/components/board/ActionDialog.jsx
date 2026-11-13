@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowDownToLine, ArrowUpFromLine, CircleDot, Hand, Shield, Trash2, X, Zap } from "lucide-react";
-import { PLAYER_ACTIONS, SET_TEMPOS, actionLabel } from "@/app/boardRecording.js";
+import { ArrowDownToLine, ArrowUpFromLine, CircleDot, Feather, Flame, Hand, Shield, Trash2, X, Zap } from "lucide-react";
+import { COACH_ACTIONS, PLAYER_ACTIONS, SET_TEMPOS, actionLabel } from "@/app/boardRecording.js";
 
-const ICONS = { saque: CircleDot, recepcion: ArrowDownToLine, colocacion: ArrowUpFromLine, remate: Zap, bloqueo: Hand, defensa: Shield };
+const ICONS = { saque: CircleDot, recepcion: ArrowDownToLine, colocacion: ArrowUpFromLine, remate: Zap, bloqueo: Hand, defensa: Shield, free: Feather, fuerte: Flame };
 export const actionIcon = (value) => ICONS[value] ?? CircleDot;
 
 const seconds = (ms) => `${(ms / 1000).toFixed(1).replace(".", ",")} s`;
 
 // Qué hace este jugador en este momento de la jugada. También lista y deja quitar las que ya tiene.
-export default function ActionDialog({ name, time, actions, onChoose, onRemove, onClose }) {
+export default function ActionDialog({ name, time, actions, onChoose, onRemove, onClose, coach = false }) {
   const dialogRef = useRef(null);
   // Al elegir "Colocar" se pregunta el tiempo.
   const [setting, setSetting] = useState(false);
@@ -62,7 +62,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
         </div>
       ) : (
       <div className="mt-3 grid grid-cols-3 gap-2">
-        {PLAYER_ACTIONS.map(({ value, label }) => {
+        {(coach ? COACH_ACTIONS : PLAYER_ACTIONS).map(({ value, label }) => {
           const Icon = ICONS[value];
           return (
             <button

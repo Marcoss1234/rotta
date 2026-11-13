@@ -21,7 +21,16 @@ export const PLAYER_ACTIONS = [
   { value: "bloqueo", label: "Bloquear", duration: 850 },
   { value: "defensa", label: "Defender", duration: 850 },
 ];
-const ACTION_BY_VALUE = Object.fromEntries(PLAYER_ACTIONS.map((item) => [item.value, item]));
+// Lo que hace un entrenador en los ejercicios: un balón fácil (free) o uno fuerte para defender.
+export const COACH_ACTIONS = [
+  { value: "free", label: "Free", duration: 750 },
+  { value: "fuerte", label: "Fuerte", duration: 1000 },
+];
+// Con qué gesto del muñeco se hace cada acción del entrenador: la free con las dos manos por arriba
+// (como colocar) y la fuerte con un golpe por arriba sin saltar (como el saque).
+const POSE_OF = { free: "colocacion", fuerte: "saque" };
+export const poseOf = (value) => POSE_OF[value] ?? value;
+const ACTION_BY_VALUE = Object.fromEntries([...PLAYER_ACTIONS, ...COACH_ACTIONS].map((item) => [item.value, item]));
 // Tiempos de colocación: cuanto más bajo el número, más rápida y más baja va la bola.
 export const SET_TEMPOS = [
   { value: "3", label: "Tiempo 3", short: "T3", hint: "Muy alta: sube y cae donde la mandas" },
@@ -36,17 +45,17 @@ export const actionLabel = (value, tempo = null) => {
   return tempo && TEMPO_BY_VALUE[tempo] ? `${label} ${TEMPO_BY_VALUE[tempo].short}` : label;
 };
 // Si se ha ajustado el ritmo del gesto en el editor, manda esa duración.
-export const actionDuration = (value) => gestureDuration(value, ACTION_BY_VALUE[value]?.duration ?? 800);
+export const actionDuration = (value) => gestureDuration(poseOf(value), ACTION_BY_VALUE[value]?.duration ?? 800);
 // Cuánto tarda cada gesto, desde que empieza, en tocar el balón.
 const CONTACT_MS = { saque: 550, recepcion: 360, colocacion: 360, remate: 500, bloqueo: 380, defensa: 360 };
 // Cuánto tarda cada gesto en despegar del suelo (null si no salta).
 export const takeoffTime = (value) => {
-  const fraction = takeoffFraction(value);
+  const fraction = takeoffFraction(poseOf(value));
   return fraction === null ? null : fraction * actionDuration(value);
 };
 export const contactTime = (value) => {
-  const fraction = hitFraction(value);
-  return fraction === null ? CONTACT_MS[value] ?? 400 : fraction * actionDuration(value);
+  const fraction = hitFraction(poseOf(value));
+  return fraction === null ? CONTACT_MS[poseOf(value)] ?? 400 : fraction * actionDuration(value);
 };
 
 // La acción que está haciendo cada jugador en este momento y por dónde va (de 0 a 1).

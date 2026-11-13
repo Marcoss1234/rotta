@@ -5,6 +5,8 @@ export const JERSEYS = {
   home: { shirt: "#09090B", trim: "#FFFFFF", number: "#FFFFFF" },
   libero: { shirt: "#FCD34D", trim: "#09090B", number: "#09090B" },
   rival: { shirt: "#FF3800", trim: "#FFFFFF", number: "#FFFFFF" },
+  // Entrenador: chándal gris oscuro con el naranja del club.
+  coach: { shirt: "#27272A", trim: "#FF3800", number: "#FF8A3D" },
 };
 export const POSITION_SHORT = { Líbero: "LIB", Colocador: "COL", Receptor: "REC", Central: "CEN", Opuesto: "OPU" };
 import { ACTION_KEYS, baseOf, capturedOf, gesturePlan, jumpAt } from "@/app/character/gestureTimes.js";
@@ -1243,7 +1245,7 @@ export function createPlayer(scene, element, player, position, female = false, {
   const base0 = isFemale ? BUILDS.female : BUILDS.male;
   const build = { ...base0, shoulder: base0.shoulder * shape.shoulders, hip: base0.hip * shape.hips };
   const rival = element.side === "rival";
-  const base = rival ? JERSEYS.rival : position === "Líbero" ? JERSEYS.libero : JERSEYS.home;
+  const base = rival ? JERSEYS.rival : element.side === "coach" ? JERSEYS.coach : position === "Líbero" ? JERSEYS.libero : JERSEYS.home;
   // La camiseta especial de la tienda solo se ve con la equipación de casa (el rival va de blanco).
   const special = !rival && SPECIAL_SHIRTS[look.shirt] ? look.shirt : null;
   const jersey = special ? { ...base, ...SPECIAL_SHIRTS[special], stripe: SPECIAL_SHIRTS[special].trim } : { ...base, stripe: rival ? "#FFFFFF" : "#FF3800" };

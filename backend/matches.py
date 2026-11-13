@@ -163,10 +163,10 @@ async def _public_match(db, match, user):
     live = await db.live_matches.find_one({"match_id": match["id"]})
     live_summary = None
     if live:
-        from live import scoreboard  # Aquí dentro: live también usa este módulo.
+        from live import scoreboard, status_of  # Aquí dentro: live también usa este módulo.
 
         board = scoreboard(live)
-        live_summary = {"id": live["id"], "status": live["status"], "won": board["won"], "current": board["current"]}
+        live_summary = {"id": live["id"], "status": status_of(live), "won": board["won"], "current": board["current"]}
     return {
         "live": live_summary,
         "is_today": match["date"] == _today().isoformat(),

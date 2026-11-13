@@ -152,6 +152,13 @@ def test_entrar_al_partido_de_hoy_con_los_que_van(admin):
     assert admin.post(f"/api/live/match/{match_id}").json()["id"] == game["id"]
     assert ana.post(f"/api/live/match/{match_id}").json()["id"] == game["id"]
     ana_id = game["lineup"][0]["player_id"]
+    # Entrar no lo empieza: hasta darle a «Empezar partido» no se apunta nada.
+    assert game["status"] == "pending" and game["can_start"] is True and game["can_score"] is False
+    assert event(admin, game["id"], type="point", side="us").status_code == 409
+    assert admin.get("/api/live?team_id=masculino").json()["live"] == []
+    assert ana.post(f"/api/live/{game['id']}/start").status_code == 403
+    started = admin.post(f"/api/live/{game['id']}/start").json()
+    assert started["status"] == "live" and started["can_score"] is True
     assert event(admin, game["id"], type="stat", player_id=ana_id, result="good", skill="ataque", point="us").status_code == 200
     # Si luego dice que no va, sigue en la plantilla porque ya tiene acciones.
     luis.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
@@ -172,6 +179,7 @@ def test_el_entrenador_elige_mvp_y_gana_coins(admin):
     ana = member(admin)
     ana.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
     game = admin.post(f"/api/live/match/{match_id}").json()
+    admin.post(f"/api/live/{game['id']}/start")
     ana_id = game["lineup"][0]["player_id"]
     points(admin, game["id"], "us", 25)
     before = ana.get("/api/coins").json()["balance"]
@@ -183,3 +191,83 @@ def test_el_entrenador_elige_mvp_y_gana_coins(admin):
     assert coins["honors"][0]["title"] == "MVP contra CV Roquetas" and coins["crown"] is None
     played = admin.get("/api/matches/played?team_id=masculino").json()
     assert played[0]["mvp"] == "Ana" and played[0]["sets"] == [{"us": 25, "them": 0}]
+
+
+def test_uno_abierto_antes_sin_nada_apuntado_vuelve_a_estar_sin_empezar(admin, db):  # noqa: F811
+    import asyncio
+
+    match_id = create_match(admin).json()["id"]
+    game = admin.post(f"/api/live/match/{match_id}").json()
+    # Así se guardaban antes al entrar: "en directo" sin haber empezado.
+    asyncio.run(db.live_matches.update_one({"id": game["id"]}, {"$set": {"status": "live"}}))
+    assert admin.get(f"/api/live/{game['id']}").json()["status"] == "pending"
+    assert admin.get("/api/matches?team_id=masculino").json()[0]["live"]["status"] == "pending"
+
+
+def test_si_ganan_cada_uno_gana_coins(admin):
+    match_id = create_match(admin).json()["id"]
+    ana = member(admin)
+    ana.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
+    game = admin.post(f"/api/live/match/{match_id}").json()
+    admin.post(f"/api/live/{game['id']}/start")
+    before = ana.get("/api/coins").json()["balance"]
+    points(admin, game["id"], "us", 25)
+    points(admin, game["id"], "us", 25)
+    points(admin, game["id"], "us", 25)
+    assert admin.post(f"/api/live/{game['id']}/finish").status_code == 200
+    coins = ana.get("/api/coins").json()
+    assert coins["balance"] == before + live.WIN_COINS
+    assert coins["entries"][0]["label"] == "Victoria contra CV Roquetas"
+    # Terminarlo otra vez no da más.
+    admin.post(f"/api/live/{game['id']}/finish")
+    assert ana.get("/api/coins").json()["balance"] == before + live.WIN_COINS
+
+
+def test_si_pierden_no_hay_coins_de_victoria(admin):
+    match_id = create_match(admin).json()["id"]
+    ana = member(admin)
+    ana.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
+    game = admin.post(f"/api/live/match/{match_id}").json()
+    admin.post(f"/api/live/{game['id']}/start")
+    before = ana.get("/api/coins").json()["balance"]
+    for _ in range(3):
+        points(admin, game["id"], "them", 25)
+    admin.post(f"/api/live/{game['id']}/finish")
+    assert ana.get("/api/coins").json()["balance"] == before
+
+
+def test_cambiar_de_sitio_arrastrando(admin):
+    ana = add_player(admin, "Ana", 7)
+    luis = add_player(admin, "Luis", 8)
+    eva = add_player(admin, "Eva", 9)
+    game = start(admin, [ana, luis, eva])
+    changed = admin.put(f"/api/live/{game['id']}/order", json={"order": [eva, ana, luis]})
+    assert changed.status_code == 200, changed.text
+    assert [item["name"] for item in changed.json()["lineup"]] == ["Eva", "Ana", "Luis"]
+    assert [item["name"] for item in admin.get(f"/api/live/{game['id']}").json()["lineup"]] == ["Eva", "Ana", "Luis"]
+    jugador = client_for("token-ana")
+    assert jugador.put(f"/api/live/{game['id']}/order", json={"order": [ana]}).status_code in (403, 401)
+
+
+def test_informe_al_terminar(admin):
+    ana = add_player(admin, "Ana", 7)
+    luis = add_player(admin, "Luis", 8)
+    game = start(admin, [ana, luis], best_of=3)
+    live_id = game["id"]
+    assert game["report"] is None
+    event(admin, live_id, type="stat", player_id=ana, result="good", skill="ataque", point="us")
+    event(admin, live_id, type="stat", player_id=ana, result="good", skill="ataque", point="us")
+    event(admin, live_id, type="stat", player_id=luis, result="bad", skill="recepcion", point="them")
+    event(admin, live_id, type="stat", player_id=luis, result="good", skill="defensa")
+    points(admin, live_id, "us", 23)
+    points(admin, live_id, "us", 25)
+    report = admin.post(f"/api/live/{live_id}/finish").json()["report"]
+    assert [(item["us"], item["them"]) for item in report["sets"]] == [(25, 1), (25, 0)]
+    assert report["origin"]["us_by_us"] == 2 and report["origin"]["them_by_us"] == 1
+    assert report["players"][0]["name"] == "Ana" and report["players"][0]["points"] == 2
+    assert report["players"][1]["name"] == "Luis" and report["players"][1]["percent"] == 50
+    attack = next(item for item in report["skills"] if item["skill"] == "ataque")
+    assert attack["best"]["name"] == "Ana" and attack["percent"] == 100 and attack["worst"] is None
+    reception = next(item for item in report["skills"] if item["skill"] == "recepcion")
+    assert reception["worst"]["name"] == "Luis"
+    assert report["runs"]["us"] == 25

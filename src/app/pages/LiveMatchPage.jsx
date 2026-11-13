@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Check, Coins, Flag, MoreVertical, Star, Timer, Trash2, Trophy, Undo2, X } from "lucide-react";
+import { ArrowLeft, Check, Coins, Flag, Hand, Info, MoreVertical, MousePointerClick, Play, Star, Timer, Trash2, Trophy, Undo2, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { addLiveEvent, deleteLive, finishLive, getLive, undoLiveEvent } from "@/app/api.js";
+import { addLiveEvent, deleteLive, finishLive, getLive, setLiveOrder, startLive, undoLiveEvent } from "@/app/api.js";
 import ConfirmDialog from "@/app/components/board/ConfirmDialog.jsx";
 import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
-import { COURT_SPOTS, initialsOf } from "@/app/components/GoingCourt.jsx";
+import { initialsOf } from "@/app/components/GoingCourt.jsx";
+import MatchReport from "@/app/components/MatchReport.jsx";
 import usePolling from "@/app/usePolling.js";
 
 const POLL_MS = 2000;
@@ -100,8 +101,19 @@ function ScoreSide({ side, name, score, sets, serving, timeouts, canScore, onPoi
   );
 }
 
-const COURT_PLACES = 12;
-const COURT_RATIO = 190 / 100;
+// Media pista: los 6 titulares; el resto, en el banquillo.
+const COURT_PLACES = 6;
+// Sus sitios, con la red arriba: delante 4 3 2 y detrás 5 6 1 (en orden de la lista).
+const HALF_SPOTS = [
+  { x: 0.18, y: 0.27 },
+  { x: 0.5, y: 0.27 },
+  { x: 0.82, y: 0.27 },
+  { x: 0.18, y: 0.73 },
+  { x: 0.5, y: 0.73 },
+  { x: 0.82, y: 0.73 },
+];
+// Media pista real: 9 m de ancho y 9 de fondo (aquí con la zona libre, algo menos de alto que de ancho).
+const HALF_RATIO = 95 / 100;
 
 // Mide el hueco libre y elige la pista que más lo llena: en el móvil, de pie; en pantallas anchas, tumbada.
 function useCourtFit() {
@@ -117,14 +129,22 @@ function useCourtFit() {
     observer.observe(node);
     return () => observer.disconnect();
   }, [node]);
-  const vertical = box.height > box.width * 1.05;
-  const width = vertical ? Math.min(box.width, box.height / COURT_RATIO) : Math.min(box.width, box.height * COURT_RATIO);
-  const height = vertical ? width * COURT_RATIO : width / COURT_RATIO;
-  return { ref, vertical, width: Math.floor(width), height: Math.floor(height) };
+  // Media pista con la red arriba. En el móvil llena el hueco aunque no tenga las medidas exactas.
+  const phone = box.width < 640;
+  const width = phone ? box.width : Math.min(box.width, box.height / HALF_RATIO);
+  const height = phone ? Math.min(box.height, width * 1.15) : width * HALF_RATIO;
+  return { ref, vertical: true, phone, width: Math.floor(width), height: Math.floor(height) };
 }
 
+// El nombre siempre entero (nunca con "…"): si es largo, la letra se hace más pequeña para que quepa.
+const LABEL_FITS = 10;
+const labelScale = (name, short) => {
+  const length = name.length + (short ? short.length + 1 : 0);
+  return length <= LABEL_FITS ? 1 : Math.max(0.6, LABEL_FITS / length);
+};
+
 // Un jugador en la pista: su foto o iniciales, el dorsal, el nombre y sus aciertos y fallos.
-function CourtPlayer({ player, stats, mvp, spot, canScore, onOpen, compact = false }) {
+function CourtPlayer({ player, stats, mvp, spot, canScore, onOpen, compact = false, dragProps = null, dragging = false }) {
   const good = stats?.good ?? 0;
   const bad = stats?.bad ?? 0;
   const short = POSITION_SHORT[player.position];
@@ -132,20 +152,20 @@ function CourtPlayer({ player, stats, mvp, spot, canScore, onOpen, compact = fal
     <>
       <span className={`relative block ${compact ? "w-[44%]" : "w-[58%]"}`}>
         <span
-          style={{ fontSize: "6.6cqmin" }}
+          style={{ fontSize: compact ? "min(6.6cqmin, 3.6cqw)" : "6.6cqmin" }}
           className={`flex aspect-square items-center justify-center overflow-hidden rounded-full border-2 bg-zinc-950 font-black text-white shadow-[0_2px_8px_rgba(0,0,0,0.55)] ${mvp ? "border-amber-300" : "border-white"}`}
         >
           {player.picture ? <img src={player.picture} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" /> : initialsOf(player.name)}
         </span>
         {player.number !== null && player.number !== undefined && (
-          <span style={{ fontSize: "5.6cqmin", minWidth: "8cqmin", padding: "0.6cqmin 1.1cqmin" }} className="absolute -bottom-[6%] -right-[24%] rounded-full bg-tnt text-center font-black leading-none text-onbrand">
+          <span style={compact ? { fontSize: "min(5.6cqmin, 3cqw)", minWidth: "min(8cqmin, 4.4cqw)", padding: "0.6cqmin 1.1cqmin" } : { fontSize: "5.6cqmin", minWidth: "8cqmin", padding: "0.6cqmin 1.1cqmin" }} className="absolute -bottom-[10%] -right-[30%] rounded-full bg-tnt text-center font-black leading-none text-onbrand">
             {player.number}
           </span>
         )}
         {mvp && <Star aria-label="El mejor ahora" style={{ width: "7.6cqmin", height: "7.6cqmin" }} className="absolute -left-[18%] -top-[10%] fill-amber-300 text-amber-300 drop-shadow" />}
       </span>
-      <span className="mt-[1cqmin] flex max-w-full gap-[1.4cqmin] rounded-md bg-black/85 px-[1.5cqmin] font-bold leading-[1.35] text-white shadow">
-        <span className="min-w-0 truncate">{firstName(player.name)}</span>
+      <span style={{ fontSize: `${labelScale(firstName(player.name), short).toFixed(2)}em` }} className="mt-[1cqmin] flex gap-[1.4cqmin] whitespace-nowrap rounded-md bg-black/85 px-[1.5cqmin] font-bold leading-[1.35] text-white shadow">
+        <span>{firstName(player.name)}</span>
         {short && <span className="shrink-0 text-ember">{short}</span>}
       </span>
       {(good > 0 || bad > 0) && (
@@ -156,24 +176,32 @@ function CourtPlayer({ player, stats, mvp, spot, canScore, onOpen, compact = fal
       )}
     </>
   );
-  const place = { left: `${spot.x * 100}%`, top: `${spot.y * 100}%`, width: "31cqmin", fontSize: "5.2cqmin" };
-  const look = "absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center";
-  if (!canScore) return <span title={player.name} style={place} className={look}>{body}</span>;
+  // De pie (móvil) cada ficha tiene más ancho, para que el nombre y la posición se lean enteros.
+  const place = {
+    left: `${spot.x * 100}%`,
+    top: `${spot.y * 100}%`,
+    // Nunca más ancho que su columna (4 de lado, 3 de pie), para no pisar al de al lado.
+    width: compact ? "min(31cqmin, 24cqw)" : "min(36cqmin, 32cqw)",
+    fontSize: compact ? "min(5.2cqmin, 3.2cqw)" : "min(4.9cqmin, 4.4cqw)",
+  };
+  const look = `absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center ${dragging ? "opacity-30" : ""}`;
+  const style = dragProps ? { ...place, touchAction: "none" } : place;
+  if (!canScore) return <span title={player.name} style={style} className={look} {...dragProps}>{body}</span>;
   return (
-    <button type="button" onClick={onOpen} aria-label={`${player.name}: apuntar acierto o fallo`} style={place} className={`${look} rounded-xl`}>
+    <button type="button" onClick={onOpen} aria-label={`${player.name}: apuntar acierto o fallo`} style={style} className={`${look} rounded-xl`} {...dragProps}>
       {body}
     </button>
   );
 }
 
 // En el banquillo (si van más de 12): una ficha pequeña por jugador, igual de tocable.
-function BenchPlayer({ player, stats, mvp, canScore, onOpen }) {
+function BenchPlayer({ player, stats, mvp, canScore, onOpen, dragProps = null, dragging = false }) {
   const good = stats?.good ?? 0;
   const bad = stats?.bad ?? 0;
   const inner = (
     <>
       <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tnt to-ember text-xs font-black text-onbrand">{player.number ?? initialsOf(player.name)}</span>
-      <span className="min-w-0 truncate text-xs font-bold">{firstName(player.name)}</span>
+      <span className="whitespace-nowrap text-xs font-bold">{firstName(player.name)}</span>
       {(good > 0 || bad > 0) && (
         <span className="text-[10px] font-black tabular-nums">
           {good > 0 && <span className="text-emerald-300">✓{good}</span>} {bad > 0 && <span className="text-red-300">✗{bad}</span>}
@@ -181,10 +209,12 @@ function BenchPlayer({ player, stats, mvp, canScore, onOpen }) {
       )}
     </>
   );
-  const look = `flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-panel py-1 pl-1 pr-3 ring-1 ${mvp ? "ring-amber-300/60" : "ring-white/10"}`;
-  if (!canScore) return <span className={look}>{inner}</span>;
+  const look = `flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-panel py-0.5 pl-0.5 pr-2.5 ring-1 ${mvp ? "ring-amber-300/60" : "ring-white/10"} ${dragging ? "opacity-30" : ""}`;
+  // Del banquillo se arrastra a la pista.
+  const style = dragProps ? { touchAction: "none" } : undefined;
+  if (!canScore) return <span style={style} className={look} {...dragProps}>{inner}</span>;
   return (
-    <button type="button" onClick={onOpen} aria-label={`${player.name}: apuntar acierto o fallo`} className={look}>
+    <button type="button" onClick={onOpen} aria-label={`${player.name}: apuntar acierto o fallo`} style={style} className={look} {...dragProps}>
       {inner}
     </button>
   );
@@ -261,6 +291,67 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
 }
 
 // Al terminar: el entrenador elige el MVP. Viene marcado el que mejor ha ido según lo apuntado.
+// Cómo se usa la pantalla: para quien lleva el marcador, todo; para el resto, lo que ven.
+function HelpDialog({ scorer, onClose }) {
+  const dialogRef = useRef(null);
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    dialog.showModal();
+    return () => dialog.close();
+  }, []);
+  const tips = scorer
+    ? [
+        [Play, "Empezar", "Al entrar, el partido está sin empezar. Dale a «Empezar partido» cuando empiece: entonces se avisa al equipo."],
+        [Hand, "Titulares y banquillo", "Arrastra a un jugador del banquillo encima de uno de la pista para sacarlo. Arrastra uno encima de otro para cambiarlos de sitio."],
+        [MousePointerClick, "Aciertos y fallos", "Toca a un jugador y elige en qué ha acertado o fallado (saque, recepción, ataque…). Si da o quita el punto, se suma solo."],
+        [Check, "Puntos", "Toca «+1 punto» en el marcador de quien gana el punto. Si es nuestro y no lo apuntas a un jugador, cuenta como fallo del rival; si es suyo, como acierto del rival. Abajo: aciertos y fallos del equipo, y los tiempos muertos."],
+        [Undo2, "Deshacer", "Si te equivocas, «Deshacer» quita lo último que has apuntado."],
+        [Flag, "Terminar", "En ⋮ → «Terminar partido»: eliges el MVP y se guarda el resultado. Si ganáis, cada jugador gana 50 Club Coins."],
+      ]
+    : [
+        [Play, "En directo", "Aquí ves el marcador punto a punto mientras se juega."],
+        [Hand, "La pista", "Los 6 de la pista son los titulares; los demás están en el banquillo."],
+        [Check, "Aciertos y fallos", "Debajo de cada jugador salen sus ✓ aciertos y ✗ fallos del partido."],
+        [Trophy, "Al terminar", "El entrenador elige el MVP. Si ganáis, cada uno gana 50 Club Coins."],
+      ];
+  return (
+    <dialog
+      ref={dialogRef}
+      aria-labelledby="live-help-title"
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      className="m-auto flex max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-sm flex-col rounded-2xl border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
+    >
+      <div className="flex items-center gap-2 bg-gradient-to-r from-red-600 via-tnt to-ember p-4 text-snow">
+        <Info aria-hidden="true" className="h-6 w-6 shrink-0" />
+        <h2 id="live-help-title" className="font-display text-xl font-black uppercase italic leading-tight">
+          Cómo funciona
+        </h2>
+      </div>
+      <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+        {tips.map(([Icon, title, text]) => (
+          <li key={title} className="flex gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-tnt/15 text-tnt ring-1 ring-tnt/30">
+              <Icon aria-hidden="true" className="h-4 w-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-black uppercase tracking-wide">{title}</span>
+              <span className="block text-sm text-zinc-300">{text}</span>
+            </span>
+          </li>
+        ))}
+      </ul>
+      <div className="p-3 pt-0">
+        <button type="button" onClick={onClose} className="min-h-12 w-full rounded-xl bg-tnt font-display text-base font-black uppercase italic text-onbrand">
+          Entendido
+        </button>
+      </div>
+    </dialog>
+  );
+}
+
 function MvpDialog({ game, suggested, onFinish, onCancel }) {
   const dialogRef = useRef(null);
   const [chosen, setChosen] = useState(suggested);
@@ -346,7 +437,14 @@ export default function LiveMatchPage({ onAccessLost }) {
   const [confirming, setConfirming] = useState(null);
   const [banner, setBanner] = useState(null);
   const [choosingMvp, setChoosingMvp] = useState(false);
+  const [helping, setHelping] = useState(false);
+  // Al terminar, se abre el informe; se puede cerrar para ver la pista y volver a abrirlo.
+  const [hideReport, setHideReport] = useState(false);
   const pending = useRef(0);
+  // Arrastrar un jugador encima de otro (o del banquillo a la pista) los cambia de sitio.
+  const [drag, setDrag] = useState(null);
+  const dragRef = useRef(null);
+  const justDragged = useRef(false);
   const court = useCourtFit();
   const lastSets = useRef(null);
 
@@ -400,6 +498,49 @@ export default function LiveMatchPage({ onAccessLost }) {
   };
 
   const point = (side) => send(() => addLiveEvent(liveId, { type: "point", side }));
+
+  const swapPlayers = (fromId, toId) => {
+    const order = game.lineup.map((item) => item.player_id);
+    const from = order.indexOf(fromId);
+    const to = order.indexOf(toId);
+    if (from < 0 || to < 0 || from === to) return;
+    [order[from], order[to]] = [order[to], order[from]];
+    const byId = new Map(game.lineup.map((item) => [item.player_id, item]));
+    setGame((current) => ({ ...current, lineup: order.map((id) => byId.get(id)) }));
+    send(() => setLiveOrder(liveId, order));
+  };
+
+  useEffect(() => {
+    const move = (event) => {
+      const current = dragRef.current;
+      if (!current || event.pointerId !== current.pointerId) return;
+      if (!current.moved && Math.hypot(event.clientX - current.x, event.clientY - current.y) < 10) return;
+      current.moved = true;
+      setDrag({ ...current.player, x: event.clientX, y: event.clientY });
+    };
+    const end = (event) => {
+      const current = dragRef.current;
+      if (!current || event.pointerId !== current.pointerId) return;
+      dragRef.current = null;
+      setDrag(null);
+      if (!current.moved) return;
+      // El toque que acaba un arrastre no abre la ficha del jugador.
+      justDragged.current = true;
+      setTimeout(() => {
+        justDragged.current = false;
+      }, 0);
+      const target = document.elementFromPoint(event.clientX, event.clientY)?.closest("[data-player]")?.dataset.player;
+      if (target && target !== current.player.player_id) swapPlayers(current.player.player_id, target);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", end);
+    window.addEventListener("pointercancel", end);
+    return () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", end);
+      window.removeEventListener("pointercancel", end);
+    };
+  });
   const stat = (body) => send(() => addLiveEvent(liveId, { type: "stat", ...body }));
 
   if (!game) {
@@ -411,6 +552,21 @@ export default function LiveMatchPage({ onAccessLost }) {
   }
 
   const live = game.status === "live";
+  const notStarted = game.status === "pending";
+  const canArrange = game.can_score || game.can_start;
+  const dragPropsFor = (player) =>
+    canArrange
+      ? {
+          "data-player": player.player_id,
+          onPointerDown: (event) => {
+            if (event.button > 0) return;
+            dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, moved: false, player };
+          },
+        }
+      : null;
+  const openSheet = (player) => {
+    if (!justDragged.current) setSheetFor(player);
+  };
   const canScore = game.can_score;
   const scoring = canScore && !game.finished;
   const mvp = bestPlayer(game);
@@ -429,7 +585,9 @@ export default function LiveMatchPage({ onAccessLost }) {
             {game.team_name.replace(/^Club /, "Club ")} <span className="text-zinc-500">vs</span> {game.opponent}
           </p>
           <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider">
-            {live ? (
+            {notStarted ? (
+              <span className="text-amber-300">Sin empezar</span>
+            ) : live ? (
               <>
                 <span aria-hidden="true" className="pulse-dot h-2 w-2 rounded-full bg-red-500 text-snow" />
                 <span className="text-red-300">En directo</span>
@@ -437,10 +595,13 @@ export default function LiveMatchPage({ onAccessLost }) {
             ) : (
               <span className="text-zinc-400">Terminado</span>
             )}
-            <span className="text-zinc-500">· {game.finished || !live ? "Final" : `Set ${game.set_number}`} · a {game.best_of === 5 ? 3 : 2} sets</span>
+            <span className="text-zinc-500">· {notStarted ? "Set 1" : game.finished || !live ? "Final" : `Set ${game.set_number}`} · a {game.best_of === 5 ? 3 : 2} sets</span>
           </p>
         </div>
-        {canScore && (
+        <button type="button" onClick={() => setHelping(true)} aria-label="Cómo funciona" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-200 hover:bg-white/10">
+          <Info aria-hidden="true" className="h-5 w-5" />
+        </button>
+        {(canScore || game.can_start) && (
           <div className="relative">
             <button type="button" onClick={() => setMenu((open) => !open)} aria-label="Más opciones" aria-expanded={menu} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
               <MoreVertical aria-hidden="true" className="h-5 w-5" />
@@ -448,6 +609,7 @@ export default function LiveMatchPage({ onAccessLost }) {
             {menu && <button type="button" tabIndex={-1} aria-label="Cerrar el menú" data-no-press onClick={() => setMenu(false)} className="fixed inset-0 z-[9] cursor-default" />}
             {menu && (
               <div className="absolute right-0 top-12 z-10 w-56 overflow-hidden rounded-xl bg-surface shadow-2xl ring-1 ring-white/10">
+                {canScore && (
                 <button
                   type="button"
                   onClick={() => {
@@ -459,6 +621,7 @@ export default function LiveMatchPage({ onAccessLost }) {
                   <Flag aria-hidden="true" className="h-4 w-4" />
                   Terminar partido
                 </button>
+                )}
                 <button
                   type="button"
                   onClick={() => {
@@ -483,14 +646,59 @@ export default function LiveMatchPage({ onAccessLost }) {
         )}
       </header>
 
+      {drag && (
+        <span
+          aria-hidden="true"
+          style={{ left: drag.x, top: drag.y }}
+          className="pointer-events-none fixed z-[60] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
+        >
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-gradient-to-br from-tnt to-ember text-lg font-black text-onbrand shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+            {drag.number ?? initialsOf(drag.name)}
+          </span>
+          <span className="mt-1 whitespace-nowrap rounded-md bg-black/85 px-1.5 text-xs font-bold text-white">{firstName(drag.name)}</span>
+        </span>
+      )}
+      {game.report && !hideReport && <MatchReport game={game} onClose={() => setHideReport(true)} />}
+      {game.report && hideReport && (
+        <button
+          type="button"
+          onClick={() => setHideReport(false)}
+          className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 font-display text-base font-black uppercase italic text-void"
+        >
+          <Trophy aria-hidden="true" className="h-5 w-5" />
+          Ver el informe del partido
+        </button>
+      )}
+      {/* Sin empezar: el entrenador lo arranca con un botón (entrar ya no lo empieza). */}
+      {notStarted && (
+        <div className="shrink-0 rounded-2xl bg-gradient-to-r from-amber-400/15 to-panel p-3 ring-1 ring-amber-300/30">
+          {game.can_start ? (
+            <>
+              <p className="text-sm text-zinc-200">El partido aún no ha empezado. Cuando empiece, dale al botón y se avisa al equipo.</p>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => send(() => startLive(liveId))}
+                className="mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 via-tnt to-ember font-display text-lg font-black uppercase italic text-snow shadow-[0_8px_24px_rgba(255,56,0,0.35)] disabled:opacity-70"
+              >
+                <Play aria-hidden="true" className="h-5 w-5 fill-white" />
+                {busy ? "Empezando…" : "Empezar partido"}
+              </button>
+            </>
+          ) : (
+            <p className="text-sm font-semibold text-amber-100">El partido aún no ha empezado. Cuando empiece, verás aquí el marcador punto a punto.</p>
+          )}
+        </div>
+      )}
+
       <div className="live-layout min-h-0 flex-1">
       {/* Marcador */}
       <div style={{ gridArea: "score" }} className="relative grid grid-cols-2 gap-2">
         <ScoreSide side="us" name="Club" score={game.current.us} sets={game.won.us} serving={!game.finished && game.serving === "us"} timeouts={game.timeouts.us} canScore={scoring} busy={busy} onPoint={() => point("us")} />
         <ScoreSide side="them" name={opponentShort} score={game.current.them} sets={game.won.them} serving={!game.finished && game.serving === "them"} timeouts={game.timeouts.them} canScore={scoring} busy={busy} onPoint={() => point("them")} />
         <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-2xl bg-void px-2.5 py-1.5 font-display font-black italic leading-none shadow-[0_6px_20px_rgba(0,0,0,0.6)] ring-2 ring-white/10">
-          <span className="text-[9px] uppercase tracking-widest text-zinc-400">{game.finished || !live ? "Final" : "Set"}</span>
-          <span className="text-xl text-white">{game.finished || !live ? `${game.won.us}-${game.won.them}` : game.set_number}</span>
+          <span className="text-[9px] uppercase tracking-widest text-zinc-400">{notStarted ? "Set" : game.finished || !live ? "Final" : "Set"}</span>
+          <span className="text-xl text-white">{notStarted ? 1 : game.finished || !live ? `${game.won.us}-${game.won.them}` : game.set_number}</span>
         </span>
       </div>
 
@@ -520,19 +728,23 @@ export default function LiveMatchPage({ onAccessLost }) {
                 className="live-court relative overflow-hidden rounded-2xl ring-1 ring-white/15 [container-type:size]"
                 style={{ width: court.width, height: court.height }}
               >
-                <CourtDrawing beach={game.team_id === "playa"} horizontal={!court.vertical} showZones={false} />
+                {/* Solo nuestro campo: la pista entera, el doble de alta, y se ve la mitad de abajo (la red arriba). */}
+                <div className="absolute inset-x-0 bottom-0" style={{ height: "200%" }}>
+                  <CourtDrawing beach={game.team_id === "playa"} showZones={false} stretch />
+                </div>
                 {game.lineup.slice(0, COURT_PLACES).map((player, index) => {
-                  const spot = COURT_SPOTS[index];
+                  const spot = HALF_SPOTS[index];
                   return (
                     <CourtPlayer
                       key={player.player_id}
                       player={player}
-                      spot={court.vertical ? { x: 1 - spot.y, y: spot.x } : spot}
+                      spot={spot}
                       stats={game.stats[player.player_id]}
                       mvp={mvp === player.player_id}
                       canScore={canScore && live}
-                      onOpen={() => setSheetFor(player)}
-                      compact={!court.vertical}
+                      onOpen={() => openSheet(player)}
+                      dragProps={dragPropsFor(player)}
+                      dragging={drag?.player_id === player.player_id}
                     />
                   );
                 })}
@@ -542,8 +754,12 @@ export default function LiveMatchPage({ onAccessLost }) {
         </div>
         {game.lineup.length > COURT_PLACES && (
           <div className="shrink-0">
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-widest text-zinc-500">Banquillo</p>
-            <div className="flex gap-1.5 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <p className="mb-1 flex items-baseline justify-between text-[10px] font-bold uppercase tracking-widest text-zinc-500">
+              <span>Banquillo · {game.lineup.length - COURT_PLACES}</span>
+              {canArrange && <span className="normal-case tracking-normal text-zinc-400">Arrastra para cambiar</span>}
+            </p>
+            {/* Todos a la vista (en varias filas si hace falta), para poder sacarlos a la pista arrastrando. */}
+            <div className="flex max-h-40 flex-wrap gap-1 overflow-y-auto pb-1">
               {game.lineup.slice(COURT_PLACES).map((player) => (
                 <BenchPlayer
                   key={player.player_id}
@@ -551,7 +767,9 @@ export default function LiveMatchPage({ onAccessLost }) {
                   stats={game.stats[player.player_id]}
                   mvp={mvp === player.player_id}
                   canScore={canScore && live}
-                  onOpen={() => setSheetFor(player)}
+                  onOpen={() => openSheet(player)}
+                  dragProps={dragPropsFor(player)}
+                  dragging={drag?.player_id === player.player_id}
                 />
               ))}
             </div>
@@ -661,6 +879,7 @@ export default function LiveMatchPage({ onAccessLost }) {
           }}
         />
       )}
+      {helping && <HelpDialog scorer={Boolean(game.can_score || game.can_start)} onClose={() => setHelping(false)} />}
       {choosingMvp && (
         <MvpDialog
           game={game}

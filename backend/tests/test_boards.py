@@ -353,3 +353,56 @@ def test_las_jugadas_del_equipo_siguen_siendo_del_entrenador(admin):
     assert board["private"] is False
     ana = member(admin)
     assert ana.get(f"/api/boards/{board['id']}").status_code == 404
+
+
+def test_entrenador_en_la_pizarra_con_free_y_fuerte(admin):
+    coach = {"id": "e", "type": "token", "x": 0.5, "y": 0.2, "side": "coach", "label": "DA", "name": "David", "player_id": "coach-x"}
+    recording = {
+        "duration_ms": 2000,
+        "tracks": [{"id": "e", "points": [[0, 0.5, 0.2]]}],
+        "actions": [{"id": "e", "t": 0, "action": "free"}, {"id": "e", "t": 1000, "action": "fuerte"}],
+    }
+    board = create(admin, steps=[{"elements": [coach, TOKEN]}], recording=recording)
+    saved = admin.get(f"/api/boards/{board['id']}").json()
+    assert saved["steps"][0]["elements"][0]["side"] == "coach"
+    assert [item["action"] for item in saved["recording"]["actions"]] == ["free", "fuerte"]
+
+
+def test_conos_y_cajones_en_la_pizarra(admin):
+    cone = {"id": "c", "type": "prop", "kind": "cone", "x": 0.3, "y": 0.7}
+    box = {"id": "b", "type": "prop", "kind": "box", "x": 0.5, "y": 0.2}
+    board = create(admin, steps=[{"elements": [cone, box, TOKEN]}])
+    saved = admin.get(f"/api/boards/{board['id']}").json()
+    assert [item.get("kind") for item in saved["steps"][0]["elements"][:2]] == ["cone", "box"]
+    wrong = {**cone, "kind": "silla"}
+    assert admin.post("/api/boards", json=body(steps=[{"elements": [wrong]}])).status_code == 422
+
+
+def test_ejercicio_en_fila_guarda_vuelve_a_la_fila(admin):
+    recording = {
+        "duration_ms": 2000,
+        "tracks": [{"id": "e", "points": [[0, 0.5, 0.2]]}],
+        "plan": [{"playerId": "e", "action": "colocacion", "target": {"x": 0.2, "y": 0.6}, "back": True, "fresh": True}],
+    }
+    coach = {"id": "e", "type": "token", "x": 0.5, "y": 0.2, "side": "home", "label": "1", "name": "Ana", "line": "fila1"}
+    board = create(admin, steps=[{"elements": [coach]}], recording=recording)
+    saved = admin.get(f"/api/boards/{board['id']}").json()
+    assert saved["recording"]["plan"][0]["back"] is True and saved["recording"]["plan"][0]["fresh"] is True
+    assert saved["steps"][0]["elements"][0]["line"] == "fila1"
+
+
+def test_lista_de_entrenadores_para_la_pizarra(admin):
+    coach = member(admin, token="token-luis", role="entrenador")
+    coach.put("/api/profile/character", json={})  # Sin personaje guardado también sale.
+    listed = admin.get("/api/coaches").json()
+    assert [item["name"] for item in listed] == ["Luis"]
+    assert listed[0]["id"].startswith("coach-") and listed[0]["team_id"] == "entrenadores" and listed[0]["coach"] is True
+
+
+def test_fila_al_rematar(admin):
+    token = {"id": "d", "type": "token", "x": 0.2, "y": 0.6, "side": "home", "label": "1", "name": "Dani", "line": "fila1", "line_rule": "remate"}
+    board = create(admin, steps=[{"elements": [token]}])
+    saved = admin.get(f"/api/boards/{board['id']}").json()
+    assert saved["steps"][0]["elements"][0]["line_rule"] == "remate"
+    wrong = {**token, "line_rule": "saque"}
+    assert admin.post("/api/boards", json=body(steps=[{"elements": [wrong]}])).status_code == 422
