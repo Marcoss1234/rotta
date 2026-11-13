@@ -4,7 +4,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { BOX_HEIGHT_M, BOX_SIZE, COURT_HEIGHT as H, COURT_WIDTH as W, boxUnder, roundCoord, tokenPosition } from "@/app/boards.js";
 import { actionDuration, actionLabel, contactTime, poseOf, takeoffTime } from "@/app/boardRecording.js";
-import { playBounce, playHit, playStep, setSoundEnabled, soundEnabled, unlockSound } from "@/app/components/board/boardSounds.js";
+import { playBounce, playFx, playHit, playStep, setSoundEnabled, soundEnabled, unlockSound } from "@/app/components/board/boardSounds.js";
 import { UP, canvasTexture, createPlayer, labelSprite, posePlayer, studioLighting, turnTowards } from "@/app/character/character3D.js";
 
 // Visor 3D de verdad: la misma jugada que en 2D, pero en una pista por la que te puedes mover.
@@ -389,6 +389,10 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
       hielo: { colors: [0x7dd3fc, 0xe0f2fe, 0xffffff], trail: 0x7dd3fc },
       estrellas: { colors: [0xfff3b0, 0xffffff, 0xfacc15], trail: 0xfff3b0, stars: true },
     };
+    // Cada efecto sabe cómo se llama (para su sonido y su animación propia).
+    Object.entries(FX_THEMES).forEach(([name, theme]) => {
+      theme.name = name;
+    });
     const FX_FIELD = { remate: "fx_remate", recepcion: "fx_recepcion", colocacion: "fx_colocacion" };
     const fxOf = (rig, action) => FX_THEMES[rig.look?.[FX_FIELD[action]]] ?? null;
     const pickColor = (theme) => new THREE.Color(theme.colors[Math.floor(Math.random() * theme.colors.length)]);
@@ -471,7 +475,247 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
       });
     };
 
+    // ---------- La firma de cada efecto: lo que lo hace distinto de los demás ----------
+    // Destello de luz de su color: ilumina la pista y a los jugadores un instante.
+    // Una sola luz que se mueve (añadir y quitar luces haría que todo se recalculara y diera tirones).
+    const fxLight = new THREE.PointLight(0xffffff, 0, 9, 2);
+    scene.add(fxLight);
+    const flashLight = (point, color, power) => {
+      fxLight.color.set(color);
+      fxLight.position.copy(point);
+      const peak = 20 + power * 34;
+      addEffect(new THREE.Object3D(), 0.45, (t) => {
+        fxLight.intensity = peak * (1 - t) ** 2;
+      });
+    };
+    const randomDirection = () => new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
+
+    // Fuego: lenguas de fuego que suben (amarillo, naranja, rojo) y acaban en humo.
+    const fireSignature = (point, power) => {
+      const flames = Math.round(10 + power * 16);
+      for (let index = 0; index < flames; index += 1) {
+        const flame = glowSprite(new THREE.Color(0xfff1a8));
+        flame.position.copy(point).add(new THREE.Vector3((Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.4));
+        const velocity = new THREE.Vector3((Math.random() - 0.5) * 0.9, 1.3 + Math.random() * 2.2 * power, (Math.random() - 0.5) * 0.9);
+        const size = 0.18 + Math.random() * 0.24 * power;
+        const sway = Math.random() * Math.PI * 2;
+        addEffect(flame, 0.55 + Math.random() * 0.4, (t, dt) => {
+          flame.position.addScaledVector(velocity, dt);
+          flame.position.x += Math.sin(t * 14 + sway) * 0.004;
+          flame.material.color.setRGB(1, Math.max(0.12, 0.95 - t * 1.15), Math.max(0, 0.6 - t * 1.7));
+          flame.scale.set(size * (1 - t * 0.4), size * (1.5 + t * 0.9), 1);
+          flame.material.opacity = (1 - t) ** 1.2;
+        });
+      }
+      for (let index = 0; index < Math.round(3 + power * 4); index += 1) {
+        const smoke = glowSprite(new THREE.Color(0x3f3f46));
+        smoke.material.blending = THREE.NormalBlending;
+        smoke.position.copy(point).add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.25, (Math.random() - 0.5) * 0.5));
+        const size = 0.3 + Math.random() * 0.3;
+        const rise = 0.5 + Math.random() * 0.6;
+        addEffect(smoke, 1.2, (t, dt) => {
+          smoke.position.y += rise * dt;
+          smoke.scale.setScalar(size * (0.6 + t * 1.5));
+          smoke.material.opacity = Math.sin(Math.PI * t) * 0.35;
+        });
+      }
+    };
+
+    // Rayo: descargas con ramas que parpadean y cambian de forma, y arcos eléctricos alrededor del balón.
+    const zigzag = (from, direction, length, steps, jitter) => {
+      const points = [from.clone()];
+      for (let step = 1; step <= steps; step += 1) {
+        points.push(from.clone().addScaledVector(direction, (step / steps) * length).add(randomDirection().multiplyScalar(Math.random() * jitter)));
+      }
+      return points;
+    };
+    const electricLine = (color) => {
+      const line = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+      line.renderOrder = 15;
+      line.userData.ownsGeometry = true;
+      return line;
+    };
+    const lightningSignature = (point, power) => {
+      const bolts = Math.round(4 + power * 5);
+      for (let bolt = 0; bolt < bolts; bolt += 1) {
+        const direction = new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.35, Math.random() - 0.5).normalize();
+        const length = 0.9 + Math.random() * 1.3 * power;
+        const line = electricLine(bolt % 3 === 0 ? 0xfacc15 : 0xa5f3fc);
+        line.geometry.setFromPoints(zigzag(point, direction, length, 9, 0.28));
+        // Rama que sale de la mitad del rayo.
+        const branch = electricLine(0xe0f2fe);
+        const fork = point.clone().addScaledVector(direction, length * 0.45);
+        const branchDirection = direction.clone().add(randomDirection().multiplyScalar(0.9)).normalize();
+        branch.geometry.setFromPoints(zigzag(fork, branchDirection, length * 0.5, 5, 0.18));
+        addEffect(line, 0.34, (t) => {
+          if (Math.random() < 0.25) line.geometry.setFromPoints(zigzag(point, direction, length, 9, 0.28));
+          line.material.opacity = (Math.random() < 0.3 ? 0.2 : 1) * (1 - t);
+        });
+        addEffect(branch, 0.24, (t) => {
+          branch.material.opacity = (Math.random() < 0.35 ? 0.15 : 0.9) * (1 - t);
+        });
+      }
+      for (let arc = 0; arc < 5; arc += 1) {
+        const line = electricLine(arc % 2 ? 0x67e8f9 : 0xffffff);
+        addEffect(line, 0.5, (t) => {
+          const angle = Math.random() * Math.PI * 2;
+          const radius = 0.2 + Math.random() * 0.15;
+          const from = point.clone().add(new THREE.Vector3(Math.cos(angle) * radius, (Math.random() - 0.5) * 0.3, Math.sin(angle) * radius));
+          const to = point.clone().add(new THREE.Vector3(Math.cos(angle + 1.5) * radius, (Math.random() - 0.5) * 0.3, Math.sin(angle + 1.5) * radius));
+          line.geometry.setFromPoints(zigzag(from, to.clone().sub(from).normalize(), from.distanceTo(to), 5, 0.07));
+          line.material.opacity = (1 - t) * (Math.random() < 0.2 ? 0.2 : 1);
+        });
+      }
+    };
+
+    // Galaxia: un remolino de colores que gira y se abre, con una nebulosa detrás.
+    const galaxySignature = (point, theme, power) => {
+      [[0x7c3aed, 1], [0xec4899, 0.7], [0x38bdf8, 0.5]].forEach(([color, share], layer) => {
+        const nebula = glowSprite(new THREE.Color(color));
+        nebula.material.blending = THREE.NormalBlending;
+        nebula.position.copy(point).add(new THREE.Vector3((layer - 1) * 0.12, (layer - 1) * 0.08, 0));
+        addEffect(nebula, 1, (t) => {
+          nebula.scale.setScalar((1 + power * 1.5) * share * (0.5 + easeOut(t) * 0.9));
+          nebula.material.rotation = t * (2 + layer);
+          nebula.material.opacity = Math.sin(Math.PI * t) * 0.5;
+        });
+      });
+      const tilt = new THREE.Euler(0.55, Math.random() * Math.PI, 0.25);
+      const sparks = Math.round(22 + power * 28);
+      for (let index = 0; index < sparks; index += 1) {
+        const spark = fxSprite(theme);
+        const start = Math.random() * Math.PI * 2;
+        const radius = 0.12 + Math.random() * 0.35;
+        const spin = 5 + Math.random() * 5;
+        const grow = 0.6 + power * 1.2;
+        const size = 0.05 + Math.random() * 0.06;
+        addEffect(spark, 0.85 + Math.random() * 0.4, (t) => {
+          const angle = start + t * spin;
+          const distance = radius + easeOut(t) * grow;
+          spark.position.copy(point).add(new THREE.Vector3(Math.cos(angle) * distance, 0, Math.sin(angle) * distance).applyEuler(tilt));
+          spark.scale.setScalar(size * (0.6 + Math.abs(Math.sin(t * 20 + index)) * 0.6));
+          spark.material.opacity = 1 - t;
+        });
+      }
+    };
+
+    // Oro: monedas de oro de verdad que salen girando, caen y botan en la pista.
+    const coinGeometry = new THREE.CylinderGeometry(0.055, 0.055, 0.012, 18);
+    const coinMaterial = new THREE.MeshStandardMaterial({ color: 0xffc94d, metalness: 1, roughness: 0.28, emissive: 0x7a5200, emissiveIntensity: 0.35 });
+    const goldSignature = (point, power) => {
+      const coins = Math.round(8 + power * 10);
+      for (let index = 0; index < coins; index += 1) {
+        const coin = new THREE.Mesh(coinGeometry, coinMaterial.clone());
+        coin.castShadow = true;
+        coin.position.copy(point);
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1.2 + Math.random() * 2.4 * power;
+        const velocity = new THREE.Vector3(Math.cos(angle) * speed, 1.5 + Math.random() * 2.5, Math.sin(angle) * speed);
+        const spin = new THREE.Vector3(Math.random() * 14, Math.random() * 14, Math.random() * 14);
+        addEffect(coin, 1.7, (t, dt) => {
+          velocity.y -= 9.8 * dt;
+          coin.position.addScaledVector(velocity, dt);
+          if (coin.position.y < 0.012) {
+            coin.position.y = 0.012;
+            velocity.y = Math.abs(velocity.y) * 0.45;
+            velocity.x *= 0.7;
+            velocity.z *= 0.7;
+            spin.multiplyScalar(0.6);
+          }
+          coin.rotation.x += spin.x * dt;
+          coin.rotation.y += spin.y * dt;
+          coin.rotation.z += spin.z * dt;
+          coin.scale.setScalar(t > 0.8 ? (1 - t) / 0.2 : 1);
+        });
+      }
+    };
+
+    // Hielo: esquirlas de hielo que salen disparadas y escarcha que se abre en el suelo.
+    const shardGeometry = new THREE.ConeGeometry(0.035, 0.18, 5);
+    const shardMaterial = new THREE.MeshStandardMaterial({ color: 0xbae6fd, emissive: 0x38bdf8, emissiveIntensity: 0.4, roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.9 });
+    const iceSignature = (point, direction, power) => {
+      const shards = Math.round(8 + power * 10);
+      for (let index = 0; index < shards; index += 1) {
+        const shard = new THREE.Mesh(shardGeometry, shardMaterial.clone());
+        shard.position.copy(point);
+        const velocity = direction.clone().multiplyScalar(0.8).add(randomDirection()).normalize().multiplyScalar(2 + Math.random() * 3.5 * power);
+        const size = 0.7 + Math.random() * 0.9;
+        shard.scale.setScalar(size);
+        addEffect(shard, 0.7 + Math.random() * 0.4, (t, dt) => {
+          velocity.y -= 5 * dt;
+          shard.position.addScaledVector(velocity, dt);
+          shard.quaternion.setFromUnitVectors(UP, velocity.clone().normalize());
+          shard.material.opacity = 0.9 * (1 - t);
+        });
+      }
+      const frost = fxRing({ flames: false }, new THREE.Color(0xe0f2fe));
+      frost.rotation.x = -Math.PI / 2;
+      frost.position.set(point.x, 0.02, point.z);
+      addEffect(frost, 0.9, (t) => {
+        frost.scale.setScalar(0.2 + easeOut(t) * (1 + power * 1.2));
+        frost.material.opacity = (1 - t) * 0.8;
+      });
+      for (let index = 0; index < 8; index += 1) {
+        const mist = glowSprite(new THREE.Color(0xf0f9ff));
+        mist.material.blending = THREE.NormalBlending;
+        mist.position.copy(point).add(randomDirection().multiplyScalar(0.2));
+        const size = 0.3 + Math.random() * 0.25;
+        addEffect(mist, 0.9, (t) => {
+          mist.scale.setScalar(size * (0.6 + t));
+          mist.material.opacity = Math.sin(Math.PI * t) * 0.4;
+        });
+      }
+    };
+
+    // Estrellas: estrellas de cinco puntas que salen girando y titilando.
+    const starTexture = roundTexture(canvasTexture(64, 64, (context) => {
+      context.translate(32, 32);
+      context.beginPath();
+      for (let index = 0; index < 10; index += 1) {
+        const radius = index % 2 ? 11 : 28;
+        const angle = -Math.PI / 2 + (index * Math.PI) / 5;
+        context.lineTo(Math.cos(angle) * radius, Math.sin(angle) * radius);
+      }
+      context.closePath();
+      context.shadowColor = "white";
+      context.shadowBlur = 8;
+      context.fillStyle = "white";
+      context.fill();
+    }));
+    const starSignature = (point, theme, power) => {
+      const stars = Math.round(10 + power * 12);
+      for (let index = 0; index < stars; index += 1) {
+        const star = new THREE.Sprite(new THREE.SpriteMaterial({ map: starTexture, color: pickColor(theme), transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+        star.renderOrder = 14;
+        star.position.copy(point);
+        const velocity = randomDirection().multiplyScalar(1 + Math.random() * 2.2 * power);
+        const size = 0.12 + Math.random() * 0.14;
+        const spin = (Math.random() - 0.5) * 10;
+        addEffect(star, 0.9 + Math.random() * 0.4, (t, dt) => {
+          velocity.multiplyScalar(1 - 2.2 * dt);
+          star.position.addScaledVector(velocity, dt);
+          star.material.rotation += spin * dt;
+          star.scale.setScalar(size * (0.7 + Math.abs(Math.sin(t * 16 + index)) * 0.5) * (1 - t * 0.4));
+          star.material.opacity = 1 - t * t;
+        });
+      }
+    };
+
+    const SIGNATURES = {
+      fuego: (point, theme, power) => fireSignature(point, power),
+      rayo: (point, theme, power) => lightningSignature(point, power),
+      galaxia: galaxySignature,
+      oro: (point, theme, power) => goldSignature(point, power),
+      hielo: (point, theme, power, direction) => iceSignature(point, direction, power),
+      estrellas: starSignature,
+    };
+    const themeSignature = (point, theme, power, direction) => {
+      flashLight(point, theme.colors[0], power);
+      SIGNATURES[theme.name]?.(point, theme, power, direction);
+    };
+
     const themedBurst = (point, theme, power, direction = new THREE.Vector3(0, -0.4, -1).normalize(), action = "remate", feet = null) => {
+      themeSignature(point, theme, power, direction);
       if (action === "recepcion") receptionShow(point, theme, feet ?? point.clone().setY(0));
       else if (action === "colocacion") setShow(point, theme);
       forceImpact(point, direction, power, theme.colors, Boolean(theme.flames));
@@ -722,7 +966,8 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         const t = effect.age / effect.life;
         if (t >= 1) {
           scene.remove(effect.object);
-          effect.object.material.dispose();
+          effect.object.material?.dispose();
+          if (effect.object.userData.ownsGeometry) effect.object.geometry.dispose();
           return false;
         }
         effect.update(t, dt);
@@ -852,6 +1097,7 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
               }
             }
             playHit(action.action, placeSound(point));
+            if (theme) playFx(theme.name, action.action, placeSound(point));
             const facing = new THREE.Vector3(-Math.sin(rig.yaw), 0, -Math.cos(rig.yaw));
             const down = action.action === "remate" ? -0.55 : action.action === "saque" ? -0.15 : 0.35;
             const direction = facing.add(new THREE.Vector3(0, down, 0)).normalize();

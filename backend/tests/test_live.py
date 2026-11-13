@@ -271,3 +271,36 @@ def test_informe_al_terminar(admin):
     reception = next(item for item in report["skills"] if item["skill"] == "recepcion")
     assert reception["worst"]["name"] == "Luis"
     assert report["runs"]["us"] == 25
+
+
+def test_reiniciar_el_partido(admin):
+    match_id = create_match(admin).json()["id"]
+    ana = member(admin)
+    ana.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
+    game = admin.post(f"/api/live/match/{match_id}").json()
+    admin.post(f"/api/live/{game['id']}/start")
+    points(admin, game["id"], "us", 3)
+    assert ana.post(f"/api/live/{game['id']}/reset").status_code == 403
+    reset = admin.post(f"/api/live/{game['id']}/reset").json()
+    assert reset["status"] == "pending" and reset["can_start"] is True and reset["current"] == {"us": 0, "them": 0}
+    assert admin.post(f"/api/live/{game['id']}/start").json()["status"] == "live"
+
+
+def test_al_empezar_se_avisa_al_equipo(admin, monkeypatch):
+    sent = []
+
+    async def capture(db, user_ids, category, payload):
+        sent.append((list(user_ids), category, payload))
+
+    monkeypatch.setattr(live, "send_notifications", capture)
+    match_id = create_match(admin).json()["id"]
+    ana = member(admin)
+    ana_id = ana.get("/api/auth/me").json()["id"]
+    game = admin.post(f"/api/live/match/{match_id}").json()
+    assert sent == []  # Entrar no avisa: solo al empezar.
+    admin.post(f"/api/live/{game['id']}/start")
+    assert len(sent) == 1
+    users, category, payload = sent[0]
+    assert ana_id in users and category == "matches"
+    assert "Empieza el partido" in payload["title"] and "CV Roquetas" in payload["body"]
+    assert payload["url"] == f"/app/directo/{game['id']}"

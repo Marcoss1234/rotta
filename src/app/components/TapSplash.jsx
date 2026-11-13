@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { playTap, unlockSound } from "@/app/components/board/boardSounds.js";
 
 // Balón de vóley blanco, pequeño, con sus tres franjas.
 const BALL_SVG = `
@@ -16,8 +17,23 @@ const SIZE = 22;
 
 // Cada toque deja un "splash": un balón que aparece girando y un aro que se abre. No bloquea nada:
 // va en una capa por encima que no recibe toques. En la pizarra no sale para no tapar lo que se dibuja.
+// Lo que suena "plup" al tocarlo: botones, enlaces y opciones.
+const TAPPABLE = "button:not(:disabled), a[href], [role=button], [role=tab], [role=radio], [role=switch], [role=checkbox], summary";
+
 export default function TapSplash({ disabled = false }) {
   const layerRef = useRef(null);
+
+  // El primer toque en cualquier sitio deja sonar la app (también los golpes de la pizarra 3D),
+  // y cada botón hace "plup".
+  useEffect(() => {
+    const onDown = (event) => {
+      if (event.button !== undefined && event.button !== 0) return;
+      unlockSound();
+      if (event.target.closest?.(TAPPABLE)) playTap();
+    };
+    document.addEventListener("pointerdown", onDown, { passive: true });
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, []);
 
   useEffect(() => {
     if (disabled) return undefined;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, Check, Coins, Flag, Hand, Info, MoreVertical, MousePointerClick, Play, Star, Timer, Trash2, Trophy, Undo2, X } from "lucide-react";
+import { ArrowLeft, Check, Coins, Flag, Hand, Info, MoreVertical, MousePointerClick, Play, RotateCcw, Star, Timer, Trash2, Trophy, Undo2, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { addLiveEvent, deleteLive, finishLive, getLive, setLiveOrder, startLive, undoLiveEvent } from "@/app/api.js";
+import { addLiveEvent, deleteLive, finishLive, getLive, resetLive, setLiveOrder, startLive, undoLiveEvent } from "@/app/api.js";
 import ConfirmDialog from "@/app/components/board/ConfirmDialog.jsx";
 import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
 import { initialsOf } from "@/app/components/GoingCourt.jsx";
@@ -301,12 +301,12 @@ function HelpDialog({ scorer, onClose }) {
   }, []);
   const tips = scorer
     ? [
-        [Play, "Empezar", "Al entrar, el partido está sin empezar. Dale a «Empezar partido» cuando empiece: entonces se avisa al equipo."],
-        [Hand, "Titulares y banquillo", "Arrastra a un jugador del banquillo encima de uno de la pista para sacarlo. Arrastra uno encima de otro para cambiarlos de sitio."],
-        [MousePointerClick, "Aciertos y fallos", "Toca a un jugador y elige en qué ha acertado o fallado (saque, recepción, ataque…). Si da o quita el punto, se suma solo."],
-        [Check, "Puntos", "Toca «+1 punto» en el marcador de quien gana el punto. Si es nuestro y no lo apuntas a un jugador, cuenta como fallo del rival; si es suyo, como acierto del rival. Abajo: aciertos y fallos del equipo, y los tiempos muertos."],
-        [Undo2, "Deshacer", "Si te equivocas, «Deshacer» quita lo último que has apuntado."],
-        [Flag, "Terminar", "En ⋮ → «Terminar partido»: eliges el MVP y se guarda el resultado. Si ganáis, cada jugador gana 50 Club Coins."],
+        [Play, "Empezar", "Dale a «Empezar partido» cuando empiece: se avisa al equipo."],
+        [Hand, "Titulares y banquillo", "Arrastra un jugador encima de otro para cambiarlos (también del banquillo a la pista)."],
+        [MousePointerClick, "Aciertos y fallos", "Toca a un jugador y elige en qué ha acertado o fallado."],
+        [Check, "Puntos", "«+1 punto» a quien lo gana. Si no lo apuntas a un jugador, cuenta como fallo o acierto del rival."],
+        [Undo2, "Deshacer y reiniciar", "«Deshacer» quita lo último. En ⋮ → «Reiniciar partido» se empieza de cero."],
+        [Flag, "Terminar", "En ⋮ → «Terminar partido»: eliges el MVP y se guarda. Si ganáis, +50 Club Coins a cada uno."],
       ]
     : [
         [Play, "En directo", "Aquí ves el marcador punto a punto mientras se juega."],
@@ -322,23 +322,23 @@ function HelpDialog({ scorer, onClose }) {
         event.preventDefault();
         onClose();
       }}
-      className="m-auto flex max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-sm flex-col rounded-2xl border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
+      className="m-auto flex max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-sm flex-col rounded-2xl border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
     >
-      <div className="flex items-center gap-2 bg-gradient-to-r from-red-600 via-tnt to-ember p-4 text-snow">
+      <div className="flex items-center gap-2 bg-gradient-to-r from-red-600 via-tnt to-ember px-4 py-3 text-snow">
         <Info aria-hidden="true" className="h-6 w-6 shrink-0" />
         <h2 id="live-help-title" className="font-display text-xl font-black uppercase italic leading-tight">
           Cómo funciona
         </h2>
       </div>
-      <ul className="min-h-0 flex-1 space-y-3 overflow-y-auto p-4">
+      <ul className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-3">
         {tips.map(([Icon, title, text]) => (
-          <li key={title} className="flex gap-3">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-tnt/15 text-tnt ring-1 ring-tnt/30">
-              <Icon aria-hidden="true" className="h-4 w-4" />
+          <li key={title} className="flex gap-2.5">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tnt/15 text-tnt ring-1 ring-tnt/30">
+              <Icon aria-hidden="true" className="h-3.5 w-3.5" />
             </span>
             <span className="min-w-0">
-              <span className="block text-sm font-black uppercase tracking-wide">{title}</span>
-              <span className="block text-sm text-zinc-300">{text}</span>
+              <span className="block text-xs font-black uppercase tracking-wide">{title}</span>
+              <span className="block text-[13px] leading-snug text-zinc-300">{text}</span>
             </span>
           </li>
         ))}
@@ -621,6 +621,23 @@ export default function LiveMatchPage({ onAccessLost }) {
                   <Flag aria-hidden="true" className="h-4 w-4" />
                   Terminar partido
                 </button>
+                )}
+                {canScore && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenu(false);
+                      setConfirming({
+                        message: "¿Reiniciar el partido? Se borra todo lo apuntado (puntos, aciertos y fallos) y vuelve a salir «Empezar partido».",
+                        label: "Reiniciar",
+                        action: () => send(() => resetLive(liveId)),
+                      });
+                    }}
+                    className="flex min-h-12 w-full items-center gap-2 px-3 text-sm font-semibold hover:bg-white/5"
+                  >
+                    <RotateCcw aria-hidden="true" className="h-4 w-4" />
+                    Reiniciar partido
+                  </button>
                 )}
                 <button
                   type="button"

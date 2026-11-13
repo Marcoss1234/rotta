@@ -471,8 +471,8 @@ async def start_match(live_id: str, user=Depends(require_approved), db=Depends(g
         await team_member_ids(db, list(match_teams(live["team_id"])), user["id"]),
         "matches",
         {
-            "title": "¡Partido en directo!",
-            "body": f"{TEAM_NAMES.get(live['team_id'], 'Club')} contra {live['opponent']}: sigue el marcador punto a punto",
+            "title": "🏐 ¡Empieza el partido!",
+            "body": f"{TEAM_NAMES.get(live['team_id'], 'Club')} contra {live['opponent']}. ¡Entra y síguelo en directo, punto a punto!",
             "url": f"/app/directo/{live_id}",
             "tag": f"directo-{live_id}",
         },
@@ -517,6 +517,22 @@ async def undo_event(live_id: str, user=Depends(require_approved), db=Depends(ge
     if not live.get("events"):
         raise HTTPException(status_code=422, detail="No hay nada que deshacer")
     await db.live_matches.update_one({"id": live_id}, {"$pop": {"events": 1}, "$set": {"updated_at": datetime.now(timezone.utc)}})
+    return await _public(db, await _find(db, live_id), user)
+
+
+@router.post("/{live_id}/reset")
+async def reset_match(live_id: str, user=Depends(require_approved), db=Depends(get_db)):
+    """«Reiniciar partido»: borra todo lo apuntado y vuelve a quedar sin empezar (para probar o si se empezó sin querer).
+    Los titulares que se han colocado se quedan."""
+    live = await _find(db, live_id)
+    if not _can_score(user, live):
+        raise HTTPException(status_code=403, detail="Solo entrenadores, administradores y editores llevan el marcador")
+    if status_of(live) == "finished":
+        raise HTTPException(status_code=409, detail="Este partido ya ha terminado")
+    await db.live_matches.update_one(
+        {"id": live_id},
+        {"$set": {"status": "pending", "events": [], "updated_at": datetime.now(timezone.utc)}, "$unset": {"started_at": ""}},
+    )
     return await _public(db, await _find(db, live_id), user)
 
 

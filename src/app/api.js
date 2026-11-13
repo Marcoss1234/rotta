@@ -167,6 +167,7 @@ export const listLive = (teamId) => request(teamId ? `/live?team_id=${encodeURIC
 export const getLive = (id) => request(`/live/${encodeURIComponent(id)}`);
 export const enterLiveMatch = (matchId) => request(`/live/match/${encodeURIComponent(matchId)}`, { method: "POST" });
 export const setLiveOrder = (id, order) => request(`/live/${encodeURIComponent(id)}/order`, { method: "PUT", body: { order } });
+export const resetLive = (id) => request(`/live/${encodeURIComponent(id)}/reset`, { method: "POST" });
 export const startLive = (id) => request(`/live/${encodeURIComponent(id)}/start`, { method: "POST" });
 export const addLiveEvent = (id, body) => request(`/live/${encodeURIComponent(id)}/events`, { method: "POST", body });
 export const undoLiveEvent = (id) => request(`/live/${encodeURIComponent(id)}/events/last`, { method: "DELETE" });

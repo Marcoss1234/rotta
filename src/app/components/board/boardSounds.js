@@ -24,9 +24,34 @@ export function setSoundEnabled(on) {
   if (on) unlockSound();
 }
 
+// En el iPhone, el modo silencio apaga los sonidos de las webs. Se le dice que son sonidos de la app
+// (como los de un vídeo) para que suenen igual: en iOS 17 o más con `audioSession`; en los anteriores,
+// reproduciendo un audio mudo cortísimo al tocar, que cambia el móvil al modo "reproducción".
+const SILENT_AUDIO = "data:audio/wav;base64,UklGRt0BAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YbkBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
+let playbackSession = false;
+function soundEvenOnSilentMode() {
+  if (playbackSession) return;
+  playbackSession = true;
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = "playback";
+  } catch {
+    // Navegador sin esta opción: vale el truco del audio mudo.
+  }
+  try {
+    const silent = new window.Audio(SILENT_AUDIO);
+    silent.setAttribute("x-webkit-airplay", "deny");
+    silent.play().catch(() => {
+      playbackSession = false;
+    });
+  } catch {
+    playbackSession = false;
+  }
+}
+
 // El navegador solo deja sonar después de que la persona toque algo: se llama al pulsar.
 export function unlockSound() {
   if (typeof window === "undefined") return null;
+  soundEvenOnSilentMode();
   const Audio = window.AudioContext ?? window.webkitAudioContext;
   if (!Audio) return null;
   if (!context) {
@@ -66,6 +91,23 @@ function impulse(audio, seconds, decay) {
 }
 
 const ready = () => context && context.state === "running" && soundEnabled();
+
+// "Plup": una burbujita al tocar un botón de la app. Corta y suave, sin eco.
+export function playTap() {
+  if (!ready()) return;
+  const now = context.currentTime;
+  const bubble = context.createOscillator();
+  bubble.type = "sine";
+  bubble.frequency.setValueAtTime(360, now);
+  bubble.frequency.exponentialRampToValueAtTime(950, now + 0.065);
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.18, now + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  bubble.connect(gain).connect(master);
+  bubble.start(now);
+  bubble.stop(now + 0.14);
+}
 
 // Salida de un sonido: volumen y lado (izquierda/derecha), y una parte al eco.
 function output(volume, pan) {
@@ -179,6 +221,109 @@ export function playHit(action, { volume = 1, pan = 0 } = {}) {
   const out = output(volume, pan);
   thump(out, at, sound.thump);
   slap(out, at, sound.slap);
+}
+
+// ---------- Sonidos de los efectos de la tienda (suenan encima del golpe normal) ----------
+// Un tono que va de `from` a `to` Hz y se apaga.
+function tone(destination, at, { type = "sine", from, to = from, length, level, attack = 0.004 }) {
+  const osc = context.createOscillator();
+  osc.type = type;
+  osc.frequency.setValueAtTime(from, at);
+  if (to !== from) osc.frequency.exponentialRampToValueAtTime(Math.max(20, to), at + length);
+  const env = context.createGain();
+  env.gain.setValueAtTime(0.0001, at);
+  env.gain.exponentialRampToValueAtTime(level, at + attack);
+  env.gain.exponentialRampToValueAtTime(0.0001, at + length);
+  osc.connect(env).connect(destination);
+  osc.start(at);
+  osc.stop(at + length + 0.02);
+}
+
+// Ruido con un filtro que puede moverse (un soplido que sube, un chisporroteo…).
+function hiss(destination, at, { type, from, to = from, q = 0.8, length, level, attack = 0.003 }) {
+  const source = context.createBufferSource();
+  source.buffer = noise;
+  source.loop = true;
+  const filter = context.createBiquadFilter();
+  filter.type = type;
+  filter.Q.value = q;
+  filter.frequency.setValueAtTime(from, at);
+  if (to !== from) filter.frequency.exponentialRampToValueAtTime(to, at + length);
+  const env = context.createGain();
+  env.gain.setValueAtTime(0.0001, at);
+  env.gain.exponentialRampToValueAtTime(level, at + attack);
+  env.gain.exponentialRampToValueAtTime(0.0001, at + length);
+  source.connect(filter).connect(env).connect(destination);
+  source.start(at, Math.random() * 0.5);
+  source.stop(at + length + 0.02);
+}
+
+// Campanita metálica (moneda, hielo): el tono y sus armónicos "de campana", que se apagan rápido.
+function bell(destination, at, frequency, level, length = 0.35) {
+  [[1, 1], [2.76, 0.45], [5.4, 0.2]].forEach(([ratio, share]) => tone(destination, at, { from: frequency * ratio, length: length / ratio ** 0.3, level: level * share, attack: 0.002 }));
+}
+
+const random = (low, high) => low + Math.random() * (high - low);
+
+const FX_SOUNDS = {
+  // Eléctrico: chisporroteo de descargas y un "zzzap" que cae.
+  rayo(out, at, power) {
+    for (let index = 0; index < 10; index += 1) {
+      const when = at + index * 0.03 + random(0, 0.02);
+      tone(out, when, { type: "sawtooth", from: random(90, 220), to: 50, length: 0.045, level: 0.22 * power });
+      hiss(out, when, { type: "highpass", from: random(3000, 6500), length: 0.025, level: 0.4 * power });
+    }
+    tone(out, at, { type: "square", from: 2200, to: 110, length: 0.3, level: 0.1 * power });
+    hiss(out, at, { type: "bandpass", from: 5000, to: 900, q: 3, length: 0.35, level: 0.25 * power });
+  },
+  // Fuego: llamarada que sube (soplido) y brasas que crepitan.
+  fuego(out, at, power) {
+    hiss(out, at, { type: "lowpass", from: 260, to: 3400, length: 0.55, level: 0.75 * power, attack: 0.06 });
+    tone(out, at, { from: 95, to: 38, length: 0.4, level: 0.5 * power });
+    for (let index = 0; index < 16; index += 1) {
+      hiss(out, at + random(0.05, 0.75), { type: "highpass", from: random(1800, 4200), length: random(0.01, 0.03), level: random(0.15, 0.4) * power });
+    }
+  },
+  // Galaxia: barrido cósmico que cae, con un brillo de estrellas por encima.
+  galaxia(out, at, power) {
+    [0, 7, 12, 19].forEach((semitones, index) => {
+      const ratio = 2 ** (semitones / 12);
+      tone(out, at + index * 0.025, { type: index % 2 ? "triangle" : "sine", from: 900 * ratio, to: 160 * ratio, length: 1, level: 0.11 * power, attack: 0.03 });
+    });
+    hiss(out, at, { type: "bandpass", from: 6000, to: 400, q: 2, length: 0.9, level: 0.2 * power, attack: 0.05 });
+    for (let index = 0; index < 9; index += 1) tone(out, at + random(0.08, 0.7), { from: random(2600, 5200), length: 0.12, level: 0.05 * power });
+  },
+  // Oro: lluvia de monedas que tintinean.
+  oro(out, at, power) {
+    const coins = Math.round(8 + power * 8);
+    for (let index = 0; index < coins; index += 1) {
+      bell(out, at + random(0, 0.55) * (index / coins + 0.3), random(2300, 4300), random(0.08, 0.16) * power);
+    }
+    hiss(out, at, { type: "highpass", from: 7000, length: 0.12, level: 0.15 * power });
+  },
+  // Hielo: crujido de cristal y tintineos agudos.
+  hielo(out, at, power) {
+    hiss(out, at, { type: "highpass", from: 4500, length: 0.07, level: 0.55 * power });
+    hiss(out, at + 0.04, { type: "bandpass", from: 7000, to: 2500, q: 1.5, length: 0.35, level: 0.3 * power });
+    for (let index = 0; index < 7; index += 1) bell(out, at + random(0.02, 0.4), random(3200, 6400), 0.07 * power, 0.25);
+  },
+  // Estrellas: arpegio que sube, como un hechizo.
+  estrellas(out, at, power) {
+    [1320, 1568, 1760, 2093, 2637, 3136].forEach((frequency, index) => {
+      tone(out, at + index * 0.055, { type: "triangle", from: frequency, length: 0.35, level: 0.12 * power, attack: 0.006 });
+      tone(out, at + index * 0.055, { from: frequency * 2, length: 0.2, level: 0.04 * power });
+    });
+  },
+};
+
+// Sonido del efecto de un golpe: más fuerte en el remate que en la recepción o la colocación.
+export function playFx(name, action, { volume = 1, pan = 0 } = {}) {
+  if (!ready()) return;
+  const recipe = FX_SOUNDS[name];
+  if (!recipe) return;
+  const power = action === "remate" ? 1 : 0.65;
+  const out = output(Math.min(0.55, volume * 0.75), pan);
+  recipe(out, context.currentTime + 0.01, power);
 }
 
 // El balón bota en el suelo: más fuerte cuanto más rápido llega.

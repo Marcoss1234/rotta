@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { ChevronRight, X } from "lucide-react";
+import { ChevronRight, Volume2, VolumeX, X } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import Avatar from "@/app/components/Avatar.jsx";
 import { roleLabel } from "@/app/roles.js";
+import { setSoundEnabled, soundEnabled } from "@/app/components/board/boardSounds.js";
 
 const CLOSE_MS = 220;
 
@@ -11,6 +12,8 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
   const [shown, setShown] = useState(open);
   const [closing, setClosing] = useState(false);
   const panelRef = useRef(null);
+  // Sonidos de la app (el "plup" de los botones y los golpes de la pizarra 3D).
+  const [sound, setSound] = useState(soundEnabled);
 
   // Al cerrar se deja un momento montado para que salga deslizándose.
   useEffect(() => {
@@ -106,6 +109,22 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
               </ul>
             </div>
           ))}
+          <button
+            type="button"
+            role="switch"
+            aria-checked={sound}
+            onClick={() => {
+              setSoundEnabled(!sound);
+              setSound(!sound);
+            }}
+            className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] font-semibold text-zinc-200 hover:bg-white/5"
+          >
+            {sound ? <Volume2 aria-hidden="true" className="h-5 w-5" /> : <VolumeX aria-hidden="true" className="h-5 w-5" />}
+            <span className="flex-1">Sonidos</span>
+            <span className={`relative h-6 w-11 rounded-full transition-colors ${sound ? "bg-tnt" : "bg-white/15"}`}>
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${sound ? "left-[1.375rem]" : "left-0.5"}`} />
+            </span>
+          </button>
         </div>
       </nav>
     </div>
