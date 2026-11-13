@@ -76,44 +76,68 @@ if (typeof document !== "undefined") {
 }
 
 // El navegador solo deja sonar después de que la persona toque algo: se llama al pulsar.
+// El motor de sonido: el volumen general, un limitador (que no cruja el altavoz) y el eco de pabellón.
+function buildContext(Audio) {
+  context = new Audio();
+  master = context.createGain();
+  master.gain.value = 0.8;
+  // Compresor al final: el remate puede sonar muy fuerte sin que cruja el altavoz.
+  const limiter = context.createDynamicsCompressor();
+  limiter.threshold.value = -10;
+  limiter.knee.value = 6;
+  limiter.ratio.value = 8;
+  limiter.attack.value = 0.002;
+  limiter.release.value = 0.2;
+  master.connect(limiter).connect(context.destination);
+  // Eco corto de pabellón.
+  room = context.createConvolver();
+  room.buffer = impulse(context, 0.9, 3.2);
+  const wet = context.createGain();
+  wet.gain.value = 0.22;
+  room.connect(wet).connect(master);
+  noise = context.createBuffer(1, context.sampleRate, context.sampleRate);
+  const data = noise.getChannelData(0);
+  for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+  stoppedSince = null;
+}
+
+// Desde cuándo el motor no está sonando ("suspended" o "interrupted").
+let stoppedSince = null;
+// En el iPhone (iOS 18) el motor a veces se queda parado y no vuelve aunque se le pida: si al tocar lleva
+// parado más de este tiempo, se tira y se hace uno nuevo en ese mismo toque, que sí arranca.
+const STUCK_MS = 700;
+
+// El navegador solo deja sonar después de que la persona toque algo: se llama al pulsar.
 export function unlockSound() {
   if (typeof window === "undefined") return null;
   soundEvenOnSilentMode();
   const Audio = window.AudioContext ?? window.webkitAudioContext;
   if (!Audio) return null;
-  if (!context) {
-    context = new Audio();
-    master = context.createGain();
-    master.gain.value = 0.8;
-    // Compresor al final: el remate puede sonar muy fuerte sin que cruja el altavoz.
-    const limiter = context.createDynamicsCompressor();
-    limiter.threshold.value = -10;
-    limiter.knee.value = 6;
-    limiter.ratio.value = 8;
-    limiter.attack.value = 0.002;
-    limiter.release.value = 0.2;
-    master.connect(limiter).connect(context.destination);
-    // Eco corto de pabellón.
-    room = context.createConvolver();
-    room.buffer = impulse(context, 0.9, 3.2);
-    const wet = context.createGain();
-    wet.gain.value = 0.22;
-    room.connect(wet).connect(master);
-    noise = context.createBuffer(1, context.sampleRate, context.sampleRate);
-    const data = noise.getChannelData(0);
-    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
+  if (context && context.state !== "running") {
+    const now = performance.now();
+    if (stoppedSince === null) stoppedSince = now;
+    else if (now - stoppedSince > STUCK_MS) {
+      problems.rebuilt = (problems.rebuilt ?? 0) + 1;
+      context.close().catch(() => {});
+      context = null;
+    }
   }
+  if (!context) buildContext(Audio);
   // El iPhone deja el sonido "suspended" o "interrupted" (tras una llamada, otra app con audio o volver de
   // segundo plano): con cualquiera de los dos, el siguiente toque lo vuelve a encender.
   if (context.state !== "running") {
-    context
+    const current = context;
+    current
       .resume()
       .then(() => {
         problems.resume = null;
+        if (current === context && current.state === "running") stoppedSince = null;
       })
       .catch((error) => {
         problems.resume = error?.name ?? "error";
       });
+  } else {
+    stoppedSince = null;
   }
   return context;
 }
@@ -166,6 +190,7 @@ export function soundStatus() {
     `estado: ${context?.state ?? "sin crear"}`,
     `sesión: ${session ?? "no"}`,
     `bucle: ${silentLoop ? (silentLoop.paused ? "parado" : "sonando") : "no"}`,
+    `rehecho: ${problems.rebuilt ?? 0}`,
     ios ? `iOS ${ios[1]}.${ios[2]}` : "no iPhone",
   ].join(" · ");
   return { lines, technical };
