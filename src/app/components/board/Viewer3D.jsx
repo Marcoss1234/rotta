@@ -490,35 +490,129 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
     };
     const randomDirection = () => new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize();
 
-    // Fuego: lenguas de fuego que suben (amarillo, naranja, rojo) y acaban en humo.
-    const fireSignature = (point, power) => {
-      const flames = Math.round(10 + power * 16);
-      for (let index = 0; index < flames; index += 1) {
-        const flame = glowSprite(new THREE.Color(0xfff1a8));
-        flame.position.copy(point).add(new THREE.Vector3((Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.2, (Math.random() - 0.5) * 0.4));
-        const velocity = new THREE.Vector3((Math.random() - 0.5) * 0.9, 1.3 + Math.random() * 2.2 * power, (Math.random() - 0.5) * 0.9);
-        const size = 0.18 + Math.random() * 0.24 * power;
-        const sway = Math.random() * Math.PI * 2;
-        addEffect(flame, 0.55 + Math.random() * 0.4, (t, dt) => {
-          flame.position.addScaledVector(velocity, dt);
-          flame.position.x += Math.sin(t * 14 + sway) * 0.004;
-          flame.material.color.setRGB(1, Math.max(0.12, 0.95 - t * 1.15), Math.max(0, 0.6 - t * 1.7));
-          flame.scale.set(size * (1 - t * 0.4), size * (1.5 + t * 0.9), 1);
-          flame.material.opacity = (1 - t) ** 1.2;
+    // Fuego. Una llama: nace amarilla casi blanca, pasa a naranja y a rojo, sube, se estira y se apaga.
+    const flame = (position, { size = 0.2, velocity = new THREE.Vector3(0, 1.5, 0), life = 0.6, stretch = 1.6, drag = 0 } = {}) => {
+      const sprite = glowSprite(new THREE.Color(0xfff1a8));
+      sprite.position.copy(position);
+      const sway = Math.random() * Math.PI * 2;
+      addEffect(sprite, life * (0.8 + Math.random() * 0.4), (t, dt) => {
+        if (drag) velocity.multiplyScalar(1 - drag * dt);
+        velocity.y += 1.2 * dt;
+        sprite.position.addScaledVector(velocity, dt);
+        sprite.position.x += Math.sin(t * 16 + sway) * 0.005;
+        sprite.material.color.setRGB(1, Math.max(0.1, 0.95 - t * 1.2), Math.max(0, 0.65 - t * 1.9));
+        sprite.scale.set(size * (1 - t * 0.35), size * (stretch + t * 0.8), 1);
+        sprite.material.opacity = (1 - t) ** 1.1;
+      });
+    };
+    const smokePuff = (position, size = 0.35, life = 1.2) => {
+      const smoke = glowSprite(new THREE.Color(0x27272a));
+      smoke.material.blending = THREE.NormalBlending;
+      smoke.position.copy(position);
+      const rise = 0.4 + Math.random() * 0.6;
+      const drift = new THREE.Vector3((Math.random() - 0.5) * 0.3, 0, (Math.random() - 0.5) * 0.3);
+      addEffect(smoke, life, (t, dt) => {
+        smoke.position.y += rise * dt;
+        smoke.position.addScaledVector(drift, dt);
+        smoke.scale.setScalar(size * (0.6 + t * 1.6));
+        smoke.material.opacity = Math.sin(Math.PI * t) * 0.4;
+      });
+    };
+    // Brasas: chispitas muy brillantes que salen disparadas, caen y parpadean.
+    const embers = (point, count, speed = 3, spread = new THREE.Vector3(0, 0.6, 0)) => {
+      for (let index = 0; index < count; index += 1) {
+        const ember = glowSprite(new THREE.Color(Math.random() < 0.5 ? 0xffd166 : 0xff7a1a));
+        ember.position.copy(point);
+        const velocity = randomDirection().add(spread).normalize().multiplyScalar(speed * (0.4 + Math.random()));
+        const size = 0.035 + Math.random() * 0.04;
+        addEffect(ember, 0.7 + Math.random() * 0.7, (t, dt) => {
+          velocity.y -= 4 * dt;
+          velocity.multiplyScalar(1 - 1.2 * dt);
+          ember.position.addScaledVector(velocity, dt);
+          ember.scale.setScalar(size * (Math.random() < 0.15 ? 0.4 : 1) * (1 - t * 0.5));
+          ember.material.opacity = 1 - t;
         });
       }
-      for (let index = 0; index < Math.round(3 + power * 4); index += 1) {
-        const smoke = glowSprite(new THREE.Color(0x3f3f46));
-        smoke.material.blending = THREE.NormalBlending;
-        smoke.position.copy(point).add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.25, (Math.random() - 0.5) * 0.5));
-        const size = 0.3 + Math.random() * 0.3;
-        const rise = 0.5 + Math.random() * 0.6;
-        addEffect(smoke, 1.2, (t, dt) => {
-          smoke.position.y += rise * dt;
-          smoke.scale.setScalar(size * (0.6 + t * 1.5));
-          smoke.material.opacity = Math.sin(Math.PI * t) * 0.35;
+    };
+
+    // Al rematar: bola de fuego que explota, un anillo de llamas que se abre de cara al golpe, brasas y humo.
+    const fireSignature = (point, power, direction = new THREE.Vector3(0, -0.4, -1)) => {
+      [[0xffffff, 0.7, 0.18], [0xffd166, 1.15, 0.3], [0xff5a1f, 1.6, 0.42], [0xb91c1c, 2, 0.55]].forEach(([color, grow, life]) => {
+        const ball = glowSprite(new THREE.Color(color));
+        ball.position.copy(point);
+        addEffect(ball, life, (t) => {
+          ball.scale.setScalar((0.35 + power * 0.5) * grow * (0.4 + easeOut(t)));
+          ball.material.opacity = (1 - t) ** 1.3;
         });
+      });
+      // Anillo de fuego perpendicular al golpe.
+      const axis = direction.clone().normalize();
+      const side = new THREE.Vector3().crossVectors(axis, UP).normalize();
+      if (side.lengthSq() < 0.01) side.set(1, 0, 0);
+      const up = new THREE.Vector3().crossVectors(side, axis).normalize();
+      const flamesInRing = Math.round(14 + power * 14);
+      for (let index = 0; index < flamesInRing; index += 1) {
+        const angle = (index / flamesInRing) * Math.PI * 2;
+        const out = side.clone().multiplyScalar(Math.cos(angle)).addScaledVector(up, Math.sin(angle));
+        flame(point.clone().addScaledVector(out, 0.15), { size: 0.16 + power * 0.1, velocity: out.multiplyScalar(2.6 + power * 2), life: 0.5, stretch: 1.3, drag: 2.5 });
       }
+      // Llamas que suben desde el golpe.
+      for (let index = 0; index < Math.round(8 + power * 10); index += 1) {
+        flame(point.clone().add(randomDirection().multiplyScalar(0.15)), { size: 0.2 + Math.random() * 0.2 * power, velocity: new THREE.Vector3((Math.random() - 0.5) * 0.8, 1 + Math.random() * 1.8, (Math.random() - 0.5) * 0.8), life: 0.7 });
+      }
+      embers(point, Math.round(16 + power * 24), 3 + power * 2.5, axis.clone().multiplyScalar(0.8));
+      for (let index = 0; index < Math.round(3 + power * 3); index += 1) smokePuff(point.clone().add(randomDirection().multiplyScalar(0.25)), 0.35 + Math.random() * 0.25, 1.3);
+    };
+
+    // El balón ardiendo en el aire: llamas grandes que lo envuelven y una cola de fuego y humo (como un cometa).
+    const fireComet = (position) => {
+      flame(position.clone().add(randomDirection().multiplyScalar(0.06)), { size: 0.2 + Math.random() * 0.14, velocity: new THREE.Vector3((Math.random() - 0.5) * 0.4, 0.6 + Math.random() * 0.6, (Math.random() - 0.5) * 0.4), life: 0.45, stretch: 1.4 });
+      if (Math.random() < 0.5) flame(position.clone(), { size: 0.12, velocity: new THREE.Vector3(0, 0.3, 0), life: 0.6, stretch: 1.1 });
+      if (Math.random() < 0.12) smokePuff(position.clone(), 0.22, 0.9);
+      if (Math.random() < 0.3) embers(position, 1, 1.2);
+    };
+
+    // El balón cae ardiendo: estallan llamas del suelo, un anillo de fuego recorre la pista y queda una quemadura.
+    const scorchTexture = roundTexture(canvasTexture(128, 128, (context) => {
+      const gradient = context.createRadialGradient(64, 64, 0, 64, 64, 64);
+      gradient.addColorStop(0, "rgba(10,6,4,0.95)");
+      gradient.addColorStop(0.45, "rgba(30,14,6,0.75)");
+      gradient.addColorStop(0.75, "rgba(90,30,8,0.35)");
+      gradient.addColorStop(1, "rgba(0,0,0,0)");
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 128, 128);
+    }));
+    const scorchGeometry = new THREE.PlaneGeometry(1, 1);
+    const fireLanding = (point) => {
+      const scorch = new THREE.Mesh(scorchGeometry, new THREE.MeshBasicMaterial({ map: scorchTexture, transparent: true, depthWrite: false }));
+      scorch.rotation.x = -Math.PI / 2;
+      scorch.position.set(point.x, 0.012, point.z);
+      scorch.renderOrder = 2;
+      addEffect(scorch, 3, (t) => {
+        scorch.scale.setScalar(0.4 + easeOut(Math.min(1, t * 6)) * 1.1);
+        scorch.material.opacity = t < 0.7 ? 0.9 : 0.9 * (1 - (t - 0.7) / 0.3);
+      });
+      const ground = new THREE.Vector3(point.x, 0.05, point.z);
+      for (let index = 0; index < 16; index += 1) {
+        flame(ground.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.4, 0, (Math.random() - 0.5) * 0.4)), { size: 0.22 + Math.random() * 0.22, velocity: new THREE.Vector3((Math.random() - 0.5) * 0.6, 1.6 + Math.random() * 2.2, (Math.random() - 0.5) * 0.6), life: 0.8 });
+      }
+      for (let index = 0; index < 22; index += 1) {
+        const angle = (index / 22) * Math.PI * 2;
+        const out = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle));
+        flame(ground.clone().addScaledVector(out, 0.2), { size: 0.17, velocity: out.multiplyScalar(3.2).setY(0.4), life: 0.55, stretch: 1.5, drag: 3 });
+      }
+      embers(ground, 26, 3.5, new THREE.Vector3(0, 1.2, 0));
+      for (let index = 0; index < 4; index += 1) smokePuff(ground.clone().add(new THREE.Vector3((Math.random() - 0.5) * 0.5, 0.2, (Math.random() - 0.5) * 0.5)), 0.45, 1.6);
+    };
+
+    // Al saltar a rematar: una columna de llamas alrededor del jugador.
+    const firePillar = (position) => {
+      for (let index = 0; index < 22; index += 1) {
+        const angle = (index / 22) * Math.PI * 2;
+        const spot = new THREE.Vector3(position.x + Math.cos(angle) * 0.35, 0.05, position.z + Math.sin(angle) * 0.35);
+        flame(spot, { size: 0.18 + Math.random() * 0.12, velocity: new THREE.Vector3(Math.cos(angle) * 0.2, 2.4 + Math.random() * 1.6, Math.sin(angle) * 0.2), life: 0.65 });
+      }
+      embers(new THREE.Vector3(position.x, 0.1, position.z), 14, 2.5, new THREE.Vector3(0, 1.5, 0));
     };
 
     // Rayo: descargas con ramas que parpadean y cambian de forma, y arcos eléctricos alrededor del balón.
@@ -568,35 +662,79 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
       }
     };
 
-    // Galaxia: un remolino de colores que gira y se abre, con una nebulosa detrás.
-    const galaxySignature = (point, theme, power) => {
-      [[0x7c3aed, 1], [0xec4899, 0.7], [0x38bdf8, 0.5]].forEach(([color, share], layer) => {
+    // Galaxia: una galaxia espiral de verdad. Miles de estrellitas en brazos que giran: el centro amarillento,
+    // los brazos morados y rosas y las puntas azules. Va en un solo dibujo (Points), así no pesa en el móvil.
+    const galaxyGeometry = (() => {
+      const count = 1400;
+      const arms = 3;
+      const positions = new Float32Array(count * 3);
+      const colors = new Float32Array(count * 3);
+      const core = new THREE.Color(0xfff3d6);
+      const purple = new THREE.Color(0xa855f7);
+      const pink = new THREE.Color(0xec4899);
+      const blue = new THREE.Color(0x38bdf8);
+      const gauss = () => (Math.random() + Math.random() + Math.random() - 1.5) / 1.5;
+      for (let index = 0; index < count; index += 1) {
+        // Más estrellas cerca del centro; los brazos se enroscan hacia fuera.
+        const distance = Math.random() ** 0.85;
+        const arm = (index % arms) * ((Math.PI * 2) / arms);
+        const angle = arm + distance * 3.4 + gauss() * 0.32 * (1 - distance * 0.4);
+        const radius = 0.04 + distance + gauss() * 0.05;
+        positions[index * 3] = Math.cos(angle) * radius;
+        positions[index * 3 + 1] = Math.sin(angle) * radius;
+        positions[index * 3 + 2] = gauss() * 0.05 * (1 - distance);
+        const color = distance < 0.35 ? core.clone().lerp(purple, distance / 0.35) : purple.clone().lerp(Math.random() < 0.35 ? pink : blue, (distance - 0.35) / 0.65);
+        color.offsetHSL(0, 0, (Math.random() - 0.5) * 0.15);
+        colors.set([color.r, color.g, color.b], index * 3);
+      }
+      const geometry = new THREE.BufferGeometry();
+      geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      geometry.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+      return geometry;
+    })();
+    const galaxySignature = (point, theme, power, direction, action) => {
+      const shield = action === "recepcion";
+      const galaxy = new THREE.Points(
+        galaxyGeometry,
+        new THREE.PointsMaterial({ size: 0.11, map: glow, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, sizeAttenuation: true }),
+      );
+      galaxy.renderOrder = 14;
+      galaxy.position.copy(point);
+      if (shield) {
+        // En la recepción: de pie delante de los brazos, como una pared que para el balón, mirando hacia donde viene.
+        const facing = direction.clone().setY(0);
+        if (facing.lengthSq() < 0.001) facing.set(0, 0, -1);
+        facing.normalize();
+        galaxy.position.addScaledVector(facing, 0.12);
+        galaxy.lookAt(galaxy.position.clone().add(facing));
+      } else {
+        // De cara a la cámara e inclinada, como en las fotos: así se ve la espiral desde cualquier vista.
+        galaxy.lookAt(view.position);
+        galaxy.rotateX(-0.45);
+      }
+      const size = shield ? 0.95 : 1.1 + power * 1.3;
+      const spin = 2.2 + Math.random() * 0.6;
+      addEffect(galaxy, 1.6, (t, dt) => {
+        galaxy.rotateZ(spin * dt * (1.4 - t));
+        galaxy.scale.setScalar(size * (0.25 + easeOut(Math.min(1, t * 1.6)) * 0.95));
+        galaxy.material.opacity = Math.min(1, t * 6) * (1 - t) ** 1.4;
+      });
+      // El centro brilla y una nebulosa suave alrededor.
+      const center = glowSprite(new THREE.Color(0xfff7e0));
+      center.position.copy(point);
+      addEffect(center, 1.2, (t) => {
+        center.scale.setScalar((0.7 + power * 0.5) * (0.7 + Math.sin(t * 9) * 0.08));
+        center.material.opacity = (1 - t) ** 1.5;
+      });
+      [[0x7c3aed, 1], [0xec4899, 0.75]].forEach(([color, share], layer) => {
         const nebula = glowSprite(new THREE.Color(color));
-        nebula.material.blending = THREE.NormalBlending;
-        nebula.position.copy(point).add(new THREE.Vector3((layer - 1) * 0.12, (layer - 1) * 0.08, 0));
-        addEffect(nebula, 1, (t) => {
-          nebula.scale.setScalar((1 + power * 1.5) * share * (0.5 + easeOut(t) * 0.9));
-          nebula.material.rotation = t * (2 + layer);
-          nebula.material.opacity = Math.sin(Math.PI * t) * 0.5;
+        nebula.position.copy(point);
+        addEffect(nebula, 1.4, (t) => {
+          nebula.scale.setScalar((1.2 + power * 1.5) * share * (0.5 + easeOut(t) * 0.8));
+          nebula.material.rotation = t * (1.5 + layer);
+          nebula.material.opacity = Math.sin(Math.PI * t) * 0.45;
         });
       });
-      const tilt = new THREE.Euler(0.55, Math.random() * Math.PI, 0.25);
-      const sparks = Math.round(22 + power * 28);
-      for (let index = 0; index < sparks; index += 1) {
-        const spark = fxSprite(theme);
-        const start = Math.random() * Math.PI * 2;
-        const radius = 0.12 + Math.random() * 0.35;
-        const spin = 5 + Math.random() * 5;
-        const grow = 0.6 + power * 1.2;
-        const size = 0.05 + Math.random() * 0.06;
-        addEffect(spark, 0.85 + Math.random() * 0.4, (t) => {
-          const angle = start + t * spin;
-          const distance = radius + easeOut(t) * grow;
-          spark.position.copy(point).add(new THREE.Vector3(Math.cos(angle) * distance, 0, Math.sin(angle) * distance).applyEuler(tilt));
-          spark.scale.setScalar(size * (0.6 + Math.abs(Math.sin(t * 20 + index)) * 0.6));
-          spark.material.opacity = 1 - t;
-        });
-      }
     };
 
     // Oro: monedas de oro de verdad que salen girando, caen y botan en la pista.
@@ -702,20 +840,20 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
     };
 
     const SIGNATURES = {
-      fuego: (point, theme, power) => fireSignature(point, power),
+      fuego: (point, theme, power, direction) => fireSignature(point, power, direction),
       rayo: (point, theme, power) => lightningSignature(point, power),
       galaxia: galaxySignature,
       oro: (point, theme, power) => goldSignature(point, power),
       hielo: (point, theme, power, direction) => iceSignature(point, direction, power),
       estrellas: starSignature,
     };
-    const themeSignature = (point, theme, power, direction) => {
+    const themeSignature = (point, theme, power, direction, action) => {
       flashLight(point, theme.colors[0], power);
-      SIGNATURES[theme.name]?.(point, theme, power, direction);
+      SIGNATURES[theme.name]?.(point, theme, power, direction, action);
     };
 
     const themedBurst = (point, theme, power, direction = new THREE.Vector3(0, -0.4, -1).normalize(), action = "remate", feet = null) => {
-      themeSignature(point, theme, power, direction);
+      themeSignature(point, theme, power, direction, action);
       if (action === "recepcion") receptionShow(point, theme, feet ?? point.clone().setY(0));
       else if (action === "colocacion") setShow(point, theme);
       forceImpact(point, direction, power, theme.colors, Boolean(theme.flames));
@@ -1112,7 +1250,10 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
           const duration = actionDuration("remate");
           const takeoff = (takeoffTime("remate") ?? contactTime("remate") * 0.6) / duration;
           const hit = contactTime("remate") / duration;
-          if (before && before.action === "remate" && before.progress < takeoff && action.progress >= takeoff) takeoffBlast(rig.group.position, spikeFx);
+          if (before && before.action === "remate" && before.progress < takeoff && action.progress >= takeoff) {
+            takeoffBlast(rig.group.position, spikeFx);
+            if (spikeFx.flames) firePillar(rig.group.position);
+          }
           if (action.progress >= takeoff && action.progress <= hit + 0.12) {
             for (let index = 0; index < 3; index += 1) auraParticle(rig.group.position.clone().add(new THREE.Vector3(0, 0.3, 0)), spikeFx, 1.9);
           }
@@ -1316,6 +1457,7 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
             const hot = ball.hot && now - ball.hot < 1800;
             playBounce({ strength: hot ? 1 : strength, ...placeSound(at) });
             floorImpact(at, strength, hot, hot ? ball.theme : null);
+            if (hot && ball.theme?.flames) fireLanding(at);
             ball.hot = 0;
             ball.peak = 0;
           }
@@ -1345,7 +1487,10 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         const speed = ball.last ? at.distanceTo(ball.last) / dt : 0;
         const heatLife = ball.theme ? 2400 : 1400;
         const heat = ball.hot ? Math.max(0, 1 - (now - ball.hot) / heatLife) * ball.heat : 0;
-        if (ball.theme && heat > 0.15 && ball.last && at.distanceTo(ball.last) > 0.01) trailParticle(at, ball.theme);
+        if (ball.theme && heat > 0.15 && ball.last && at.distanceTo(ball.last) > 0.01) {
+          trailParticle(at, ball.theme);
+          if (ball.theme.flames && heat > 0.3) fireComet(at);
+        }
         const wanted = current.actions && speed < 60 ? Math.min(1, Math.max(0, (speed - 3) / 9) + heat) : 0;
         ball.glow += (wanted - ball.glow) * 0.25;
         ball.history.unshift(at.clone());
