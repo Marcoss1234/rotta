@@ -32,6 +32,8 @@ export function setSoundEnabled(on) {
 // Se para al salir de la app (para que no salga en la pantalla de bloqueo) y vuelve con el siguiente toque.
 const SILENT_AUDIO = "data:audio/wav;base64,UklGRt0BAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YbkBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
 let silentLoop = null;
+// Lo que ha fallado al intentar sonar, para el botón «Probar sonido».
+const problems = { silent: null, resume: null };
 function setPlaybackSession() {
   try {
     if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback";
@@ -50,7 +52,16 @@ function soundEvenOnSilentMode() {
       silentLoop.setAttribute("x-webkit-airplay", "deny");
       silentLoop.setAttribute("playsinline", "");
     }
-    if (silentLoop.paused) silentLoop.play().catch(() => {});
+    if (silentLoop.paused) {
+      silentLoop
+        .play()
+        .then(() => {
+          problems.silent = null;
+        })
+        .catch((error) => {
+          problems.silent = error?.name ?? "error";
+        });
+    }
   } catch {
     // Si no se puede, al menos suena con el móvil sin silencio.
   }
@@ -94,7 +105,16 @@ export function unlockSound() {
   }
   // El iPhone deja el sonido "suspended" o "interrupted" (tras una llamada, otra app con audio o volver de
   // segundo plano): con cualquiera de los dos, el siguiente toque lo vuelve a encender.
-  if (context.state !== "running") context.resume().catch(() => {});
+  if (context.state !== "running") {
+    context
+      .resume()
+      .then(() => {
+        problems.resume = null;
+      })
+      .catch((error) => {
+        problems.resume = error?.name ?? "error";
+      });
+  }
   return context;
 }
 
@@ -109,6 +129,47 @@ function impulse(audio, seconds, decay) {
 }
 
 const ready = () => context && context.state === "running" && soundEnabled();
+
+// «Probar sonido»: tres notas claras, más fuertes que el plup, para saber si se oye.
+export function playTest() {
+  if (!context) return;
+  const now = context.currentTime + 0.02;
+  [660, 880, 1320].forEach((frequency, index) => {
+    const osc = context.createOscillator();
+    osc.type = "triangle";
+    osc.frequency.value = frequency;
+    const gain = context.createGain();
+    const at = now + index * 0.14;
+    gain.gain.setValueAtTime(0.0001, at);
+    gain.gain.exponentialRampToValueAtTime(0.5, at + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.35);
+    osc.connect(gain).connect(master);
+    osc.start(at);
+    osc.stop(at + 0.4);
+  });
+}
+
+// Cómo está el sonido ahora mismo, explicado para quien no sabe de esto.
+export function soundStatus() {
+  const lines = [];
+  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) ? navigator.userAgent.match(/OS (\d+)_(\d+)/) : null;
+  if (!soundEnabled()) lines.push("Los sonidos están apagados en el interruptor «Sonidos».");
+  if (!context) lines.push("El sonido aún no se ha activado: toca otra vez el botón.");
+  else if (context.state !== "running") lines.push(`El navegador tiene el sonido parado (${context.state}).`);
+  if (problems.resume) lines.push(`No ha dejado encender el sonido (${problems.resume}).`);
+  if (problems.silent) lines.push(`El truco para el modo silencio ha fallado (${problems.silent}).`);
+  if (silentLoop && silentLoop.paused && !problems.silent) lines.push("El audio para el modo silencio está parado.");
+  const session = typeof navigator !== "undefined" && navigator.audioSession ? navigator.audioSession.type : null;
+  if (ios && !session) lines.push(`iOS ${ios[1]}.${ios[2]}: el modo de sonido de iOS 17 no está disponible.`);
+  if (lines.length === 0) lines.push("Todo en marcha: si no lo has oído, sube el volumen con los botones del lateral con la app abierta y mira que no tengas auriculares conectados.");
+  const technical = [
+    `estado: ${context?.state ?? "sin crear"}`,
+    `sesión: ${session ?? "no"}`,
+    `bucle: ${silentLoop ? (silentLoop.paused ? "parado" : "sonando") : "no"}`,
+    ios ? `iOS ${ios[1]}.${ios[2]}` : "no iPhone",
+  ].join(" · ");
+  return { lines, technical };
+}
 
 // "Plup": una burbujita al tocar un botón de la app. Corta y suave, sin eco.
 export function playTap() {

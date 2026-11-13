@@ -3,7 +3,7 @@ import { ChevronRight, Volume2, VolumeX, X } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import Avatar from "@/app/components/Avatar.jsx";
 import { roleLabel } from "@/app/roles.js";
-import { setSoundEnabled, soundEnabled } from "@/app/components/board/boardSounds.js";
+import { playTest, setSoundEnabled, soundEnabled, soundStatus, unlockSound } from "@/app/components/board/boardSounds.js";
 
 const CLOSE_MS = 220;
 
@@ -14,6 +14,15 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
   const panelRef = useRef(null);
   // Sonidos de la app (el "plup" de los botones y los golpes de la pizarra 3D).
   const [sound, setSound] = useState(soundEnabled);
+  // «Probar sonido»: suena una melodía corta y explica qué pasa si no se oye.
+  const [soundCheck, setSoundCheck] = useState(null);
+  const testSound = () => {
+    unlockSound();
+    setTimeout(() => {
+      playTest();
+      setSoundCheck(soundStatus());
+    }, 250);
+  };
 
   // Al cerrar se deja un momento montado para que salga deslizándose.
   useEffect(() => {
@@ -125,6 +134,18 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${sound ? "left-[1.375rem]" : "left-0.5"}`} />
             </span>
           </button>
+          <button type="button" onClick={testSound} className="ml-11 min-h-10 rounded-lg px-3 text-left text-sm font-semibold text-tnt hover:bg-white/5">
+            Probar sonido
+          </button>
+          {soundCheck && (
+            <div role="status" className="mx-3 space-y-1 rounded-xl bg-white/[0.04] p-3 text-xs text-zinc-300 ring-1 ring-white/10">
+              <p className="font-bold text-white">¿Has oído tres notas?</p>
+              {soundCheck.lines.map((line) => (
+                <p key={line}>{line}</p>
+              ))}
+              <p className="pt-1 text-[10px] text-zinc-500">{soundCheck.technical}</p>
+            </div>
+          )}
         </div>
       </nav>
     </div>
