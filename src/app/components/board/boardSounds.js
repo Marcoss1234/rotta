@@ -169,13 +169,14 @@ function impulse(audio, seconds, decay) {
 // Algunos iPhone (iOS 18) dejan el motor de sonido parado para siempre, pero sí dejan sonar audios normales
 // (como el bucle mudo). Entonces cada sonido se dibuja en un motor "de mentira" que no necesita permiso
 // (OfflineAudioContext), se convierte en un audio WAV y lo toca uno de estos reproductores.
-const SAMPLE_RATE = 44100;
+// Una pista y 22 kHz: en sonidos tan cortos no se nota y se preparan antes.
+const SAMPLE_RATE = 22050;
 const players = [];
 let nextPlayer = 0;
 // Los reproductores se "estrenan" al tocar la pantalla: después el iPhone les deja sonar sin tocar.
 function preparePlayers() {
   if (typeof window === "undefined") return;
-  while (players.length < 6) {
+  while (players.length < 10) {
     const player = new window.Audio();
     player.setAttribute("playsinline", "");
     player.setAttribute("x-webkit-airplay", "deny");
@@ -223,13 +224,44 @@ function wavOf(buffer) {
       offset += 2;
     }
   }
-  return new Blob([view], { type: "audio/wav" });
+  // Pasado a texto base64 por trozos (de golpe, con sonidos largos, se pasaría del límite).
+  const bytesArray = new Uint8Array(view.buffer);
+  let binary = "";
+  for (let index = 0; index < bytesArray.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytesArray.subarray(index, index + 0x8000));
+  }
+  return `data:audio/wav;base64,${btoa(binary)}`;
 }
 
-function playThroughMedia(seconds, draw) {
+const prepared = new Map();
+function playUrl(url) {
+  const player = players.length ? players[nextPlayer % players.length] : new window.Audio();
+  nextPlayer += 1;
+  player.src = url;
+  return player.play().catch(() => {
+    const fresh = new window.Audio();
+    fresh.setAttribute("playsinline", "");
+    fresh.src = url;
+    return fresh.play();
+  });
+}
+
+function playThroughMedia(seconds, draw, cacheKey = null) {
+  if (cacheKey && prepared.has(cacheKey)) {
+    stopSilentLoop();
+    playUrl(prepared.get(cacheKey))
+      .then(() => {
+        problems.media = null;
+        usedMedia = true;
+      })
+      .catch((error) => {
+        problems.media = error?.name ?? "error";
+      });
+    return;
+  }
   const Offline = window.OfflineAudioContext ?? window.webkitOfflineAudioContext;
   if (!Offline) return;
-  const offline = new Offline(2, Math.ceil(SAMPLE_RATE * seconds), SAMPLE_RATE);
+  const offline = new Offline(1, Math.ceil(SAMPLE_RATE * seconds), SAMPLE_RATE);
   const saved = { context, master, room, noise };
   try {
     wireGraph(offline);
@@ -243,23 +275,12 @@ function playThroughMedia(seconds, draw) {
     noise = saved.noise;
   }
   stopSilentLoop();
-  const play = (player, url) => {
-    if (player.dataset.url && player.dataset.url !== url) URL.revokeObjectURL(player.dataset.url);
-    player.dataset.url = url;
-    player.src = url;
-    return player.play();
-  };
   offline
     .startRendering()
     .then((buffer) => {
-      const url = URL.createObjectURL(wavOf(buffer));
-      const player = players.length ? players[nextPlayer % players.length] : new window.Audio();
-      nextPlayer += 1;
-      return play(player, url).catch(() => {
-        const fresh = new window.Audio();
-        fresh.setAttribute("playsinline", "");
-        return play(fresh, url);
-      });
+      const url = wavOf(buffer);
+      if (cacheKey) prepared.set(cacheKey, url);
+      return playUrl(url);
     })
     .then(() => {
       problems.media = null;
@@ -272,14 +293,13 @@ function playThroughMedia(seconds, draw) {
 let usedMedia = false;
 
 // Todos los sonidos pasan por aquí: con el motor si funciona; si el iPhone lo tiene bloqueado, por el plan B.
-function perform(seconds, draw, { skipOnPlanB = false } = {}) {
+function perform(seconds, draw, { cacheKey = null } = {}) {
   if (!soundEnabled() || typeof window === "undefined") return;
   if (context && context.state === "running") {
     draw();
     return;
   }
-  if (skipOnPlanB) return;
-  playThroughMedia(seconds, draw);
+  playThroughMedia(seconds, draw, cacheKey);
 }
 
 
@@ -344,7 +364,7 @@ export function playTap() {
     bubble.connect(gain).connect(master);
     bubble.start(now);
     bubble.stop(now + 0.14);
-  });
+  }, { cacheKey: "tap" });
 }
 
 // Salida de un sonido: volumen y lado (izquierda/derecha), y una parte al eco.
@@ -597,5 +617,5 @@ export function playStep({ run = 0, volume = 1, pan = 0 } = {}) {
       osc.start(at);
       osc.stop(at + 0.11);
     }
-  }, { skipOnPlanB: true });
+  }, { cacheKey: `paso-${run > 0.6 ? "corre" : "anda"}-${Math.round(Math.min(1, volume) * 3)}-${Math.floor(Math.random() * 3)}` });
 }
