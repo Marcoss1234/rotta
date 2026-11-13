@@ -31,8 +31,16 @@ export default function TapSplash({ disabled = false }) {
       unlockSound();
       if (event.target.closest?.(TAPPABLE)) playTap();
     };
+    // En el iPhone el permiso para sonar llega al levantar el dedo (touchend / click), no al empezar a tocar.
+    const onRelease = () => unlockSound();
     document.addEventListener("pointerdown", onDown, { passive: true });
-    return () => document.removeEventListener("pointerdown", onDown);
+    document.addEventListener("touchend", onRelease, { passive: true });
+    document.addEventListener("click", onRelease, { passive: true });
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("touchend", onRelease);
+      document.removeEventListener("click", onRelease);
+    };
   }, []);
 
   useEffect(() => {

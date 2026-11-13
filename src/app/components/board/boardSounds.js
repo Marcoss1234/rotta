@@ -22,36 +22,46 @@ export function setSoundEnabled(on) {
     // Sin almacenamiento: vale solo para esta vez.
   }
   if (on) unlockSound();
+  else stopSilentLoop();
 }
 
-// En el iPhone, el modo silencio apaga los sonidos de las webs. Se le dice que son sonidos de la app
-// (como los de un vídeo) para que suenen igual: en iOS 17 o más con `audioSession`; en los anteriores,
-// reproduciendo un audio mudo cortísimo al tocar, que cambia el móvil al modo "reproducción".
-const SILENT_AUDIO = "data:audio/wav;base64,UklGRt0BAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YbkBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
-let playbackSession = false;
-// Al volver a la app (después de otra app o de bloquear el móvil) se repite el truco del modo silencio.
+// En el iPhone, el modo silencio apaga los sonidos de las webs. Para que suenen igual (como los de un vídeo):
+// - en iOS 17 o más, se le dice al navegador que son sonidos de "reproducción" (`audioSession`);
+// - y, para los demás, un audio mudo que se queda sonando en bucle mientras la app está abierta: mientras
+//   suena, el móvil está en modo "reproducción" y deja oír el resto. Si se parara, volvería a silenciarlo.
+// Se para al salir de la app (para que no salga en la pantalla de bloqueo) y vuelve con el siguiente toque.
+const SILENT_AUDIO = "data:audio/wav;base64,UklGRt0BAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YbkBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
+let silentLoop = null;
+function setPlaybackSession() {
+  try {
+    if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback";
+  } catch {
+    // Navegador sin esta opción: vale el audio mudo.
+  }
+}
+if (typeof navigator !== "undefined" && soundEnabled()) setPlaybackSession();
+function soundEvenOnSilentMode() {
+  if (!soundEnabled()) return;
+  setPlaybackSession();
+  try {
+    if (!silentLoop) {
+      silentLoop = new window.Audio(SILENT_AUDIO);
+      silentLoop.loop = true;
+      silentLoop.setAttribute("x-webkit-airplay", "deny");
+      silentLoop.setAttribute("playsinline", "");
+    }
+    if (silentLoop.paused) silentLoop.play().catch(() => {});
+  } catch {
+    // Si no se puede, al menos suena con el móvil sin silencio.
+  }
+}
+function stopSilentLoop() {
+  silentLoop?.pause();
+}
 if (typeof document !== "undefined") {
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") playbackSession = false;
+    if (document.visibilityState === "hidden") stopSilentLoop();
   });
-}
-function soundEvenOnSilentMode() {
-  if (playbackSession) return;
-  playbackSession = true;
-  try {
-    if (navigator.audioSession) navigator.audioSession.type = "playback";
-  } catch {
-    // Navegador sin esta opción: vale el truco del audio mudo.
-  }
-  try {
-    const silent = new window.Audio(SILENT_AUDIO);
-    silent.setAttribute("x-webkit-airplay", "deny");
-    silent.play().catch(() => {
-      playbackSession = false;
-    });
-  } catch {
-    playbackSession = false;
-  }
 }
 
 // El navegador solo deja sonar después de que la persona toque algo: se llama al pulsar.
