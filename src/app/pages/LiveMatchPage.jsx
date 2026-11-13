@@ -292,6 +292,8 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
 
 // Al terminar: el entrenador elige el MVP. Viene marcado el que mejor ha ido según lo apuntado.
 // Cómo se usa la pantalla: para quien lleva el marcador, todo; para el resto, lo que ven.
+// Las listas de las ventanas usan `flex-auto` (no `flex-1`): en Safari del iPhone, con `flex-1`
+// la lista se encogía casi a cero y solo se veía la primera línea.
 function HelpDialog({ scorer, onClose }) {
   const dialogRef = useRef(null);
   useEffect(() => {
@@ -330,7 +332,7 @@ function HelpDialog({ scorer, onClose }) {
           Cómo funciona
         </h2>
       </div>
-      <ul className="min-h-0 flex-1 space-y-2.5 overflow-y-auto px-4 py-3">
+      <ul className="min-h-0 flex-auto space-y-2.5 overflow-y-auto px-4 py-3">
         {tips.map(([Icon, title, text]) => (
           <li key={title} className="flex gap-2.5">
             <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tnt/15 text-tnt ring-1 ring-tnt/30">
@@ -386,7 +388,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel }) {
           Gana <Coins aria-hidden="true" className="h-4 w-4" /> {15} Club Coins y se queda en sus premios.
         </p>
       </div>
-      <ul className="min-h-0 flex-1 space-y-1.5 overflow-y-auto p-3">
+      <ul className="min-h-0 flex-auto space-y-1.5 overflow-y-auto p-3">
         {ranked.map((player) => {
           const stats = game.stats[player.player_id];
           const selected = chosen === player.player_id;
