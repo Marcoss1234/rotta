@@ -304,3 +304,37 @@ def test_al_empezar_se_avisa_al_equipo(admin, monkeypatch):
     assert ana_id in users and category == "matches"
     assert "Empieza el partido" in payload["title"] and "CV Roquetas" in payload["body"]
     assert payload["url"] == f"/app/directo/{game['id']}"
+
+
+def test_el_entrenador_cambia_el_mvp_al_terminar(admin):
+    match_id = create_match(admin).json()["id"]
+    ana = member(admin)
+    luis = member(admin, "token-luis")
+    ana.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
+    luis.put(f"/api/matches/{match_id}/answer", json={"status": "going"})
+    game = admin.post(f"/api/live/match/{match_id}").json()
+    admin.post(f"/api/live/{game['id']}/start")
+    ids = {item["name"]: item["player_id"] for item in admin.get(f"/api/live/{game['id']}").json()["lineup"]}
+    points(admin, game["id"], "us", 25)
+    # Antes de terminar no se cambia: se elige al terminar.
+    assert admin.put(f"/api/live/{game['id']}/mvp", json={"mvp_player_id": ids["Ana"]}).status_code == 409
+    ana_before = ana.get("/api/coins").json()["balance"]
+    luis_before = luis.get("/api/coins").json()["balance"]
+    finished = admin.post(f"/api/live/{game['id']}/finish", json={"mvp_player_id": ids["Ana"]}).json()
+    assert finished["can_edit_mvp"] is True
+    # Un jugador no puede cambiarlo.
+    assert ana.put(f"/api/live/{game['id']}/mvp", json={"mvp_player_id": ids["Ana"]}).status_code == 403
+    changed = admin.put(f"/api/live/{game['id']}/mvp", json={"mvp_player_id": ids["Luis"]})
+    assert changed.status_code == 200 and changed.json()["mvp"]["name"] == "Luis"
+    win = 0  # Un set solo: aún no hay victoria.
+    assert ana.get("/api/coins").json()["balance"] == ana_before + win
+    assert ana.get("/api/coins").json()["honors"] == []
+    assert luis.get("/api/coins").json()["balance"] == luis_before + win + live.MVP_COINS
+    assert admin.get("/api/matches/played?team_id=masculino").json()[0]["mvp"] == "Luis"
+    # Guardar el mismo otra vez no da coins dos veces; y se puede dejar sin MVP.
+    admin.put(f"/api/live/{game['id']}/mvp", json={"mvp_player_id": ids["Luis"]})
+    assert luis.get("/api/coins").json()["balance"] == luis_before + win + live.MVP_COINS
+    cleared = admin.put(f"/api/live/{game['id']}/mvp", json={"mvp_player_id": None}).json()
+    assert cleared["mvp"] is None
+    assert luis.get("/api/coins").json()["balance"] == luis_before + win
+    assert admin.get("/api/matches/played?team_id=masculino").json()[0].get("mvp") is None

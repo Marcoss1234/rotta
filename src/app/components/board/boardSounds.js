@@ -32,8 +32,6 @@ export function setSoundEnabled(on) {
 // Se para al salir de la app (para que no salga en la pantalla de bloqueo) y vuelve con el siguiente toque.
 const SILENT_AUDIO = "data:audio/wav;base64,UklGRt0BAABXQVZFZm10IBAAAAABAAEARKwAAESsAAABAAgAZGF0YbkBAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA=";
 let silentLoop = null;
-// Lo que ha fallado al intentar sonar, para el botón «Probar sonido».
-const problems = { silent: null, resume: null };
 function setPlaybackSession() {
   try {
     if (navigator.audioSession && navigator.audioSession.type !== "playback") navigator.audioSession.type = "playback";
@@ -45,7 +43,6 @@ if (typeof navigator !== "undefined" && soundEnabled()) setPlaybackSession();
 function soundEvenOnSilentMode() {
   if (!soundEnabled()) return;
   setPlaybackSession();
-  preparePlayers();
   try {
     if (!silentLoop) {
       silentLoop = new window.Audio(SILENT_AUDIO);
@@ -53,16 +50,7 @@ function soundEvenOnSilentMode() {
       silentLoop.setAttribute("x-webkit-airplay", "deny");
       silentLoop.setAttribute("playsinline", "");
     }
-    if (silentLoop.paused && !usedMedia) {
-      silentLoop
-        .play()
-        .then(() => {
-          problems.silent = null;
-        })
-        .catch((error) => {
-          problems.silent = error?.name ?? "error";
-        });
-    }
+    if (silentLoop.paused) silentLoop.play().catch(() => {});
   } catch {
     // Si no se puede, al menos suena con el móvil sin silencio.
   }
@@ -77,81 +65,36 @@ if (typeof document !== "undefined") {
 }
 
 // El navegador solo deja sonar después de que la persona toque algo: se llama al pulsar.
-// El motor de sonido: el volumen general, un limitador (que no cruja el altavoz) y el eco de pabellón.
-// `wireGraph` monta lo mismo sobre cualquier motor: el de verdad o el que prepara un sonido en segundo plano.
-// El eco tiene que ir a la misma frecuencia que su motor; por eso se guarda uno por frecuencia.
-const sharedImpulses = new Map();
-let sharedNoise = null;
-function wireGraph(audio) {
-  context = audio;
-  master = audio.createGain();
-  master.gain.value = 0.8;
-  // Compresor al final: el remate puede sonar muy fuerte sin que cruja el altavoz.
-  const limiter = audio.createDynamicsCompressor();
-  limiter.threshold.value = -10;
-  limiter.knee.value = 6;
-  limiter.ratio.value = 8;
-  limiter.attack.value = 0.002;
-  limiter.release.value = 0.2;
-  master.connect(limiter).connect(audio.destination);
-  // Eco corto de pabellón (el eco y el ruido se calculan una vez y se reutilizan).
-  if (!sharedImpulses.has(audio.sampleRate)) sharedImpulses.set(audio.sampleRate, impulse(audio, 0.9, 3.2));
-  room = audio.createConvolver();
-  room.buffer = sharedImpulses.get(audio.sampleRate);
-  const wet = audio.createGain();
-  wet.gain.value = 0.22;
-  room.connect(wet).connect(master);
-  if (!sharedNoise) {
-    sharedNoise = audio.createBuffer(1, audio.sampleRate, audio.sampleRate);
-    const data = sharedNoise.getChannelData(0);
-    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
-  }
-  noise = sharedNoise;
-}
-function buildContext(Audio) {
-  wireGraph(new Audio());
-  stoppedSince = null;
-}
-
-// Desde cuándo el motor no está sonando ("suspended" o "interrupted").
-let stoppedSince = null;
-// En el iPhone (iOS 18) el motor a veces se queda parado y no vuelve aunque se le pida: si al tocar lleva
-// parado más de este tiempo, se tira y se hace uno nuevo en ese mismo toque, que sí arranca.
-const STUCK_MS = 700;
-const MAX_REBUILDS = 3;
-
-// El navegador solo deja sonar después de que la persona toque algo: se llama al pulsar.
 export function unlockSound() {
   if (typeof window === "undefined") return null;
   soundEvenOnSilentMode();
   const Audio = window.AudioContext ?? window.webkitAudioContext;
   if (!Audio) return null;
-  if (context && context.state !== "running") {
-    const now = performance.now();
-    if (stoppedSince === null) stoppedSince = now;
-    else if (now - stoppedSince > STUCK_MS && (problems.rebuilt ?? 0) < MAX_REBUILDS) {
-      problems.rebuilt = (problems.rebuilt ?? 0) + 1;
-      context.close().catch(() => {});
-      context = null;
-    }
+  if (!context) {
+    context = new Audio();
+    master = context.createGain();
+    master.gain.value = 0.8;
+    // Compresor al final: el remate puede sonar muy fuerte sin que cruja el altavoz.
+    const limiter = context.createDynamicsCompressor();
+    limiter.threshold.value = -10;
+    limiter.knee.value = 6;
+    limiter.ratio.value = 8;
+    limiter.attack.value = 0.002;
+    limiter.release.value = 0.2;
+    master.connect(limiter).connect(context.destination);
+    // Eco corto de pabellón.
+    room = context.createConvolver();
+    room.buffer = impulse(context, 0.9, 3.2);
+    const wet = context.createGain();
+    wet.gain.value = 0.22;
+    room.connect(wet).connect(master);
+    noise = context.createBuffer(1, context.sampleRate, context.sampleRate);
+    const data = noise.getChannelData(0);
+    for (let index = 0; index < data.length; index += 1) data[index] = Math.random() * 2 - 1;
   }
-  if (!context) buildContext(Audio);
   // El iPhone deja el sonido "suspended" o "interrupted" (tras una llamada, otra app con audio o volver de
   // segundo plano): con cualquiera de los dos, el siguiente toque lo vuelve a encender.
-  if (context.state !== "running") {
-    const current = context;
-    current
-      .resume()
-      .then(() => {
-        problems.resume = null;
-        if (current === context && current.state === "running") stoppedSince = null;
-      })
-      .catch((error) => {
-        if (current === context) problems.resume = error?.name ?? "error";
-      });
-  } else {
-    stoppedSince = null;
-  }
+  if (context.state !== "running") context.resume().catch(() => {});
   return context;
 }
 
@@ -165,206 +108,23 @@ function impulse(audio, seconds, decay) {
   return buffer;
 }
 
-// ---------- Plan B: si el iPhone bloquea el motor, cada sonido se prepara aparte y suena como un audio ----------
-// Algunos iPhone (iOS 18) dejan el motor de sonido parado para siempre, pero sí dejan sonar audios normales
-// (como el bucle mudo). Entonces cada sonido se dibuja en un motor "de mentira" que no necesita permiso
-// (OfflineAudioContext), se convierte en un audio WAV y lo toca uno de estos reproductores.
-// Una pista y 22 kHz: en sonidos tan cortos no se nota y se preparan antes.
-const SAMPLE_RATE = 22050;
-const players = [];
-let nextPlayer = 0;
-// Los reproductores se "estrenan" al tocar la pantalla: después el iPhone les deja sonar sin tocar.
-function preparePlayers() {
-  if (typeof window === "undefined") return;
-  while (players.length < 10) {
-    const player = new window.Audio();
-    player.setAttribute("playsinline", "");
-    player.setAttribute("x-webkit-airplay", "deny");
-    players.push(player);
-  }
-  players.forEach((player) => {
-    if (player.dataset.primed) return;
-    player.dataset.primed = "1";
-    player.src = SILENT_AUDIO;
-    player
-      .play()
-      .then(() => {
-        // Si mientras tanto ya le han puesto un sonido de verdad, no se toca.
-        if (player.src === SILENT_AUDIO) player.pause();
-      })
-      .catch(() => {});
-  });
-}
-
-function wavOf(buffer) {
-  const channels = buffer.numberOfChannels;
-  const frames = buffer.length;
-  const bytes = 44 + frames * channels * 2;
-  const view = new DataView(new ArrayBuffer(bytes));
-  const text = (offset, value) => [...value].forEach((char, index) => view.setUint8(offset + index, char.charCodeAt(0)));
-  text(0, "RIFF");
-  view.setUint32(4, bytes - 8, true);
-  text(8, "WAVE");
-  text(12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, channels, true);
-  view.setUint32(24, buffer.sampleRate, true);
-  view.setUint32(28, buffer.sampleRate * channels * 2, true);
-  view.setUint16(32, channels * 2, true);
-  view.setUint16(34, 16, true);
-  text(36, "data");
-  view.setUint32(40, frames * channels * 2, true);
-  const data = [...Array(channels)].map((_, channel) => buffer.getChannelData(channel));
-  let offset = 44;
-  for (let frame = 0; frame < frames; frame += 1) {
-    for (let channel = 0; channel < channels; channel += 1) {
-      const sample = Math.max(-1, Math.min(1, data[channel][frame]));
-      view.setInt16(offset, sample < 0 ? sample * 0x8000 : sample * 0x7fff, true);
-      offset += 2;
-    }
-  }
-  // Pasado a texto base64 por trozos (de golpe, con sonidos largos, se pasaría del límite).
-  const bytesArray = new Uint8Array(view.buffer);
-  let binary = "";
-  for (let index = 0; index < bytesArray.length; index += 0x8000) {
-    binary += String.fromCharCode(...bytesArray.subarray(index, index + 0x8000));
-  }
-  return `data:audio/wav;base64,${btoa(binary)}`;
-}
-
-const prepared = new Map();
-function playUrl(url) {
-  const player = players.length ? players[nextPlayer % players.length] : new window.Audio();
-  nextPlayer += 1;
-  player.src = url;
-  return player.play().catch(() => {
-    const fresh = new window.Audio();
-    fresh.setAttribute("playsinline", "");
-    fresh.src = url;
-    return fresh.play();
-  });
-}
-
-function playThroughMedia(seconds, draw, cacheKey = null) {
-  if (cacheKey && prepared.has(cacheKey)) {
-    stopSilentLoop();
-    playUrl(prepared.get(cacheKey))
-      .then(() => {
-        problems.media = null;
-        usedMedia = true;
-      })
-      .catch((error) => {
-        problems.media = error?.name ?? "error";
-      });
-    return;
-  }
-  const Offline = window.OfflineAudioContext ?? window.webkitOfflineAudioContext;
-  if (!Offline) return;
-  const offline = new Offline(1, Math.ceil(SAMPLE_RATE * seconds), SAMPLE_RATE);
-  const saved = { context, master, room, noise };
-  try {
-    wireGraph(offline);
-    draw();
-  } catch (error) {
-    problems.media = error?.name ?? "error";
-  } finally {
-    context = saved.context;
-    master = saved.master;
-    room = saved.room;
-    noise = saved.noise;
-  }
-  stopSilentLoop();
-  offline
-    .startRendering()
-    .then((buffer) => {
-      const url = wavOf(buffer);
-      if (cacheKey) prepared.set(cacheKey, url);
-      return playUrl(url);
-    })
-    .then(() => {
-      problems.media = null;
-      usedMedia = true;
-    })
-    .catch((error) => {
-      problems.media = error?.name ?? "error";
-    });
-}
-let usedMedia = false;
-
-// Todos los sonidos pasan por aquí: con el motor si funciona; si el iPhone lo tiene bloqueado, por el plan B.
-function perform(seconds, draw, { cacheKey = null } = {}) {
-  if (!soundEnabled() || typeof window === "undefined") return;
-  if (context && context.state === "running") {
-    draw();
-    return;
-  }
-  playThroughMedia(seconds, draw, cacheKey);
-}
-
-
-// «Probar sonido»: tres notas claras, más fuertes que el plup, para saber si se oye.
-export function playTest() {
-  perform(0.9, () => {
-    const now = context.currentTime + 0.02;
-    [660, 880, 1320].forEach((frequency, index) => {
-      const osc = context.createOscillator();
-      osc.type = "triangle";
-      osc.frequency.value = frequency;
-      const gain = context.createGain();
-      const at = now + index * 0.14;
-      gain.gain.setValueAtTime(0.0001, at);
-      gain.gain.exponentialRampToValueAtTime(0.5, at + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, at + 0.35);
-      osc.connect(gain).connect(master);
-      osc.start(at);
-      osc.stop(at + 0.4);
-    });
-  });
-}
-
-// Cómo está el sonido ahora mismo, explicado para quien no sabe de esto.
-export function soundStatus() {
-  const lines = [];
-  const ios = /iP(hone|ad|od)/.test(navigator.userAgent) ? navigator.userAgent.match(/OS (\d+)_(\d+)/) : null;
-  if (!soundEnabled()) lines.push("Los sonidos están apagados en el interruptor «Sonidos».");
-  if (!context) lines.push("El sonido aún no se ha activado: toca otra vez el botón.");
-  else if (context.state !== "running") lines.push(usedMedia ? "El iPhone tiene parado el motor de sonido, pero suena por el plan B (como un audio normal)." : `El navegador tiene el sonido parado (${context.state}).`);
-  if (problems.resume) lines.push(`No ha dejado encender el sonido (${problems.resume}).`);
-  if (problems.media) lines.push(`El plan B tampoco ha podido sonar (${problems.media}).`);
-  if (problems.silent) lines.push(`El truco para el modo silencio ha fallado (${problems.silent}).`);
-  if (silentLoop && silentLoop.paused && !problems.silent && !usedMedia) lines.push("El audio para el modo silencio está parado.");
-  const session = typeof navigator !== "undefined" && navigator.audioSession ? navigator.audioSession.type : null;
-  if (ios && !session) lines.push(`iOS ${ios[1]}.${ios[2]}: el modo de sonido de iOS 17 no está disponible.`);
-  if (lines.length === 0) lines.push("Todo en marcha: si no lo has oído, sube el volumen con los botones del lateral con la app abierta y mira que no tengas auriculares conectados.");
-  const technical = [
-    `estado: ${context?.state ?? "sin crear"}`,
-    `sesión: ${session ?? "no"}`,
-    `bucle: ${silentLoop ? (silentLoop.paused ? "parado" : "sonando") : "no"}`,
-    `rehecho: ${problems.rebuilt ?? 0}`,
-    `plan B: ${usedMedia ? "sí" : "no"}${problems.media ? ` (${problems.media})` : ""}`,
-    navigator.standalone || window.matchMedia?.("(display-mode: standalone)").matches ? "abierta desde el icono" : "abierta en el navegador",
-    ios ? `iOS ${ios[1]}.${ios[2]}` : "no iPhone",
-  ].join(" · ");
-  return { lines, technical };
-}
+const ready = () => context && context.state === "running" && soundEnabled();
 
 // "Plup": una burbujita al tocar un botón de la app. Corta y suave, sin eco.
 export function playTap() {
-  perform(0.25, () => {
-    const now = context.currentTime;
-    const bubble = context.createOscillator();
-    bubble.type = "sine";
-    bubble.frequency.setValueAtTime(360, now);
-    bubble.frequency.exponentialRampToValueAtTime(950, now + 0.065);
-    const gain = context.createGain();
-    gain.gain.setValueAtTime(0.0001, now);
-    gain.gain.exponentialRampToValueAtTime(0.18, now + 0.008);
-    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
-    bubble.connect(gain).connect(master);
-    bubble.start(now);
-    bubble.stop(now + 0.14);
-  }, { cacheKey: "tap" });
+  if (!ready()) return;
+  const now = context.currentTime;
+  const bubble = context.createOscillator();
+  bubble.type = "sine";
+  bubble.frequency.setValueAtTime(360, now);
+  bubble.frequency.exponentialRampToValueAtTime(950, now + 0.065);
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.0001, now);
+  gain.gain.exponentialRampToValueAtTime(0.18, now + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.12);
+  bubble.connect(gain).connect(master);
+  bubble.start(now);
+  bubble.stop(now + 0.14);
 }
 
 // Salida de un sonido: volumen y lado (izquierda/derecha), y una parte al eco.
@@ -465,21 +225,20 @@ function playSpike(volume, pan, power) {
 }
 
 export function playHit(action, { volume = 1, pan = 0 } = {}) {
-  perform(1.3, () => {
-    if (action === "remate") {
-      playSpike(Math.min(0.42, volume * 0.6), pan, 1);
-      return;
-    }
-    if (action === "saque") {
-      playSpike(Math.min(0.32, volume * 0.45), pan, 0.65);
-      return;
-    }
-    const sound = HITS[action] ?? HITS.recepcion;
-    const at = context.currentTime + 0.005;
-    const out = output(volume, pan);
-    thump(out, at, sound.thump);
-    slap(out, at, sound.slap);
-  });
+  if (!ready()) return;
+  if (action === "remate") {
+    playSpike(Math.min(0.42, volume * 0.6), pan, 1);
+    return;
+  }
+  if (action === "saque") {
+    playSpike(Math.min(0.32, volume * 0.45), pan, 0.65);
+    return;
+  }
+  const sound = HITS[action] ?? HITS.recepcion;
+  const at = context.currentTime + 0.005;
+  const out = output(volume, pan);
+  thump(out, at, sound.thump);
+  slap(out, at, sound.slap);
 }
 
 // ---------- Sonidos de los efectos de la tienda (suenan encima del golpe normal) ----------
@@ -577,45 +336,42 @@ const FX_SOUNDS = {
 
 // Sonido del efecto de un golpe: más fuerte en el remate que en la recepción o la colocación.
 export function playFx(name, action, { volume = 1, pan = 0 } = {}) {
-  perform(1.5, () => {
-    const recipe = FX_SOUNDS[name];
-    if (!recipe) return;
-    const power = action === "remate" ? 1 : 0.65;
-    const out = output(Math.min(0.55, volume * 0.75), pan);
-    recipe(out, context.currentTime + 0.01, power);
-  });
+  if (!ready()) return;
+  const recipe = FX_SOUNDS[name];
+  if (!recipe) return;
+  const power = action === "remate" ? 1 : 0.65;
+  const out = output(Math.min(0.55, volume * 0.75), pan);
+  recipe(out, context.currentTime + 0.01, power);
 }
 
 // El balón bota en el suelo: más fuerte cuanto más rápido llega.
 export function playBounce({ strength = 1, volume = 1, pan = 0 } = {}) {
-  perform(0.8, () => {
-    const level = Math.max(0.05, Math.min(1, strength));
-    const at = context.currentTime + 0.005;
-    const out = output(volume * level, pan);
-    thump(out, at, { from: 150, to: 50, length: 0.14, level: 0.85 });
-    slap(out, at, { type: "bandpass", frequency: 800, q: 0.8, length: 0.06, level: 0.55 });
-  });
+  if (!ready()) return;
+  const level = Math.max(0.05, Math.min(1, strength));
+  const at = context.currentTime + 0.005;
+  const out = output(volume * level, pan);
+  thump(out, at, { from: 150, to: 50, length: 0.14, level: 0.85 });
+  slap(out, at, { type: "bandpass", frequency: 800, q: 0.8, length: 0.06, level: 0.55 });
 }
 
 // Un paso: golpecito de zapatilla y, corriendo, alguna vez el chirrido de la goma en la pista.
 export function playStep({ run = 0, volume = 1, pan = 0 } = {}) {
-  perform(0.3, () => {
-    const at = context.currentTime + 0.005;
-    const out = output(volume * (0.35 + run * 0.4), pan);
-    slap(out, at, { type: "bandpass", frequency: 380 + Math.random() * 160, q: 1.4, length: 0.05, level: 0.5 });
-    if (run > 0.6 && Math.random() < 0.18) {
-      const osc = context.createOscillator();
-      osc.type = "triangle";
-      const pitch = 2100 + Math.random() * 900;
-      osc.frequency.setValueAtTime(pitch, at);
-      osc.frequency.linearRampToValueAtTime(pitch * 1.12, at + 0.07);
-      const env = context.createGain();
-      env.gain.setValueAtTime(0.0001, at);
-      env.gain.exponentialRampToValueAtTime(0.05, at + 0.01);
-      env.gain.exponentialRampToValueAtTime(0.0001, at + 0.09);
-      osc.connect(env).connect(out);
-      osc.start(at);
-      osc.stop(at + 0.11);
-    }
-  }, { cacheKey: `paso-${run > 0.6 ? "corre" : "anda"}-${Math.round(Math.min(1, volume) * 3)}-${Math.floor(Math.random() * 3)}` });
+  if (!ready()) return;
+  const at = context.currentTime + 0.005;
+  const out = output(volume * (0.35 + run * 0.4), pan);
+  slap(out, at, { type: "bandpass", frequency: 380 + Math.random() * 160, q: 1.4, length: 0.05, level: 0.5 });
+  if (run > 0.6 && Math.random() < 0.18) {
+    const osc = context.createOscillator();
+    osc.type = "triangle";
+    const pitch = 2100 + Math.random() * 900;
+    osc.frequency.setValueAtTime(pitch, at);
+    osc.frequency.linearRampToValueAtTime(pitch * 1.12, at + 0.07);
+    const env = context.createGain();
+    env.gain.setValueAtTime(0.0001, at);
+    env.gain.exponentialRampToValueAtTime(0.05, at + 0.01);
+    env.gain.exponentialRampToValueAtTime(0.0001, at + 0.09);
+    osc.connect(env).connect(out);
+    osc.start(at);
+    osc.stop(at + 0.11);
+  }
 }

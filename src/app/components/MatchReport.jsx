@@ -1,4 +1,4 @@
-import { ArrowLeft, Flame, ShieldAlert, Target, Timer, Trophy, TrendingUp } from "lucide-react";
+import { ArrowLeft, Flame, Pencil, ShieldAlert, Target, Timer, Trophy, TrendingUp } from "lucide-react";
 
 const SKILL_LABEL = { saque: "Saque", recepcion: "Recepción", colocacion: "Colocación", ataque: "Ataque", bloqueo: "Bloqueo", defensa: "Defensa" };
 const POSITION_SHORT = { Líbero: "LIB", Colocador: "COL", Receptor: "REC", Central: "CEN", Opuesto: "OPU" };
@@ -55,7 +55,7 @@ function Name({ person }) {
 }
 
 // El informe al terminar el partido: resultado, cómo llegaron los puntos, cada fundamento y cada jugador.
-export default function MatchReport({ game, onClose }) {
+export default function MatchReport({ game, onClose, onChangeMvp = null }) {
   const report = game.report;
   const won = game.won.us > game.won.them;
   const ourPoints = report.origin.us_by_us + report.origin.us_by_them;
@@ -91,11 +91,21 @@ export default function MatchReport({ game, onClose }) {
               </li>
             ))}
           </ol>
-          {game.mvp && (
-            <p className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-amber-300/15 px-3 py-1 text-sm font-bold text-amber-100 ring-1 ring-amber-300/40">
-              <Trophy aria-hidden="true" className="h-4 w-4 text-amber-300" />
-              MVP: {game.mvp.name}
-            </p>
+          {(game.mvp || onChangeMvp) && (
+            <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+              {game.mvp && (
+                <p className="inline-flex items-center gap-1.5 rounded-full bg-amber-300/15 px-3 py-1 text-sm font-bold text-amber-100 ring-1 ring-amber-300/40">
+                  <Trophy aria-hidden="true" className="h-4 w-4 text-amber-300" />
+                  MVP: {game.mvp.name}
+                </p>
+              )}
+              {onChangeMvp && (
+                <button type="button" onClick={onChangeMvp} className="inline-flex min-h-9 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-zinc-200 ring-1 ring-white/20 hover:bg-white/5">
+                  <Pencil aria-hidden="true" className="h-3.5 w-3.5" />
+                  {game.mvp ? "Cambiar MVP" : "Elegir MVP"}
+                </button>
+              )}
+            </div>
           )}
           <p className="mt-3 text-xs text-zinc-400">
             Acciones apuntadas: <span className="font-bold text-emerald-300">✓{report.total.good}</span> · <span className="font-bold text-red-300">✗{report.total.bad}</span>

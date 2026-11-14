@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft, Check, Coins, Flag, Hand, Info, MoreVertical, MousePointerClick, Play, RotateCcw, Star, Timer, Trash2, Trophy, Undo2, X } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { addLiveEvent, deleteLive, finishLive, getLive, resetLive, setLiveOrder, startLive, undoLiveEvent } from "@/app/api.js";
+import { addLiveEvent, changeLiveMvp, deleteLive, finishLive, getLive, resetLive, setLiveOrder, startLive, undoLiveEvent } from "@/app/api.js";
 import ConfirmDialog from "@/app/components/board/ConfirmDialog.jsx";
 import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
 import { initialsOf } from "@/app/components/GoingCourt.jsx";
@@ -354,9 +354,10 @@ function HelpDialog({ scorer, onClose }) {
   );
 }
 
-function MvpDialog({ game, suggested, onFinish, onCancel }) {
+// `changing`: el partido ya terminó y el entrenador cambia el MVP que eligió (o lo quita).
+function MvpDialog({ game, suggested, onFinish, onCancel, changing = false }) {
   const dialogRef = useRef(null);
-  const [chosen, setChosen] = useState(suggested);
+  const [chosen, setChosen] = useState(changing ? (game.mvp?.player_id ?? null) : suggested);
   useEffect(() => {
     const dialog = dialogRef.current;
     dialog.showModal();
@@ -382,7 +383,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel }) {
       <div className="bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 p-4 text-void">
         <p className="flex items-center gap-2 font-display text-xl font-black uppercase italic">
           <Trophy aria-hidden="true" className="h-6 w-6" />
-          <span id="mvp-title">¿Quién ha sido el MVP?</span>
+          <span id="mvp-title">{changing ? "Cambiar el MVP" : "¿Quién ha sido el MVP?"}</span>
         </p>
         <p className="mt-0.5 flex items-center gap-1 text-sm font-semibold">
           Gana <Coins aria-hidden="true" className="h-4 w-4" /> {15} Club Coins y se queda en sus premios.
@@ -421,7 +422,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel }) {
         </button>
       </div>
       <button type="button" onClick={onCancel} className="mx-3 mb-3 min-h-10 rounded-lg text-xs font-semibold text-zinc-400 hover:bg-white/5">
-        Aún no, seguir el partido
+        {changing ? "Cancelar" : "Aún no, seguir el partido"}
       </button>
     </dialog>
   );
@@ -677,7 +678,7 @@ export default function LiveMatchPage({ onAccessLost }) {
           <span className="mt-1 whitespace-nowrap rounded-md bg-black/85 px-1.5 text-xs font-bold text-white">{firstName(drag.name)}</span>
         </span>
       )}
-      {game.report && !hideReport && <MatchReport game={game} onClose={() => setHideReport(true)} />}
+      {game.report && !hideReport && <MatchReport game={game} onClose={() => setHideReport(true)} onChangeMvp={game.can_edit_mvp ? () => setChoosingMvp(true) : null} />}
       {game.report && hideReport && (
         <button
           type="button"
@@ -903,10 +904,11 @@ export default function LiveMatchPage({ onAccessLost }) {
         <MvpDialog
           game={game}
           suggested={mvp}
+          changing={game.status === "finished"}
           onCancel={() => setChoosingMvp(false)}
           onFinish={(playerId) => {
             setChoosingMvp(false);
-            send(() => finishLive(liveId, playerId));
+            send(() => (game.status === "finished" ? changeLiveMvp(liveId, playerId) : finishLive(liveId, playerId)));
           }}
         />
       )}

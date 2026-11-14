@@ -171,6 +171,8 @@ export const resetLive = (id) => request(`/live/${encodeURIComponent(id)}/reset`
 export const startLive = (id) => request(`/live/${encodeURIComponent(id)}/start`, { method: "POST" });
 export const addLiveEvent = (id, body) => request(`/live/${encodeURIComponent(id)}/events`, { method: "POST", body });
 export const undoLiveEvent = (id) => request(`/live/${encodeURIComponent(id)}/events/last`, { method: "DELETE" });
+export const changeLiveMvp = (id, mvpPlayerId = null) =>
+  request(`/live/${encodeURIComponent(id)}/mvp`, { method: "PUT", body: { mvp_player_id: mvpPlayerId } });
 export const finishLive = (id, mvpPlayerId = null) =>
   request(`/live/${encodeURIComponent(id)}/finish`, { method: "POST", body: { mvp_player_id: mvpPlayerId } });
 export const deleteLive = (id) => request(`/live/${encodeURIComponent(id)}`, { method: "DELETE" });

@@ -322,6 +322,8 @@ async def _public(db, live, user):
         "can_score": _can_score(user, live) and status_of(live) == "live",
         "can_start": _can_score(user, live) and status_of(live) == "pending",
         "mvp": live.get("mvp"),
+        # Con el partido terminado, el entrenador puede cambiar el MVP (o quitarlo).
+        "can_edit_mvp": _can_score(user, live) and status_of(live) == "finished",
         # Al terminar: el informe completo del partido.
         "report": match_report(live, lineup) if status_of(live) == "finished" else None,
         **board,
@@ -555,29 +557,56 @@ async def finish_live(live_id: str, body: Optional[LiveFinish] = None, user=Depe
     live = await _find(db, live_id)
     _require_scorer(user, live)
     board = scoreboard(live)
-    mvp = None
-    if body and body.mvp_player_id:
-        lineup = await _lineup(db, live)
-        chosen = next((item for item in lineup if item["player_id"] == body.mvp_player_id), None)
-        if not chosen:
-            raise HTTPException(status_code=422, detail="El MVP tiene que ser de la plantilla del partido")
-        mvp = {"player_id": chosen["player_id"], "name": chosen["name"]}
-    changes = {"status": "finished", "updated_at": datetime.now(timezone.utc)}
-    if mvp:
-        changes["mvp"] = mvp
-    await db.live_matches.update_one({"id": live_id}, {"$set": changes})
-    match_changes = {}
+    mvp = await _chosen_mvp(db, live, body)
+    await db.live_matches.update_one({"id": live_id}, {"$set": {"status": "finished", "updated_at": datetime.now(timezone.utc)}})
     if live.get("match_id") and board["sets"]:
-        match_changes["sets"] = board["sets"]
-    if live.get("match_id") and mvp:
-        match_changes["mvp"] = mvp["name"]
-    if match_changes:
-        await db.matches.update_one({"id": live["match_id"]}, {"$set": match_changes})
-    if mvp:
-        await _reward_mvp(db, live, mvp)
+        await db.matches.update_one({"id": live["match_id"]}, {"$set": {"sets": board["sets"]}})
+    await _apply_mvp(db, live, mvp)
     if board["winner"] == "us":
         await _reward_win(db, live)
     return await _public(db, await _find(db, live_id), user)
+
+
+@router.put("/{live_id}/mvp")
+async def change_mvp(live_id: str, body: LiveFinish, user=Depends(require_approved), db=Depends(get_db)):
+    """Cambiar (o quitar) el MVP de un partido ya terminado: el anterior pierde el premio y sus coins."""
+    live = await _find(db, live_id)
+    if not _can_score(user, live):
+        raise HTTPException(status_code=403, detail="Solo entrenadores, administradores y editores eligen el MVP")
+    if status_of(live) != "finished":
+        raise HTTPException(status_code=409, detail="El MVP se elige al terminar el partido")
+    await _apply_mvp(db, live, await _chosen_mvp(db, live, body))
+    return await _public(db, await _find(db, live_id), user)
+
+
+async def _chosen_mvp(db, live, body):
+    if not body or not body.mvp_player_id:
+        return None
+    lineup = await _lineup(db, live)
+    chosen = next((item for item in lineup if item["player_id"] == body.mvp_player_id), None)
+    if not chosen:
+        raise HTTPException(status_code=422, detail="El MVP tiene que ser de la plantilla del partido")
+    return {"player_id": chosen["player_id"], "name": chosen["name"]}
+
+
+async def _apply_mvp(db, live, mvp):
+    """Deja `mvp` como MVP del partido (None = sin MVP). Si antes había otro, se le quitan el premio y sus coins."""
+    previous = live.get("mvp")
+    if previous and (not mvp or previous["player_id"] != mvp["player_id"]):
+        key = {"group_id": live["team_id"], "kind": "mvp", "period": live["id"], "player_id": previous["player_id"]}
+        await db.honors.delete_one(key)
+        await db.coin_entries.delete_one({"ref": f"honor:{live['team_id']}:mvp:{live['id']}:{previous['player_id']}"})
+    if mvp:
+        await db.live_matches.update_one({"id": live["id"]}, {"$set": {"mvp": mvp}})
+    else:
+        await db.live_matches.update_one({"id": live["id"]}, {"$unset": {"mvp": ""}})
+    if live.get("match_id"):
+        if mvp:
+            await db.matches.update_one({"id": live["match_id"]}, {"$set": {"mvp": mvp["name"]}})
+        else:
+            await db.matches.update_one({"id": live["match_id"]}, {"$unset": {"mvp": ""}})
+    if mvp and (not previous or previous["player_id"] != mvp["player_id"]):
+        await _reward_mvp(db, live, mvp)
 
 
 async def _reward_win(db, live):
