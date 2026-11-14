@@ -425,3 +425,34 @@ def test_el_administrador_principal_puede_poner_notas_a_todos(admin, monkeypatch
     # Otro administrador que no es el principal sigue sin poder.
     other = member(admin, role="admin", team="masculino", coached=[])
     assert rate(other, add_player(admin, "Lola"), ALL_EIGHT).status_code == 403
+
+
+def test_el_admin_da_los_premios_de_una_semana_pasada_que_se_quedo_sin_ellos(admin, db, monkeypatch):  # noqa: F811
+    import honors
+
+    monkeypatch.setattr(honors, "_indexes_ready", False)  # Base nueva: que cree sus índices (un premio, una vez).
+    ana = member(admin)
+    me = ana.get("/api/auth/me").json()["id"]
+    mine = asyncio.run(db.players.find_one({"user_id": me}))["id"]
+    others = [add_player(admin, name) for name in ("Bea", "Carla", "Dora")]
+    for index, player_id in enumerate([mine, *others]):
+        rate_ok(admin, player_id, {skill["id"]: 9 - index for skill in ranking.SKILLS}, offset=1)
+        rate_ok(admin, player_id, {skill["id"]: 5 + index for skill in ranking.SKILLS})
+    publish_ok(admin, offset=1)
+    publish_ok(admin)
+    # La semana pasada se publicó antes de existir los premios: no tiene ninguno.
+    asyncio.run(db.honors.delete_many({"period": week(1)}))
+    asyncio.run(db.coin_entries.delete_many({"ref": {"$regex": f":week:{week(1)}:"}}))
+    before = ana.get("/api/coins").json()["balance"]
+    body = {"group_id": "masculino", "week": week(1)}
+    assert ana.post("/api/ranking/award", json=body).status_code == 403
+    assert admin.post("/api/ranking/award", json={"group_id": "masculino", "week": week(2)}).status_code == 422
+    given = admin.post("/api/ranking/award", json=body)
+    assert given.status_code == 200, given.text
+    assert [(item["place"], item["player_id"]) for item in given.json()["winners"]] == [(1, mine), (2, others[0]), (3, others[1])]
+    assert ana.get("/api/coins").json()["balance"] == before + ranking.WEEK_PRIZES[1]
+    # Otra vez no da nada más, y la corona sigue con los de la última semana.
+    admin.post("/api/ranking/award", json=body)
+    assert ana.get("/api/coins").json()["balance"] == before + ranking.WEEK_PRIZES[1]
+    current = admin.get("/api/ranking/honors?group_id=masculino").json()["week"]
+    assert [item["player_id"] for item in current] == [others[2], others[1], others[0]]

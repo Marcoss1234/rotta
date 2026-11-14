@@ -505,6 +505,24 @@ async def publish_week(body: WeekPublish, user=Depends(require_approved), db=Dep
     return {"group_id": body.group_id, "week": week_key, "published": True}
 
 
+@router.post("/ranking/award")
+async def award_published_week(body: WeekPublish, user=Depends(require_approved), db=Depends(get_db)):
+    """Solo administradores: dar los premios de una semana ya publicada que se quedó sin ellos
+    (por ejemplo, porque se publicó antes de que existieran). Si ya estaban dados, no se dan otra vez."""
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=403, detail="Solo los administradores dan premios de semanas pasadas")
+    week_key = _check_week(body.week)
+    if not await db.rating_weeks.find_one({"group_id": body.group_id, "week": week_key}):
+        raise HTTPException(status_code=422, detail="Esa semana no está publicada")
+    await award_week(db, body.group_id, week_key)
+    honors = await db.honors.find({"group_id": body.group_id, "kind": "week", "period": week_key}).to_list(20)
+    return {
+        "group_id": body.group_id,
+        "week": week_key,
+        "winners": [{"place": honor["place"], "player_id": honor["player_id"], "coins": honor["coins"]} for honor in sorted(honors, key=lambda item: item["place"])],
+    }
+
+
 @router.get("/players/{player_id}/profile")
 async def get_player_profile(player_id: str, user=Depends(require_approved), db=Depends(get_db)):
     """La ficha de un jugador que ve todo el club: su personaje, sus títulos (semana, mes, MVP) y cómo va en el ranking."""
