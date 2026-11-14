@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, Pencil } from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil, Trophy } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
-import { deleteMatch, listPlayedMatches, listTeams, updateMatch } from "@/app/api.js";
+import { changeLiveMvp, deleteMatch, listPlayedMatches, listTeams, updateMatch } from "@/app/api.js";
 import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
 import MatchDialog from "@/app/components/MatchDialog.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
@@ -39,7 +39,47 @@ function MatchResult({ sets }) {
   );
 }
 
-function PlayedMatchRow({ match, onEdit }) {
+// El entrenador elige el MVP de un menú con los que jugaron (o «Sin MVP»).
+function MvpPicker({ match, onChange }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const current = match.mvp_player_id ?? "";
+  return (
+    <div>
+      <label className="flex items-center gap-2 text-sm font-bold text-amber-200">
+        <span aria-hidden="true">🏆</span>
+        MVP:
+        <select
+          value={current}
+          disabled={busy}
+          onChange={async (event) => {
+            setBusy(true);
+            setError("");
+            try {
+              await changeLiveMvp(match.live_id, event.target.value || null);
+              await onChange();
+            } catch (requestError) {
+              setError(requestError.message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+          className="min-h-11 min-w-0 flex-1 rounded-lg border border-amber-300/40 bg-void px-2 text-sm font-bold text-white disabled:opacity-50"
+        >
+          <option value="">Sin MVP</option>
+          {match.players.map((player) => (
+            <option key={player.player_id} value={player.player_id}>
+              {player.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {error && <p role="alert" className="mt-1 text-xs font-semibold text-red-300">{error}</p>}
+    </div>
+  );
+}
+
+function PlayedMatchRow({ match, onEdit, onReload }) {
   return (
     <li className="space-y-2.5 rounded-xl border border-white/5 bg-panel p-3" data-testid="played-match">
       <div className="flex items-center gap-3">
@@ -55,10 +95,24 @@ function PlayedMatchRow({ match, onEdit }) {
         )}
       </div>
       {match.sets.length > 0 ? <MatchResult sets={match.sets} /> : <p className="text-sm text-zinc-400">Resultado sin apuntar</p>}
-      {match.mvp && (
-        <p className="flex items-center gap-1.5 text-sm font-bold text-amber-200">
-          <span aria-hidden="true">🏆</span> MVP: {match.mvp}
-        </p>
+      {match.can_edit && match.live_id && match.players.length > 0 ? (
+        <MvpPicker match={match} onChange={onReload} />
+      ) : (
+        match.mvp && (
+          <p className="flex items-center gap-1.5 text-sm font-bold text-amber-200">
+            <span aria-hidden="true">🏆</span> MVP: {match.mvp}
+          </p>
+        )
+      )}
+      {match.live_id && (
+        <Link
+          to={`/app/directo/${match.live_id}`}
+          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-3 font-display text-sm font-black uppercase italic text-void"
+        >
+          <Trophy aria-hidden="true" className="h-4 w-4" />
+          Ver informe
+          <ChevronRight aria-hidden="true" className="h-4 w-4" />
+        </Link>
       )}
       {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
       {match.notes && <MatchNotes notes={match.notes} />}
@@ -161,7 +215,7 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
           ) : (
             <ul className="space-y-2">
               {shown.map((match) => (
-                <PlayedMatchRow key={match.id} match={match} onEdit={setEditing} />
+                <PlayedMatchRow key={match.id} match={match} onEdit={setEditing} onReload={load} />
               ))}
             </ul>
           )}

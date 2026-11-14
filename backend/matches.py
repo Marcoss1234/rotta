@@ -193,9 +193,14 @@ async def _find_match(db, match_id):
     return match
 
 
-def _played_match(match, user):
+def _played_match(match, user, report_ids=None, players=None):
     fields = ("id", "team_id", "date", "time", "opponent", "kind")
     return {
+        # Si se llevó en directo, el partido para abrir su informe.
+        "live_id": (report_ids or {}).get(match["id"]),
+        # Quién jugó: el entrenador elige de aquí el MVP.
+        "players": (players or {}).get(match["id"], {}).get("lineup", []),
+        "mvp_player_id": (players or {}).get(match["id"], {}).get("mvp"),
         **{field: match[field] for field in fields},
         "location": match.get("location", ""),
         "notes": match.get("notes", ""),
@@ -210,7 +215,19 @@ async def list_played_matches(team_id: TeamId = Query(...), user=Depends(require
     """Los partidos ya jugados del equipo, del más reciente al más antiguo."""
     query = {"team_id": {"$in": list(match_teams(team_id))}, "date": {"$lte": _today().isoformat()}}
     matches = await db.matches.find(query).sort([("date", DESCENDING), ("time", DESCENDING)]).to_list(MAX_PLAYED_LISTED)
-    return [_played_match(match, user) for match in matches if _is_played(match)]
+    played = [match for match in matches if _is_played(match)]
+    finished = await db.live_matches.find({"match_id": {"$in": [match["id"] for match in played]}, "status": "finished"}).to_list(len(played) + 1)
+    report_ids = {live["match_id"]: live["id"] for live in finished}
+    players = {}
+    if can_manage_matches(user):
+        from live import _lineup  # Aquí dentro: live también usa este módulo.
+
+        for live in finished:
+            players[live["match_id"]] = {
+                "lineup": [{"player_id": item["player_id"], "name": item["name"]} for item in await _lineup(db, live)],
+                "mvp": (live.get("mvp") or {}).get("player_id"),
+            }
+    return [_played_match(match, user, report_ids, players) for match in played]
 
 
 @router.get("/matches")

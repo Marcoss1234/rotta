@@ -331,6 +331,11 @@ def test_el_entrenador_cambia_el_mvp_al_terminar(admin):
     assert ana.get("/api/coins").json()["honors"] == []
     assert luis.get("/api/coins").json()["balance"] == luis_before + win + live.MVP_COINS
     assert admin.get("/api/matches/played?team_id=masculino").json()[0]["mvp"] == "Luis"
+    # En «Partidos jugados» sale el enlace a su informe.
+    assert admin.get("/api/matches/played?team_id=masculino").json()[0]["live_id"] == game["id"]
+    shown = admin.get("/api/matches/played?team_id=masculino").json()[0]
+    assert shown["mvp_player_id"] == ids["Luis"] and sorted(item["name"] for item in shown["players"]) == ["Ana", "Luis"]
+    assert luis.get("/api/matches/played?team_id=masculino").json()[0]["players"] == []
     # Guardar el mismo otra vez no da coins dos veces; y se puede dejar sin MVP.
     admin.put(f"/api/live/{game['id']}/mvp", json={"mvp_player_id": ids["Luis"]})
     assert luis.get("/api/coins").json()["balance"] == luis_before + win + live.MVP_COINS
