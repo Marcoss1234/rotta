@@ -50,7 +50,7 @@ function crownStory(crown, prizes, monthTitle) {
 function PrizeColumn({ title, when, prizes, firstTitle }) {
   return (
     <div className="rounded-xl bg-panel p-4 ring-1 ring-white/10">
-      <h2 className="font-display text-xl font-black uppercase italic leading-tight">{title}</h2>
+      <h2 className="font-display text-xl font-black leading-tight">{title}</h2>
       <p className="text-xs text-zinc-400">{when}</p>
       <ol className="mt-3 space-y-2.5">
         {prizes.map(({ place, coins }) => {
@@ -61,7 +61,7 @@ function PrizeColumn({ title, when, prizes, firstTitle }) {
                 <Crown aria-hidden="true" className={`h-4 w-4 ${style.crown}`} />
               </span>
               <span className="min-w-0 flex-1">
-                <span className={`block font-display text-base font-black italic leading-none ${style.text}`}>{style.label} puesto</span>
+                <span className={`block font-display text-base font-black leading-none ${style.text}`}>{style.label} puesto</span>
                 {place === 1 && firstTitle && <span className="block text-[11px] font-semibold text-zinc-400">y el título de {firstTitle.toLowerCase()}</span>}
               </span>
               <span className="flex items-center gap-1 rounded-full bg-amber-400/15 px-2.5 py-1 text-sm font-black tabular-nums text-amber-200">
@@ -111,7 +111,7 @@ function CrownShowcase({ profile, prizes, monthTitle }) {
             </span>
           </div>
         )}
-        <p className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-extrabold uppercase tracking-widest text-amber-200">Pruébatela</p>
+        <p className="pointer-events-none absolute left-3 top-3 rounded-full bg-black/45 px-2.5 py-1 text-[11px] font-extrabold text-amber-200">Pruébatela</p>
       </div>
 
       <div className="space-y-3 p-4 pt-0">
@@ -136,7 +136,7 @@ function CrownShowcase({ profile, prizes, monthTitle }) {
         {story && (
           <div className="flex items-start justify-between gap-3 rounded-xl bg-black/30 p-3">
             <div className="min-w-0">
-              <p className="font-display text-xl font-black uppercase italic leading-tight text-white">{story.title}</p>
+              <p className="font-display text-xl font-black leading-tight text-white">{story.title}</p>
               <p className="text-sm text-zinc-300">{story.how}</p>
               <p className="text-xs text-zinc-400">{story.lasts}</p>
             </div>
@@ -214,7 +214,7 @@ export default function RewardsPage({ user, onAccessLost }) {
 
       {holders && (
         <section aria-labelledby="holders-title" className="space-y-2">
-          <h2 id="holders-title" className="font-display text-2xl font-black uppercase italic">Ahora llevan corona</h2>
+          <h2 id="holders-title" className="font-display text-2xl font-black">Ahora llevan corona</h2>
           <HonorsBanner honors={honors} />
         </section>
       )}

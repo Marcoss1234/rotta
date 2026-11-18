@@ -44,8 +44,9 @@ export default {
         ring: "hsl(var(--ring))",
       },
       fontFamily: {
-        display: ['"Outfit"', "Plus Jakarta Sans", "sans-serif"],
-        body: ['"Plus Jakarta Sans"', "sans-serif"],
+        // Rotta: títulos con carácter (Bricolage Grotesque) y texto limpio (Instrument Sans).
+        display: ['"Bricolage Grotesque"', '"Instrument Sans"', "sans-serif"],
+        body: ['"Instrument Sans"', "sans-serif"],
         mono: ['"JetBrains Mono"', "monospace"],
       },
       keyframes: {

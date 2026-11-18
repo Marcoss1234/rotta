@@ -133,7 +133,7 @@ export default function ThemeSettingsCard({ isAdmin }) {
   return (
     <section aria-labelledby="theme-title" className="space-y-3 rounded-xl bg-panel p-4">
       <div>
-        <h2 id="theme-title" className="font-display text-xl font-black uppercase italic">Apariencia</h2>
+        <h2 id="theme-title" className="font-display text-xl font-black">Apariencia</h2>
         <p className="text-sm text-zinc-400">"Del club" usa el fondo que ha elegido tu club; "Auto" sigue a tu móvil.</p>
       </div>
       <ModePicker />

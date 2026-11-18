@@ -158,7 +158,7 @@ function DemoAccess({ onSignedIn }) {
   };
   return (
     <section aria-labelledby="demo-title" className="space-y-2 rounded-2xl border border-tnt/40 bg-tnt/10 p-3">
-      <h2 id="demo-title" className="text-center text-xs font-extrabold uppercase tracking-widest text-orange-200">Demo · entra como</h2>
+      <h2 id="demo-title" className="text-center text-xs font-extrabold text-orange-200">Demo · entra como</h2>
       <ul className="space-y-1.5">
         {DEMO_ACCOUNTS.map((account) => (
           <li key={account.credential}>

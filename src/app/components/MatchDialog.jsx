@@ -149,8 +149,8 @@ export default function MatchDialog({ match, teams, defaultTeamId, onSave, onDel
             <legend className={labelClass}>Resultado por sets <span className="font-normal text-zinc-400">(opcional)</span></legend>
             <div className="grid grid-cols-[3.25rem_1fr_1fr] items-center gap-2">
               <span aria-hidden="true" />
-              <span aria-hidden="true" className="text-center text-xs font-bold uppercase tracking-wide text-ember">Club</span>
-              <span aria-hidden="true" className="text-center text-xs font-bold uppercase tracking-wide text-zinc-400">Rival</span>
+              <span aria-hidden="true" className="text-center text-xs font-bold text-ember">Club</span>
+              <span aria-hidden="true" className="text-center text-xs font-bold text-zinc-400">Rival</span>
               {sets.map((item, index) => (
                 <div key={index} className="contents">
                   <span className="text-sm font-semibold text-zinc-300">Set {index + 1}</span>

@@ -119,7 +119,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
     <section className={`overflow-hidden rounded-2xl bg-gradient-to-b from-tnt/25 via-surface to-void ring-1 ring-white/10 ${editing ? "sticky top-0 z-20 shadow-xl shadow-black/60" : "relative"}`} aria-label="Tu ficha">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-10 mx-auto h-64 w-64 rounded-full bg-tnt/30 blur-3xl" />
       {player?.number !== null && player?.number !== undefined && (
-        <span aria-hidden="true" className="pointer-events-none absolute -right-3 top-6 select-none font-display text-[10rem] font-black italic leading-none text-white/[0.07]">
+        <span aria-hidden="true" className="pointer-events-none absolute -right-3 top-6 select-none font-display text-[10rem] font-black leading-none text-white/[0.07]">
           {player.number}
         </span>
       )}
@@ -142,8 +142,8 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
       </div>
 
       {/* Debajo del personaje, para no taparle las piernas. */}
-      <div className={`relative -mt-4 px-4 pb-4 ${editing ? "hidden" : ""}`}>
-          <h1 className="break-words font-display text-4xl font-black uppercase italic leading-none tracking-tight">{user.name}</h1>
+      <div className={`relative px-4 pb-4 pt-3 ${editing ? "hidden" : ""}`}>
+          <h1 className="break-words font-display text-4xl font-black leading-none tracking-tight">{user.name}</h1>
           <p className="mt-1.5 text-sm font-semibold text-white/85">
             {roleLabel(user.role)}{user.also_plays && user.role !== "jugador" ? " · también juega" : ""}
             {profile.team_name ? ` · ${shortTeam(profile.team_name)}` : ""}
@@ -162,7 +162,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
                 <Sparkles aria-hidden="true" className="h-4 w-4" />
                 Celebrar
               </button>
-              <button type="button" onClick={onEdit} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-gradient-to-r from-tnt to-ember text-sm font-bold text-onbrand">
+              <button type="button" onClick={onEdit} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-tnt text-sm font-bold text-onbrand">
                 <Shirt aria-hidden="true" className="h-4 w-4" />
                 Editar personaje
               </button>
@@ -191,7 +191,7 @@ function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCan
   return (
     <section aria-labelledby="character-title" className="space-y-4 rounded-2xl border border-tnt/40 bg-panel p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="character-title" className="font-display text-2xl font-black uppercase italic">Tu personaje</h2>
+        <h2 id="character-title" className="font-display text-2xl font-black">Tu personaje</h2>
         <button type="button" onClick={() => onChange(randomLook(draft))} className="flex min-h-11 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
           <Shuffle aria-hidden="true" className="h-4 w-4" />
           Al azar

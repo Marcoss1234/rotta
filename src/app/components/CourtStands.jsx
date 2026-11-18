@@ -74,7 +74,7 @@ export default function CourtStands({ family }) {
 
   return (
     <section aria-labelledby="stands-title" className="mx-auto mt-3 max-w-sm rounded-lg border border-white/15 p-3 lg:hidden" data-testid="court-stands">
-      <h3 id="stands-title" className="font-display text-sm font-extrabold uppercase italic tracking-wide text-zinc-200">Gradas · {family.length}</h3>
+      <h3 id="stands-title" className="font-display text-sm font-extrabold text-zinc-200">Gradas · {family.length}</h3>
       {family.length === 0 && <p className="mt-1 text-sm text-zinc-400">Todavía no hay familias en este equipo.</p>}
       <div className="mt-2 space-y-1 rounded-lg bg-void/70 p-1">
         {rows.map((row, rowIndex) => (

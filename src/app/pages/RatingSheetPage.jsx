@@ -102,7 +102,7 @@ export default function RatingSheetPage({ onAccessLost }) {
         <button type="button" aria-label="Semana anterior" onClick={() => setWeek((current) => shiftWeek(current, -1))} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/5">
           <ChevronLeft aria-hidden="true" className="h-5 w-5" />
         </button>
-        <p className="text-center font-display text-sm font-extrabold uppercase tracking-wide" aria-live="polite">
+        <p className="text-center font-display text-sm font-extrabold" aria-live="polite">
           {isCurrent ? "Esta semana" : weekLabel(week)}
         </p>
         <button type="button" aria-label="Semana siguiente" disabled={isCurrent} onClick={() => setWeek((current) => shiftWeek(current, 1))} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/5 disabled:opacity-30">
@@ -117,10 +117,10 @@ export default function RatingSheetPage({ onAccessLost }) {
         <>
           <div className="rounded-xl bg-panel p-4">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className={`rounded px-2 py-0.5 text-[11px] font-black uppercase tracking-widest ${sheet.published ? "bg-emerald-300/20 text-emerald-200" : "bg-ember/20 text-ember"}`}>
+              <span className={`rounded px-2 py-0.5 text-[11px] font-black ${sheet.published ? "bg-emerald-300/20 text-emerald-200" : "bg-ember/20 text-ember"}`}>
                 {sheet.published ? "Publicada" : "Borrador"}
               </span>
-              <span className="font-display text-lg font-black italic tabular-nums">{rated}<span className="text-zinc-500">/{sheet.rows.length}</span></span>
+              <span className="font-display text-lg font-black tabular-nums">{rated}<span className="text-zinc-500">/{sheet.rows.length}</span></span>
             </div>
             <AnimatedBar percent={sheet.rows.length ? (rated / sheet.rows.length) * 100 : 0} className="h-2" />
             <p className="mt-2 text-xs text-zinc-400">
@@ -173,7 +173,7 @@ export default function RatingSheetPage({ onAccessLost }) {
                   </div>
                 </div>
               ) : (
-                <button type="button" onClick={() => setConfirming(true)} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-tnt to-ember px-4 font-display text-lg font-black uppercase italic text-onbrand">
+                <button type="button" onClick={() => setConfirming(true)} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-lg bg-tnt px-4 font-display text-lg font-black text-onbrand">
                   <Zap aria-hidden="true" className="h-5 w-5 fill-white" />
                   Publicar semana
                 </button>

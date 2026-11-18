@@ -37,7 +37,7 @@ const isLocked = (option, owned) => Boolean(option.shop) && !owned.has(option.sh
 function Group({ title, children }) {
   return (
     <fieldset className="space-y-2">
-      <legend className="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-400">{title}</legend>
+      <legend className="mb-2 text-xs font-bold text-zinc-400">{title}</legend>
       {children}
     </fieldset>
   );
@@ -171,7 +171,7 @@ export default function CharacterEditor({ look, onChange, onTabChange, owned = [
             role="tab"
             aria-selected={tab === item.id}
             onClick={() => setTab(item.id)}
-            className={`min-h-11 shrink-0 rounded-lg px-3.5 font-display text-sm font-black uppercase italic ${
+            className={`min-h-11 shrink-0 rounded-lg px-3.5 font-display text-sm font-black ${
               tab === item.id ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
             }`}
           >

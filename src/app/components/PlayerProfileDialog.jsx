@@ -72,10 +72,10 @@ export default function PlayerProfileDialog({ player, onClose, onDelete = null, 
 
       <div className="space-y-4 p-4">
         <div>
-          <h2 id="player-profile-title" className="break-words font-display text-2xl font-black uppercase italic leading-tight">{shown.name}</h2>
+          <h2 id="player-profile-title" className="break-words font-display text-2xl font-black leading-tight">{shown.name}</h2>
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-zinc-300">
             <PositionTag position={shown.position} />
-            {shown.number !== null && shown.number !== undefined && <span className="font-display font-black italic text-tnt">#{shown.number}</span>}
+            {shown.number !== null && shown.number !== undefined && <span className="font-display font-black text-tnt">#{shown.number}</span>}
             {!shown.linked && <span className="text-xs text-zinc-500">Sin cuenta en la app</span>}
           </p>
         </div>
@@ -87,9 +87,9 @@ export default function PlayerProfileDialog({ player, onClose, onDelete = null, 
             {/* Ranking: el puesto ahora mismo y su nota. */}
             {ranking ? (
               <section aria-label="Ranking" className="rounded-xl bg-panel p-3 ring-1 ring-white/10">
-                <p className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Ranking · {ranking.group_name}</p>
+                <p className="text-[11px] font-bold text-zinc-400">Ranking · {ranking.group_name}</p>
                 <div className="mt-1 flex items-center gap-3">
-                  <span className="font-display text-4xl font-black italic leading-none">
+                  <span className="font-display text-4xl font-black leading-none">
                     {ranking.rank}º<span className="ml-1 text-base text-zinc-500">de {ranking.of}</span>
                   </span>
                   <span className="ml-auto text-right">
@@ -116,8 +116,8 @@ export default function PlayerProfileDialog({ player, onClose, onDelete = null, 
                 ["MVP", counts.mvp, "partidos"],
               ].map(([label, value, hint]) => (
                 <div key={label} className="rounded-xl bg-panel px-1 py-2 ring-1 ring-white/10">
-                  <span className="block font-display text-2xl font-black italic leading-none text-amber-200">{value}</span>
-                  <span className="mt-1 block text-[11px] font-bold uppercase leading-tight">{label}</span>
+                  <span className="block font-display text-2xl font-black leading-none text-amber-200">{value}</span>
+                  <span className="mt-1 block text-[11px] font-bold leading-tight">{label}</span>
                   <span className="block text-[10px] text-zinc-500">{hint}</span>
                 </div>
               ))}
@@ -125,7 +125,7 @@ export default function PlayerProfileDialog({ player, onClose, onDelete = null, 
 
             {/* Sus títulos, del más reciente al más antiguo. */}
             <section aria-label="Títulos" className="space-y-1.5">
-              <h3 className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">
+              <h3 className="flex items-center gap-1.5 text-[11px] font-bold text-zinc-400">
                 <Award aria-hidden="true" className="h-3.5 w-3.5" />
                 Títulos
               </h3>
@@ -140,7 +140,7 @@ export default function PlayerProfileDialog({ player, onClose, onDelete = null, 
                         <Icon aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />
                         {title.title}
                         {title.kind === "week" && <span className="text-[10px] opacity-70">· {weekLabel(title.period)}</span>}
-                        {title.current && <span className="rounded-full bg-white/15 px-1.5 text-[10px] font-black uppercase">Ahora</span>}
+                        {title.current && <span className="rounded-full bg-white/15 px-1.5 text-[10px] font-black">Ahora</span>}
                       </li>
                     );
                   })}

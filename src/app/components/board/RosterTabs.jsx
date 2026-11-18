@@ -13,8 +13,8 @@ export default function RosterTabs({ active, teamId }) {
           key={id}
           to={teamId ? `${path}?equipo=${teamId}` : path}
           aria-current={active === id ? "page" : undefined}
-          className={`flex min-h-11 items-center justify-center rounded-lg font-display text-sm font-black uppercase italic tracking-wide ${
-            active === id ? "bg-gradient-to-r from-tnt to-ember text-onbrand" : "text-zinc-300 hover:text-white"
+          className={`flex min-h-11 items-center justify-center rounded-lg font-display text-sm font-black ${
+            active === id ? "bg-tnt text-onbrand" : "text-zinc-300 hover:text-white"
           }`}
         >
           {label}

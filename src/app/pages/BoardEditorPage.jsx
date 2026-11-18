@@ -124,7 +124,7 @@ function VideoDialog({ video, onClose }) {
       }}
       className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/80"
     >
-      <h2 id="video-title" className="font-display text-xl font-black uppercase italic">Vídeo listo</h2>
+      <h2 id="video-title" className="font-display text-xl font-black">Vídeo listo</h2>
       <video src={video.url} controls playsInline className="mx-auto mt-3 max-h-[50dvh] rounded-lg bg-black" />
       <div className={`mt-4 grid gap-2 ${canShare ? "grid-cols-2" : "grid-cols-1"}`}>
         {canShare && (
@@ -905,7 +905,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   value={board.name}
                   maxLength={60}
                   onChange={(event) => changeBoard({ name: event.target.value })}
-                  className="block min-h-8 w-full truncate rounded-md bg-transparent px-1.5 font-display text-lg font-black uppercase italic leading-tight text-white hover:bg-white/5 focus:bg-white/10 focus:outline-none"
+                  className="block min-h-8 w-full truncate rounded-md bg-transparent px-1.5 font-display text-lg font-black leading-tight text-white hover:bg-white/5 focus:bg-white/10 focus:outline-none"
                 />
                 <p aria-live="polite" className={`truncate px-1.5 text-[11px] font-semibold ${status === "error" ? "text-red-300" : "text-zinc-500"}`}>
                   {boardKindLabel(board.kind)} · {STATUS_LABEL[status] ?? (board.private ? "Solo la ves tú" : board.published ? "Publicada" : "Borrador")}
@@ -927,7 +927,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             </>
           ) : (
             <>
-              <h1 className="min-w-0 flex-1 truncate px-1 font-display text-xl font-black uppercase italic">{board.name}</h1>
+              <h1 className="min-w-0 flex-1 truncate px-1 font-display text-xl font-black">{board.name}</h1>
             </>
           )}
         </div>
@@ -950,11 +950,11 @@ export default function BoardEditorPage({ onAccessLost }) {
               <Popover onClose={closeMenu} label="Más opciones" className="right-0 top-12">
                 {editable && (
                   <div className="space-y-2 border-b border-white/10 px-2 pb-3 pt-1">
-                    <label htmlFor="board-kind" className="block text-[11px] font-bold uppercase tracking-wide text-zinc-400">Tipo de jugada</label>
+                    <label htmlFor="board-kind" className="block text-[11px] font-bold text-zinc-400">Tipo de jugada</label>
                     <select id="board-kind" value={board.kind} onChange={(event) => changeBoard({ kind: event.target.value })} className="min-h-10 w-full rounded-lg border border-white/10 bg-void px-2 text-sm font-semibold text-white [color-scheme:dark] focus:border-white/40 focus:outline-none">
                       {BOARD_KINDS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                     </select>
-                    <p className="text-[11px] font-bold uppercase tracking-wide text-zinc-400">Pista</p>
+                    <p className="text-[11px] font-bold text-zinc-400">Pista</p>
                     <div role="group" aria-label="Tamaño de la pista" className="flex rounded-lg border border-white/10 bg-void p-0.5">
                       {[["full", "Entera"], ["half", "Media"]].map(([value, label]) => (
                         <button key={value} type="button" aria-pressed={board.court === value} onClick={() => changeBoard({ court: value })} className={`flex-1 ${segmentClass(board.court === value)}`}>
@@ -1080,7 +1080,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         )}
 
         {countdown !== null && countdown > 0 && (
-          <span aria-live="assertive" className="pointer-events-none absolute inset-0 flex items-center justify-center font-display text-9xl font-black italic text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.7)]">
+          <span aria-live="assertive" className="pointer-events-none absolute inset-0 flex items-center justify-center font-display text-9xl font-black text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.7)]">
             {countdown}
           </span>
         )}
@@ -1110,7 +1110,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             <div className="mt-2 space-y-1.5 px-1">
               {planner.steps.length > 0 && (
                 <div role="group" aria-label="Qué balón juega" className="flex items-center gap-2">
-                  <span className="w-20 shrink-0 text-[11px] font-extrabold uppercase tracking-wide text-zinc-400">Balón</span>
+                  <span className="w-20 shrink-0 text-[11px] font-extrabold text-zinc-400">Balón</span>
                   <div className="flex flex-1 gap-0.5 rounded-full bg-void p-0.5 ring-1 ring-white/10">
                     <button type="button" aria-pressed={!planner.fresh} onClick={() => setPlanner({ ...planner, fresh: false })} className={choiceClass(!planner.fresh)}>
                       El que viene
@@ -1161,7 +1161,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               role="tab"
               aria-selected={shownMode === id}
               onClick={() => chooseMode(id)}
-              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-black uppercase italic ${
+              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-black ${
                 shownMode === id ? "bg-white text-void" : "text-zinc-300 hover:bg-white/5"
               }`}
             >

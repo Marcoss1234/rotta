@@ -71,7 +71,7 @@ export default function ScheduleDialog({ teamName, sessions, onSave, onClose }) 
     >
       <form onSubmit={save} className="space-y-5">
         <div>
-          <h2 id="schedule-title" className="font-display text-2xl font-black uppercase italic leading-tight">Horario de entrenamiento</h2>
+          <h2 id="schedule-title" className="font-display text-2xl font-black leading-tight">Horario de entrenamiento</h2>
           <p className="mt-1 text-sm text-zinc-400">{teamName}. Lo ve todo el equipo y es el que se usa para confirmar asistencia.</p>
         </div>
 

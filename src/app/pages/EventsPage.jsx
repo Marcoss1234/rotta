@@ -73,12 +73,12 @@ function AgendaRow({ item, canManage, onEdit }) {
       <div className="flex items-center gap-3">
         <DateBadge iso={item.date} />
         <div className="min-w-0 flex-1">
-          <p className="break-words font-display text-lg font-black uppercase italic leading-tight">
+          <p className="break-words font-display text-lg font-black leading-tight">
             {isMatch(item) ? `Partido ${MATCH_TEAM_PHRASE[item.team_id]}` : item.title}
           </p>
           {isMatch(item) && <p className="mt-0.5 break-words text-sm font-semibold text-zinc-300">contra <span className="text-white">{item.opponent}</span></p>}
         </div>
-        {item.time && <p className="shrink-0 font-display text-2xl font-black italic leading-none">{item.time}</p>}
+        {item.time && <p className="shrink-0 font-display text-2xl font-black leading-none">{item.time}</p>}
         {!isMatch(item) && canManage && (
           <button type="button" onClick={() => onEdit(item)} aria-label={`Editar ${item.title}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5 hover:text-white">
             <Pencil aria-hidden="true" className="h-4 w-4" />
@@ -161,7 +161,7 @@ export default function EventsPage({ onAccessLost }) {
           <button type="button" aria-label="Mes anterior" onClick={() => goToMonth(shiftMonth(month, -1))} className={arrowClass}>
             <ChevronLeft aria-hidden="true" className="h-5 w-5" />
           </button>
-          <h2 className="font-display text-xl font-black uppercase italic" aria-live="polite">{monthTitle(month)}</h2>
+          <h2 className="font-display text-xl font-black" aria-live="polite">{monthTitle(month)}</h2>
           <button type="button" aria-label="Mes siguiente" onClick={() => goToMonth(shiftMonth(month, 1))} className={arrowClass}>
             <ChevronRight aria-hidden="true" className="h-5 w-5" />
           </button>
@@ -184,7 +184,7 @@ export default function EventsPage({ onAccessLost }) {
       {calendar && (
         <section aria-labelledby="agenda-title" className="space-y-2">
           <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/15 pb-1">
-            <h2 id="agenda-title" className="min-w-0 font-display text-lg font-black uppercase italic">{selected ? dayTitle(selected) : "Todo el mes"}</h2>
+            <h2 id="agenda-title" className="min-w-0 font-display text-lg font-black">{selected ? dayTitle(selected) : "Todo el mes"}</h2>
             {selected && (
               <button type="button" onClick={() => setSelected(null)} className="min-h-11 shrink-0 rounded-lg px-2 text-sm font-semibold text-zinc-300 hover:text-white">
                 Ver el mes

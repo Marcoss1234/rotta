@@ -13,7 +13,7 @@ import { isStaff, POSITIONS } from "@/app/roles.js";
 
 function RosterPositionTag({ position }) {
   return (
-    <span className="inline-block -skew-x-12 bg-tnt px-1.5 py-px text-[10px] font-extrabold uppercase tracking-wider text-onbrand">
+    <span className="inline-block -skew-x-12 bg-tnt px-1.5 py-px text-[10px] font-extrabold text-onbrand">
       <span className="inline-block skew-x-12">{position}</span>
     </span>
   );
@@ -23,10 +23,10 @@ function PlayerCardContent({ player }) {
   const preferred = player.preferred_positions.filter((position) => position !== player.position);
   return (
     <>
-      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-tnt to-ember text-onbrand" />
+      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-tnt text-onbrand" />
       <Avatar name={player.name} picture={player.picture} className="h-10 w-10 text-xs ring-1 ring-white/10" />
       <span className="min-w-0 flex-1 text-left">
-        <span className="block break-words font-display text-sm font-black uppercase italic leading-tight">{player.name}</span>
+        <span className="block break-words font-display text-sm font-black leading-tight">{player.name}</span>
         <span className="mt-0.5 flex flex-wrap items-center gap-1">
           <RosterPositionTag position={player.position} />
           {preferred.map((position) => (
@@ -47,7 +47,7 @@ function PlayerCardContent({ player }) {
         )}
       </span>
       {player.number !== null && (
-        <span className="shrink-0 bg-gradient-to-br from-tnt to-ember bg-clip-text pr-1 font-display text-3xl font-black italic leading-none tabular-nums text-transparent text-onbrand">
+        <span className="shrink-0 bg-tnt bg-clip-text pr-1 font-display text-3xl font-black leading-none tabular-nums text-transparent text-onbrand">
           <span className="sr-only">Dorsal </span>{player.number}
         </span>
       )}
@@ -64,8 +64,8 @@ function SquadSummary({ players }) {
     <ul aria-label="Jugadores por posición" className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden">
       {counts.map(({ position, count }) => (
         <li key={position} className="flex shrink-0 items-center gap-2 rounded-xl border border-white/5 bg-panel px-3 py-2">
-          <span className="font-display text-2xl font-black italic leading-none tabular-nums text-ember">{count}</span>
-          <span className="text-xs font-bold uppercase tracking-wide text-zinc-300">{position}</span>
+          <span className="font-display text-2xl font-black leading-none tabular-nums text-ember">{count}</span>
+          <span className="text-xs font-bold text-zinc-300">{position}</span>
         </li>
       ))}
     </ul>
@@ -215,7 +215,7 @@ export default function RosterPage({ user, onAccessLost }) {
         )}
       </RankingHero>
 
-      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} columns="grid-cols-3 md:grid-cols-5" />}
+      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} />}
 
       {teams && <RosterTabs active="plantilla" teamId={teamId} />}
 
@@ -230,7 +230,7 @@ export default function RosterPage({ user, onAccessLost }) {
 
       {players && (
         <section aria-labelledby="squad-title" className="space-y-3">
-          <h2 id="squad-title" className="font-display text-2xl font-black uppercase italic">Jugadores</h2>
+          <h2 id="squad-title" className="font-display text-2xl font-black">Jugadores</h2>
           {players.length === 0 && (
             <p className="rounded-xl bg-panel p-4 text-sm text-zinc-300">
               {canEdit ? "Este equipo aún no tiene jugadores. Añade el primero." : "Este equipo aún no tiene jugadores."}

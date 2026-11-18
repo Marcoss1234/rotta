@@ -31,7 +31,7 @@ export default function LineDialog({ onConfirm, onCancel }) {
       }}
       className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/70"
     >
-      <h2 id="line-dialog-title" className="font-display text-lg font-black uppercase italic">Nueva fila</h2>
+      <h2 id="line-dialog-title" className="font-display text-lg font-black">Nueva fila</h2>
       {step === "rule" ? (
         <>
           <p className="mt-1 text-sm text-zinc-300">¿Cuándo se cambian los de la fila?</p>

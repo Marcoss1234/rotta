@@ -64,7 +64,7 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <img src="/rotta-logo.svg" alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-white/30" />
-              <span className="font-display text-sm font-extrabold uppercase italic tracking-wide">Rotta</span>
+              <span className="font-display text-sm font-extrabold">Rotta</span>
             </span>
             <button type="button" onClick={onClose} aria-label="Cerrar el menú" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
               <X aria-hidden="true" className="h-6 w-6" />
@@ -73,7 +73,7 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
           <NavLink to="/app/perfil" onClick={onClose} className="mt-4 flex items-center gap-3 rounded-xl bg-black/20 p-2.5 hover:bg-black/30">
             <Avatar name={user.name} picture={user.picture} className="h-12 w-12 text-base ring-2 ring-white/40" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-display text-lg font-black italic leading-tight">{user.name}</span>
+              <span className="block truncate font-display text-lg font-black leading-tight">{user.name}</span>
               <span className="block text-xs font-semibold text-white/80">{roleLabel(user.role)} · Ver perfil</span>
             </span>
             <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-white/70" />
@@ -83,7 +83,7 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
         <div className="side-menu-items flex-1 space-y-4 p-3">
           {groups.map((group) => (
             <div key={group.title}>
-              <p className="px-3 pb-1 text-[11px] font-bold uppercase tracking-widest text-zinc-500">{group.title}</p>
+              <p className="px-3 pb-1 text-[11px] font-bold text-zinc-500">{group.title}</p>
               <ul className="space-y-0.5">
                 {group.items.map(({ to, end, label, icon: Icon }) => (
                   <li key={to}>
@@ -93,7 +93,7 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
                       onClick={onClose}
                       className={({ isActive }) =>
                         `flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold ${
-                          isActive ? "bg-gradient-to-r from-tnt to-ember text-onbrand shadow-[0_4px_14px_rgba(255,56,0,0.3)]" : "text-zinc-200 hover:bg-white/5"
+                          isActive ? "bg-tnt text-onbrand shadow-[0_4px_14px_rgba(255,56,0,0.3)]" : "text-zinc-200 hover:bg-white/5"
                         }`
                       }
                     >

@@ -6,7 +6,7 @@ import { formatOverall, formatScore, overallOf, weightPercent } from "@/app/rank
 
 const fieldClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none";
-const primaryClass = "min-h-12 rounded-lg bg-gradient-to-r from-tnt to-ember px-4 font-display text-sm font-extrabold uppercase tracking-wide text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
+const primaryClass = "min-h-12 rounded-lg bg-tnt px-4 font-display text-sm font-extrabold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryClass =
   "min-h-12 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 
@@ -21,8 +21,8 @@ function OverallRing({ overall }) {
       style={{ background: `conic-gradient(#FF3800, #FF8800 ${fill}%, rgba(255,255,255,0.12) ${fill}%)` }}
     >
       <div className="flex h-[4.6rem] w-[4.6rem] flex-col items-center justify-center rounded-full bg-panel" aria-live="polite">
-        <span className={`font-display text-3xl font-black italic leading-none tabular-nums ${overallTone(overall)}`}>{formatOverall(overall)}</span>
-        <span className="text-[9px] font-bold uppercase tracking-widest text-zinc-400">Overall</span>
+        <span className={`font-display text-3xl font-black leading-none tabular-nums ${overallTone(overall)}`}>{formatOverall(overall)}</span>
+        <span className="text-[9px] font-bold text-zinc-400">Overall</span>
       </div>
     </div>
   );
@@ -83,13 +83,13 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
     >
       <div className="flex items-center gap-3 bg-gradient-to-r from-tnt/30 via-tnt/10 to-transparent p-5">
         <Avatar name={row.name} picture={row.picture} className="h-12 w-12 text-sm" />
-        <h2 id="rating-dialog-title" className="min-w-0 flex-1 break-words font-display text-2xl font-black uppercase italic leading-tight">{row.name}</h2>
+        <h2 id="rating-dialog-title" className="min-w-0 flex-1 break-words font-display text-2xl font-black leading-tight">{row.name}</h2>
         <OverallRing overall={overall} />
       </div>
 
       <form onSubmit={submit} className="space-y-5 p-5 pt-4">
         <fieldset disabled={busy}>
-          <legend className="mb-2 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Posición esta semana</legend>
+          <legend className="mb-2 text-[11px] font-bold text-zinc-400">Posición esta semana</legend>
           <div className="grid grid-cols-3 gap-1.5">
             {POSITIONS.map((item) => (
               <button
@@ -115,7 +115,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
                   <label htmlFor={`rating-${id}`} className="text-sm font-semibold text-zinc-200">
                     {label} <span className="text-xs font-bold text-ember">{weightPercent(positionWeights, id)}%</span>
                   </label>
-                  <span className="font-display text-2xl font-black italic tabular-nums">{text}</span>
+                  <span className="font-display text-2xl font-black tabular-nums">{text}</span>
                 </div>
                 <input
                   id={`rating-${id}`}
@@ -137,7 +137,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
         <p className="text-xs text-zinc-400">De 1 a 10 según lo esperado para su posición. Si algo no se ha visto esta semana, déjalo a la izquierda del todo, sin nota.</p>
 
         <div>
-          <label htmlFor="rating-comment" className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-zinc-400">Comentario <span className="font-normal normal-case tracking-normal">(opcional)</span></label>
+          <label htmlFor="rating-comment" className="mb-1.5 block text-[11px] font-bold text-zinc-400">Comentario <span className="font-normal normal-case tracking-normal">(opcional)</span></label>
           <textarea
             id="rating-comment"
             value={comment}

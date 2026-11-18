@@ -113,7 +113,7 @@ export default function NotificationsCard({ variant = "card" }) {
         >
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
-        <p className="flex items-center gap-2 pr-8 font-display text-lg font-black uppercase italic leading-tight">
+        <p className="flex items-center gap-2 pr-8 font-display text-lg font-black leading-tight">
           <Bell aria-hidden="true" className="h-5 w-5 shrink-0 fill-tnt text-tnt" />
           Activa los avisos
         </p>

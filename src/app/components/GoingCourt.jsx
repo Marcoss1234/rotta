@@ -59,8 +59,8 @@ function PositionCounts({ people }) {
         const count = people.filter((person) => person.position === position).length;
         return (
           <li key={position} className={`rounded-md bg-void/60 py-1 text-center ${count === 0 ? "opacity-50" : ""}`}>
-            <span className={`block font-display text-lg font-black italic leading-none tabular-nums ${count > 0 ? "text-ember" : "text-zinc-400"}`}>{count}</span>
-            <span aria-hidden="true" className="mt-0.5 block text-[10px] font-bold uppercase tracking-wide text-zinc-300">{POSITION_SHORT[position]}</span>
+            <span className={`block font-display text-lg font-black leading-none tabular-nums ${count > 0 ? "text-ember" : "text-zinc-400"}`}>{count}</span>
+            <span aria-hidden="true" className="mt-0.5 block text-[10px] font-bold text-zinc-300">{POSITION_SHORT[position]}</span>
             <span className="sr-only">{position}</span>
           </li>
         );

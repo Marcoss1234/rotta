@@ -30,6 +30,7 @@ import MatchDialog from "@/app/components/MatchDialog.jsx";
 import NotificationsCard from "@/app/components/NotificationsCard.jsx";
 import ScheduleDialog from "@/app/components/ScheduleDialog.jsx";
 import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
+import RotationMark from "@/app/components/RotationMark.jsx";
 import { localToday, matchDayLabel, matchKindLabel, placeInfo } from "@/app/matches.js";
 import { nextTraining } from "@/app/nextTraining.js";
 import { roleLabel } from "@/app/roles.js";
@@ -104,14 +105,14 @@ function LiveNow() {
           to={`/app/directo/${item.id}`}
           className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 via-tnt to-ember p-3 shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow"
         >
-          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/25 px-2 py-1 text-[10px] font-black uppercase tracking-wider">
+          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/25 px-2 py-1 text-[10px] font-black">
             <span aria-hidden="true" className="pulse-dot h-2 w-2 rounded-full bg-white" />
             En directo
           </span>
-          <span className="min-w-0 flex-1 truncate font-display text-base font-black italic">
+          <span className="min-w-0 flex-1 truncate font-display text-base font-black">
             {item.team_name.replace(/^Club /, "")} vs {item.opponent}
           </span>
-          <span className="shrink-0 text-right font-display font-black italic leading-none tabular-nums">
+          <span className="shrink-0 text-right font-display font-black leading-none tabular-nums">
             <span className="block text-xl">
               {item.won.us}-{item.won.them}
             </span>
@@ -162,7 +163,7 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
   const [ref, hold] = useStayInPlace();
   return (
     <div data-testid="attendance-answer">
-      <p className="font-display text-sm font-extrabold uppercase italic tracking-wide">{question}</p>
+      <p className="font-display text-sm font-extrabold">{question}</p>
       {hint && <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-amber-200/90"><Coins aria-hidden="true" className="h-3.5 w-3.5" />{hint}</p>}
       <div ref={ref} className="mt-2 grid grid-cols-2 gap-2">
         {[["going", "Voy"], ["not_going", "No voy"]].map(([status, label]) => (
@@ -177,7 +178,7 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
                 hold();
                 onAnswer(status);
               }}
-              className={`min-h-12 w-full rounded-lg font-display text-lg font-black uppercase italic aria-disabled:opacity-60 ${
+              className={`min-h-12 w-full rounded-lg font-display text-lg font-black aria-disabled:opacity-60 ${
                 mine === status
                   ? status === "going"
                     ? "bg-emerald-600 text-snow shadow-sm"
@@ -206,10 +207,10 @@ function AttendanceGroup({ group, people, currentUserId }) {
   const Icon = group.icon;
   return (
     <div className="rounded-xl border border-white/5 bg-void/60 p-3">
-      <h3 className={`flex items-center gap-2 font-display text-sm font-extrabold uppercase italic tracking-wide ${group.tint}`}>
+      <h3 className={`flex items-center gap-2 font-display text-sm font-extrabold ${group.tint}`}>
         <Icon aria-hidden="true" className="h-[18px] w-[18px]" />
         {group.title}
-        <span className="ml-auto font-display text-2xl font-black italic leading-none tabular-nums text-white">{people.length}</span>
+        <span className="ml-auto font-display text-2xl font-black leading-none tabular-nums text-white">{people.length}</span>
       </h3>
       {people.length === 0 ? (
         <p className="mt-2 text-sm text-zinc-500">{group.empty}</p>
@@ -221,7 +222,7 @@ function AttendanceGroup({ group, people, currentUserId }) {
               <span className="min-w-0 break-words">
                 {person.name}
                 {person.id === currentUserId && <span className="text-zinc-400"> (tú)</span>}
-                {person.guest && <span className="ml-1 rounded bg-sky-400/15 px-1.5 py-px text-[10px] font-bold uppercase text-sky-300">Ayuda</span>}
+                {person.guest && <span className="ml-1 rounded bg-sky-400/15 px-1.5 py-px text-[10px] font-bold text-sky-300">Ayuda</span>}
               </span>
             </li>
           ))}
@@ -246,7 +247,7 @@ function EventCard({ icon: Icon, label, status, action, testId, children }) {
   return (
     <article className="overflow-hidden rounded-2xl border border-white/10 bg-panel shadow-lg shadow-black/30" data-testid={testId}>
       <div className="grain relative flex min-h-11 items-center justify-between gap-2 bg-gradient-to-r from-tnt via-tnt to-tntdeep px-4 text-onbrand">
-        <span className="relative flex items-center gap-2 font-display text-sm font-black uppercase italic tracking-wide text-white">
+        <span className="relative flex items-center gap-2 font-display text-sm font-black text-white">
           <Icon aria-hidden="true" className="h-4 w-4" />
           {label}
           {status && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] not-italic tracking-normal text-tnt">{status}</span>}
@@ -265,7 +266,7 @@ function EventWhen({ iso, time, until, spoken, subtitle, teamId, people, titleId
       <div className="flex items-center gap-3">
         {iso && <DateBadge iso={iso} />}
         <div className="min-w-0 flex-1">
-          <p id={titleId} className="font-display text-4xl font-black italic leading-none tracking-tight">
+          <p id={titleId} className="font-display text-4xl font-black leading-none tracking-tight">
             <span className="sr-only">{spoken} </span>
             {time}
             {until && <span className="ml-1 text-base font-bold text-zinc-400">– {until}</span>}
@@ -295,7 +296,7 @@ function HelpButton({ attendance, onAsk }) {
         to="/app/chat?canal=general"
         className="flex min-h-11 shrink-0 flex-col items-center justify-center rounded-xl border border-sky-400/40 bg-sky-400/10 px-2.5 py-1 text-center text-sky-200 hover:bg-sky-400/20"
       >
-        <span className="flex items-center gap-1 text-xs font-extrabold uppercase">
+        <span className="flex items-center gap-1 text-xs font-extrabold">
           <LifeBuoy aria-hidden="true" className="h-3.5 w-3.5" />
           Ayuda pedida
         </span>
@@ -313,7 +314,7 @@ function HelpButton({ attendance, onAsk }) {
         few ? "bg-gradient-to-br from-red-500 to-tnt text-snow shadow-[0_4px_14px_rgba(239,68,68,0.35)]" : "border border-white/20 text-zinc-200 hover:bg-white/5"
       }`}
     >
-      <span className="flex items-center gap-1 text-xs font-extrabold uppercase">
+      <span className="flex items-center gap-1 text-xs font-extrabold">
         <LifeBuoy aria-hidden="true" className="h-3.5 w-3.5" />
         Pedir ayuda
       </span>
@@ -403,7 +404,7 @@ function LiveMatchButton({ match, onError }) {
         {playing ? <span aria-hidden="true" className="pulse-dot h-2.5 w-2.5 rounded-full bg-white" /> : <Zap aria-hidden="true" className="h-5 w-5 fill-white" />}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-display text-lg font-black uppercase italic leading-tight">
+        <span className="block font-display text-lg font-black leading-tight">
           {!live || live.status === "pending" ? (match.can_edit ? "Entrar al partido" : "Ver el partido") : playing ? (match.can_edit ? "Seguir el partido" : "Ver en directo") : "Ver el partido"}
         </span>
         <span className="block text-xs font-semibold text-white/80">
@@ -411,7 +412,7 @@ function LiveMatchButton({ match, onError }) {
         </span>
       </span>
       {live && live.status !== "pending" && (
-        <span className="shrink-0 text-right font-display font-black italic leading-none tabular-nums">
+        <span className="shrink-0 text-right font-display font-black leading-none tabular-nums">
           <span className="block text-2xl">
             {live.won.us}-{live.won.them}
           </span>
@@ -542,7 +543,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
   return (
     <section aria-labelledby="matches-title" className="space-y-3">
       <div className="flex items-center justify-between gap-3 border-b border-white/15 pb-2">
-        <h2 id="matches-title" className="font-display text-2xl font-black uppercase italic">Próximos</h2>
+        <h2 id="matches-title" className="font-display text-2xl font-black">Próximos</h2>
         {canManage && (
           <button type="button" onClick={() => setEditing({ match: null })} className="flex min-h-11 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
             <Plus aria-hidden="true" className="h-4 w-4" />
@@ -571,7 +572,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
       )}
       <Link to={`/app/partidos/jugados?equipo=${teamId}`} data-testid="played-link" className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-panel px-4 hover:bg-white/5">
         <History aria-hidden="true" className="h-5 w-5 shrink-0 text-ember" />
-        <span className="flex-1 font-display text-lg font-black uppercase italic">Partidos jugados</span>
+        <span className="flex-1 font-display text-lg font-black">Partidos jugados</span>
         <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
       </Link>
       {editing && (
@@ -618,7 +619,7 @@ function useTeams(onAccessLost) {
 
 function TeamPicker({ teams, teamId, onChange }) {
   if (teams.length === 0) return null;
-  return <GroupPicker groups={teams} groupId={teamId} onChange={onChange} columns="grid-cols-3 md:grid-cols-5" />;
+  return <GroupPicker groups={teams} groupId={teamId} onChange={onChange} />;
 }
 
 // El horario que ha puesto cada entrenador (mientras carga, el de siempre).
@@ -689,14 +690,14 @@ function TabButton({ id, selected, icon: Icon, label, badge, onSelect }) {
       aria-selected={selected}
       aria-controls={`panel-${id}`}
       onClick={() => onSelect(id)}
-      className={`relative flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl font-display text-[13px] font-black uppercase italic transition-colors ${
-        selected ? "bg-gradient-to-r from-tnt to-ember text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
+      className={`relative flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl font-display text-[13px] font-black transition-colors ${
+        selected ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
       }`}
     >
       <Icon aria-hidden="true" className="h-5 w-5" />
       {label}
       {badge && (
-        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold uppercase ${selected ? "bg-white text-tnt" : "bg-tnt text-onbrand"}`}>
+        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${selected ? "bg-white text-tnt" : "bg-tnt text-onbrand"}`}>
           {badge}
         </span>
       )}
@@ -820,11 +821,11 @@ export default function HomePage({ user, onAccessLost }) {
 
       <NotificationsCard variant="banner" />
 
-      <header className="grain relative overflow-hidden rounded-2xl bg-gradient-to-br from-tnt via-tnt to-tntdeep p-5 text-onbrand">
-        <Zap aria-hidden="true" className="absolute -right-6 -top-8 h-44 w-44 rotate-12 fill-white/10 text-white/10" />
+      <header className="relative overflow-hidden rounded-2xl bg-tnt p-5 text-onbrand">
+        <RotationMark className="absolute -right-12 -top-14 h-56 w-56 text-white/15" />
         <div className="relative flex items-center gap-4">
           <div className="min-w-0 flex-1">
-            <h1 className="break-words font-display text-4xl font-black uppercase italic leading-none tracking-tight md:text-5xl">Hola, {user.name.split(" ")[0]}</h1>
+            <h1 className="break-words font-display text-4xl font-black leading-none tracking-tight md:text-5xl">Hola, {user.name.split(" ")[0]}</h1>
             <p className="mt-2 text-sm font-semibold text-white/85">{roleLabel(user.role)}</p>
             {coins && (
               <Link

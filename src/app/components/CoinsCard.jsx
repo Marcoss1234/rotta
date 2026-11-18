@@ -35,8 +35,8 @@ export default function CoinsCard({ coins }) {
           <Coins className="h-6 w-6" />
         </span>
         <div className="min-w-0 flex-1">
-          <h2 id="coins-title" className="text-xs font-extrabold uppercase tracking-widest text-amber-200/80">Club Coins</h2>
-          <p className="font-display text-3xl font-black italic leading-none tabular-nums text-white">{amount}</p>
+          <h2 id="coins-title" className="text-xs font-extrabold text-amber-200/80">Club Coins</h2>
+          <p className="font-display text-3xl font-black leading-none tabular-nums text-white">{amount}</p>
         </div>
         <Link to="/app/tienda" className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 pl-3 pr-2 text-sm font-black text-void shadow-[0_4px_14px_rgba(245,197,66,0.35)]">
           <ShoppingBag aria-hidden="true" className="h-4 w-4" />
@@ -54,7 +54,7 @@ export default function CoinsCard({ coins }) {
 
       {coins.honors.length > 0 && (
         <div className="relative mt-3">
-          <h3 className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Tus premios</h3>
+          <h3 className="text-[11px] font-bold text-zinc-400">Tus premios</h3>
           <ul className="mt-1.5 flex flex-wrap gap-1.5">
             {coins.honors.map((honor) => (
               <li
@@ -70,7 +70,7 @@ export default function CoinsCard({ coins }) {
       )}
 
       <div className="relative mt-3">
-        <h3 className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Últimos movimientos</h3>
+        <h3 className="text-[11px] font-bold text-zinc-400">Últimos movimientos</h3>
         {coins.entries.length === 0 ? (
           <p className="mt-1.5 text-sm text-zinc-400">
             Aún no tienes coins. Se ganan quedando en el podio del ranking, siendo el mejor del mes y respondiendo a la asistencia de los entrenos.

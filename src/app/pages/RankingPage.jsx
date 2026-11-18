@@ -35,10 +35,10 @@ function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onO
         {showMovement && <MovementPill value={entry.movement} hasPrevious={hasPrevious} />}
       </span>
       <span className={`flex w-full flex-col items-center justify-start rounded-t-xl bg-gradient-to-b pt-2 text-[#0B0C0F] ${medal.pedestal}`}>
-        <span className="font-display text-4xl font-black italic leading-none tabular-nums">
+        <span className="font-display text-4xl font-black leading-none tabular-nums">
           <span className="sr-only">Overall </span>{formatOverall(entry.overall)}
         </span>
-        <span className="mt-1 font-display text-sm font-black uppercase italic">
+        <span className="mt-1 font-display text-sm font-black">
           <span className="sr-only">Puesto </span>{place}º
         </span>
       </span>
@@ -59,7 +59,7 @@ function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onO
 function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay }) {
   const content = (
     <>
-      <span className="w-8 shrink-0 text-center font-display text-2xl font-black italic tabular-nums text-zinc-500">
+      <span className="w-8 shrink-0 text-center font-display text-2xl font-black tabular-nums text-zinc-500">
         <span className="sr-only">Puesto </span>{place}
       </span>
       <Avatar name={entry.name} picture={entry.picture} />
@@ -160,7 +160,7 @@ function PlayerDialog({ player, groupId, onClose, onError }) {
           </Suspense>
         </div>
       )}
-      <h2 id="player-history-title" className="mb-4 break-words font-display text-2xl font-black uppercase italic">{player.name}</h2>
+      <h2 id="player-history-title" className="mb-4 break-words font-display text-2xl font-black">{player.name}</h2>
       {history ? <PlayerRatingHistory history={history} /> : <p role="status" className="text-zinc-300">Cargando…</p>}
       <button type="button" onClick={onClose} className="mt-5 min-h-11 w-full rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5">
         Cerrar
@@ -294,7 +294,7 @@ export default function RankingPage({ user, onAccessLost }) {
 
           {ranking.pending.length > 0 && !position && (
             <section aria-labelledby="pending-title" className="rounded-xl border border-dashed border-white/15 p-4">
-              <h2 id="pending-title" className="font-display font-extrabold uppercase italic">Aún sin puesto</h2>
+              <h2 id="pending-title" className="font-display font-extrabold">Aún sin puesto</h2>
               <p className="mt-1 text-sm text-zinc-400">Hacen falta al menos 2 semanas puntuadas de las últimas 4.</p>
               <p className="mt-2 text-sm text-zinc-200">{ranking.pending.map((person) => person.name).join(", ")}</p>
             </section>
@@ -302,7 +302,7 @@ export default function RankingPage({ user, onAccessLost }) {
 
           {myHistory && myHistory.weeks.length > 0 && (
             <section aria-labelledby="my-card-title" className="grain overflow-hidden rounded-2xl border border-tnt/40 bg-gradient-to-b from-tnt/20 to-panel p-5">
-              <h2 id="my-card-title" className="mb-4 font-display text-2xl font-black uppercase italic">Tu ficha</h2>
+              <h2 id="my-card-title" className="mb-4 font-display text-2xl font-black">Tu ficha</h2>
               <PlayerRatingHistory history={myHistory} />
             </section>
           )}

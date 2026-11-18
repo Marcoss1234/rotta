@@ -51,7 +51,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
     <div>
     {/* Velocidad siempre a la vista: un toque y se ve más lenta o más rápida. */}
     <div role="radiogroup" aria-label="Velocidad de la jugada" className="flex items-center gap-1.5 px-2 pt-2">
-      <span className="shrink-0 text-[11px] font-bold uppercase tracking-wide text-zinc-400">Velocidad</span>
+      <span className="shrink-0 text-[11px] font-bold text-zinc-400">Velocidad</span>
       <div className="flex min-w-0 flex-1 gap-1 rounded-full bg-white/[0.04] p-1">
         {PLAYBACK_SPEEDS.map((speed) => {
           const active = playback.speed === speed;
@@ -62,7 +62,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
               role="radio"
               aria-checked={active}
               onClick={() => playback.setSpeed(speed)}
-              className={`min-h-9 min-w-0 flex-1 rounded-full text-xs font-extrabold tabular-nums transition-colors ${active ? "bg-gradient-to-br from-tnt to-ember text-onbrand shadow" : "text-zinc-300 hover:bg-white/10"}`}
+              className={`min-h-9 min-w-0 flex-1 rounded-full text-xs font-extrabold tabular-nums transition-colors ${active ? "bg-tnt text-onbrand shadow" : "text-zinc-300 hover:bg-white/10"}`}
             >
               {String(speed).replace(".", ",")}x
             </button>
@@ -75,7 +75,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
         type="button"
         onClick={playback.toggle}
         aria-label={playback.playing ? "Pausar" : "Reproducir jugada"}
-        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tnt to-ember text-onbrand"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand"
       >
         {playback.playing ? <Pause aria-hidden="true" className="h-5 w-5 fill-white" /> : <Play aria-hidden="true" className="h-5 w-5 fill-white" />}
       </button>

@@ -6,7 +6,7 @@ export default function MenuHint({ hidden, onOpen, onDismiss }) {
   return (
     <div role="status" className="menu-hint pointer-events-none fixed bottom-[calc(4.6rem+env(safe-area-inset-bottom))] right-2 z-[55] w-64 md:hidden">
       <div className="pointer-events-auto relative rounded-2xl bg-white p-3 pr-9 text-void shadow-[0_10px_30px_rgba(0,0,0,0.55)]">
-        <p className="text-[11px] font-black uppercase tracking-wider text-tnt">¡Nuevo menú!</p>
+        <p className="text-[11px] font-black text-tnt">¡Nuevo menú!</p>
         <p className="mt-0.5 text-sm font-semibold leading-snug">
           Aquí tienes {names}
           {hidden.length > 3 ? " y más" : ""}. Toca «Menú» para abrirlo.

@@ -314,7 +314,7 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
 
   return (
     <section aria-labelledby="court-title" className="rounded-2xl border border-white/5 bg-panel p-4">
-      <h2 id="court-title" className="font-display text-2xl font-black uppercase italic">Pista</h2>
+      <h2 id="court-title" className="font-display text-2xl font-black">Pista</h2>
       {canEdit && (
         <p id="court-help" className="mt-1 text-xs text-zinc-400">
           Arrastra cada chapa a donde quieras. Se guarda sola, y si la sacas de la pista vuelve al banquillo. Tócala para cambiar su puesto.
@@ -357,7 +357,7 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
       </div>
 
       <div className="mx-auto mt-3 max-w-sm rounded-lg border border-white/15 p-3" data-testid="court-bench">
-        <h3 className="font-display text-sm font-extrabold uppercase italic tracking-wide text-zinc-200">Banquillo · {onBench.length}</h3>
+        <h3 className="font-display text-sm font-extrabold text-zinc-200">Banquillo · {onBench.length}</h3>
         {onBench.length === 0 ? (
           <p className="mt-1 text-sm text-zinc-400">No hay nadie en el banquillo.</p>
         ) : (

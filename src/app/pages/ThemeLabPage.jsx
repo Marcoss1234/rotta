@@ -102,14 +102,14 @@ function PhonePreview({ theme }) {
           {/* Próximo entreno */}
           <section className="rounded-2xl bg-[var(--surface)] p-3.5 shadow-[var(--card-shadow)] ring-1 ring-[var(--line)]">
             <div className="flex items-center justify-between">
-              <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-[var(--muted)]"><CalendarDays aria-hidden="true" className="h-3.5 w-3.5 text-[var(--calendar)]" />Próximo entreno</p>
+              <p className="flex items-center gap-1.5 text-[11px] font-extrabold text-[var(--muted)]"><CalendarDays aria-hidden="true" className="h-3.5 w-3.5 text-[var(--calendar)]" />Próximo entreno</p>
               <span className="flex items-center gap-1 rounded-full bg-[var(--success-soft)] px-2 py-0.5 text-[11px] font-extrabold text-[var(--success)]">
                 <CheckCircle2 aria-hidden="true" className="h-3 w-3" />Vas
               </span>
             </div>
             <div className="mt-2 flex items-center gap-3">
               <div className="w-14 shrink-0 overflow-hidden rounded-xl bg-white text-center shadow-sm ring-1 ring-black/10">
-                <span className="block bg-[var(--calendar)] py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white">Nov</span>
+                <span className="block bg-[var(--calendar)] py-0.5 text-[10px] font-extrabold text-white">Nov</span>
                 <span className="block pb-1 pt-0.5 font-display text-2xl font-black leading-none text-zinc-900">12</span>
               </div>
               <div className="min-w-0 flex-1">
@@ -137,7 +137,7 @@ function PhonePreview({ theme }) {
           {/* Ranking */}
           <section className="rounded-2xl bg-[var(--surface)] p-3.5 shadow-[var(--card-shadow)] ring-1 ring-[var(--line)]">
             <div className="flex items-center justify-between">
-              <p className="flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-widest text-[var(--muted)]"><Trophy aria-hidden="true" className="h-3.5 w-3.5 text-[var(--gold)]" />Ranking de la semana</p>
+              <p className="flex items-center gap-1.5 text-[11px] font-extrabold text-[var(--muted)]"><Trophy aria-hidden="true" className="h-3.5 w-3.5 text-[var(--gold)]" />Ranking de la semana</p>
               <span className="text-xs font-semibold text-[var(--brand-text)]">Ver todo</span>
             </div>
             <ol className="mt-3 grid grid-cols-3 items-end gap-2 text-center">
@@ -216,7 +216,7 @@ export default function ThemeLabPage() {
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:py-10">
         <div className="space-y-5">
           <header>
-            <p className="text-xs font-extrabold uppercase tracking-widest text-zinc-500">Rotta · prueba de temas</p>
+            <p className="text-xs font-extrabold text-zinc-500">Rotta · prueba de temas</p>
             <h1 className="mt-1 font-display text-3xl font-black leading-tight md:text-4xl">Los colores de tu club</h1>
             <p className="mt-1 max-w-prose text-sm text-zinc-600">
               El club elige sus dos colores una vez y toda la app se tiñe. Cada persona elige si la ve en claro u oscuro.
@@ -241,7 +241,7 @@ export default function ThemeLabPage() {
                   <input type="color" value={value} onChange={pickCustom(setter)} className="h-11 w-14 cursor-pointer rounded-lg border border-zinc-300 bg-white p-1" />
                   <span className="leading-tight">
                     {label}
-                    <span className="block font-mono text-[11px] uppercase text-zinc-500">{value}</span>
+                    <span className="block font-mono text-[11px] text-zinc-500">{value}</span>
                   </span>
                 </label>
               ))}

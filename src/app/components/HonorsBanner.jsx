@@ -24,10 +24,10 @@ export default function HonorsBanner({ honors }) {
             <Crown aria-hidden="true" className="absolute -top-3 left-1/2 h-5 w-5 -translate-x-1/2 fill-amber-300 text-amber-500" />
           </span>
           <div className="relative min-w-0 flex-1">
-            <p className="text-[11px] font-extrabold uppercase tracking-widest text-amber-200">
+            <p className="text-[11px] font-extrabold text-amber-200">
               {honors.month_title} de {monthName(champion.period)}
             </p>
-            <p className="truncate font-display text-lg font-black italic text-white">{champion.name}</p>
+            <p className="truncate font-display text-lg font-black text-white">{champion.name}</p>
           </div>
           <span className="relative flex shrink-0 items-center gap-1 rounded-full bg-amber-300/15 px-2 py-1 text-xs font-extrabold text-amber-200">
             <Coins aria-hidden="true" className="h-3.5 w-3.5" />+{champion.coins}
@@ -36,7 +36,7 @@ export default function HonorsBanner({ honors }) {
       )}
       {honors.week.length > 0 && (
         <div className="rounded-2xl bg-panel p-3 ring-1 ring-white/5">
-          <p className="text-[11px] font-extrabold uppercase tracking-widest text-zinc-400">Premios de la semana</p>
+          <p className="text-[11px] font-extrabold text-zinc-400">Premios de la semana</p>
           <ul className="mt-2 grid grid-cols-3 gap-2">
             {honors.week.map((entry) => {
               const medal = MEDAL[entry.place] ?? MEDAL[3];

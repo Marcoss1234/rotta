@@ -27,7 +27,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
 
   return (
     <section aria-labelledby="privacy-title" className="space-y-3 rounded-xl bg-panel p-4">
-      <h2 id="privacy-title" className="flex items-center gap-2 font-display text-xl font-black uppercase italic">
+      <h2 id="privacy-title" className="flex items-center gap-2 font-display text-xl font-black">
         <ShieldCheck aria-hidden="true" className="h-5 w-5 text-tnt" />
         Privacidad
       </h2>

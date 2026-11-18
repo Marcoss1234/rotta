@@ -41,14 +41,14 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
           </CourtFrame>
           {recording && (
             <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-tnt to-ember shadow-[0_4px_14px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-110 text-onbrand">
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tnt shadow-[0_4px_14px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-110 text-onbrand">
                 <Play className="h-4 w-4 translate-x-px fill-white text-white" />
               </span>
             </span>
           )}
         </span>
         <span className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-0.5 pr-10">
-          <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold uppercase tracking-wide">
+          <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold">
             <span className="text-ember">{boardKindLabel(board.kind)}</span>
             {board.private && (
               <span className="flex items-center gap-1 rounded bg-sky-400/15 px-1.5 py-px text-sky-300">
@@ -62,7 +62,7 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
               <span className="rounded bg-white/10 px-1.5 py-px text-zinc-300">Borrador</span>
             ))}
           </span>
-          <span className="block break-words font-display text-lg font-black uppercase italic leading-tight">{board.name}</span>
+          <span className="block break-words font-display text-lg font-black leading-tight">{board.name}</span>
           <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-zinc-400">
             {recording ? (
               <span className="flex items-center gap-1 text-zinc-200">
@@ -206,7 +206,7 @@ export default function BoardsPage({ user, onAccessLost }) {
         )}
       </RankingHero>
 
-      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={(id) => setSearchParams({ equipo: id }, { replace: true })} columns="grid-cols-3 md:grid-cols-5" />}
+      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={(id) => setSearchParams({ equipo: id }, { replace: true })} />}
 
       <RosterTabs active="pizarra" teamId={teamId} />
 
@@ -215,7 +215,7 @@ export default function BoardsPage({ user, onAccessLost }) {
 
       {data?.boards.length === 0 && (
         <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-panel px-4 py-8 text-center">
-          <p className="font-display text-xl font-black uppercase italic">{data.can_edit ? "Todavía no hay jugadas" : "Aún no hay jugadas"}</p>
+          <p className="font-display text-xl font-black">{data.can_edit ? "Todavía no hay jugadas" : "Aún no hay jugadas"}</p>
           <p className="max-w-xs text-sm text-zinc-400">
             {data.can_edit
               ? "Coloca a tus jugadores, dibuja la jugada o créala paso a paso, y publícala para que la vea el equipo."
@@ -240,7 +240,7 @@ export default function BoardsPage({ user, onAccessLost }) {
           .map(([key, title, list], _index, groups) => (
             <section key={key} aria-label={title} className="space-y-2">
               {groups.length > 1 && (
-                <h2 className="flex items-center gap-2 px-1 font-display text-sm font-black uppercase italic tracking-wide text-zinc-300">
+                <h2 className="flex items-center gap-2 px-1 font-display text-sm font-black text-zinc-300">
                   {key === "mine" && <Lock aria-hidden="true" className="h-3.5 w-3.5 text-sky-300" />}
                   {title}
                   {key === "mine" && <span className="font-body text-xs font-semibold normal-case not-italic tracking-normal text-zinc-500">· solo las ves tú</span>}

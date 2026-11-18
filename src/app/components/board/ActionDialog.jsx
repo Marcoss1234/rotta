@@ -31,7 +31,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 id="action-title" className="font-display text-lg font-black uppercase italic leading-tight">¿Qué hace {name}?</h2>
+          <h2 id="action-title" className="font-display text-lg font-black leading-tight">¿Qué hace {name}?</h2>
           {time !== null && <p className="text-xs text-zinc-400">En el segundo {seconds(time)} de la jugada</p>}
         </div>
         <button type="button" onClick={onClose} aria-label="Cerrar" className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10">
@@ -49,7 +49,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
               onClick={() => onChoose("colocacion", tempo.value)}
               className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-void/70 px-3 text-left hover:border-tnt"
             >
-              <span className="flex h-9 w-11 shrink-0 items-center justify-center rounded-lg bg-tnt font-display text-base font-black italic text-onbrand">{tempo.short}</span>
+              <span className="flex h-9 w-11 shrink-0 items-center justify-center rounded-lg bg-tnt font-display text-base font-black text-onbrand">{tempo.short}</span>
               <span>
                 <span className="block text-sm font-bold">{tempo.label}</span>
                 <span className="block text-xs text-zinc-400">{tempo.hint}</span>
@@ -81,7 +81,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
 
       {actions.length > 0 && (
         <div className="mt-4 border-t border-white/10 pt-3">
-          <h3 className="text-[11px] font-bold uppercase tracking-wide text-zinc-500">Sus acciones en esta jugada</h3>
+          <h3 className="text-[11px] font-bold text-zinc-500">Sus acciones en esta jugada</h3>
           <ul className="mt-1.5 space-y-1">
             {actions.map((item) => {
               const Icon = ICONS[item.action];

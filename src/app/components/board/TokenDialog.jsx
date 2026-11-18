@@ -64,7 +64,7 @@ export default function TokenDialog({ element, player, busy, onApply, onRemove, 
             <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tnt text-sm font-black text-onbrand">{element.label}</span>
           )}
           <div className="min-w-0 flex-1">
-            <h2 id="token-dialog-title" className="break-words font-display text-xl font-black uppercase italic leading-tight">{title}</h2>
+            <h2 id="token-dialog-title" className="break-words font-display text-xl font-black leading-tight">{title}</h2>
             {player && <p className="mt-0.5 text-xs font-semibold text-zinc-400">En su ficha: {player.position}</p>}
           </div>
           <button type="button" onClick={close} aria-label="Cerrar" className="-mr-1 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center self-start rounded-lg text-zinc-300 hover:bg-white/5">
@@ -73,7 +73,7 @@ export default function TokenDialog({ element, player, busy, onApply, onRemove, 
         </div>
 
         <fieldset disabled={busy}>
-          <legend className="mb-2 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Posición en esta jugada</legend>
+          <legend className="mb-2 text-[11px] font-bold text-zinc-400">Posición en esta jugada</legend>
           <div className="grid grid-cols-2 gap-1.5">
             {POSITIONS.map((position) => (
               <button
@@ -81,7 +81,7 @@ export default function TokenDialog({ element, player, busy, onApply, onRemove, 
                 type="button"
                 aria-pressed={position === current}
                 onClick={() => pick(position)}
-                className={`min-h-12 rounded-lg px-2 text-sm font-bold disabled:opacity-50 ${position === current ? "bg-gradient-to-r from-tnt to-ember text-onbrand" : "bg-void text-zinc-200 hover:text-white"}`}
+                className={`min-h-12 rounded-lg px-2 text-sm font-bold disabled:opacity-50 ${position === current ? "bg-tnt text-onbrand" : "bg-void text-zinc-200 hover:text-white"}`}
               >
                 {position}
               </button>
@@ -108,7 +108,7 @@ export default function TokenDialog({ element, player, busy, onApply, onRemove, 
 
         {rival && (
           <div>
-            <label htmlFor="token-label" className="mb-1.5 block text-[11px] font-bold uppercase tracking-widest text-zinc-400">Dorsal o etiqueta</label>
+            <label htmlFor="token-label" className="mb-1.5 block text-[11px] font-bold text-zinc-400">Dorsal o etiqueta</label>
             <input
               id="token-label"
               value={label}
