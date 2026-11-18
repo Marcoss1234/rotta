@@ -146,6 +146,9 @@ export const BUILDS = [
 export const CELEBRATIONS = [
   { id: "brazos", label: "Salto con los brazos arriba" },
   { id: "puno", label: "Puño cerrado" },
+  { id: "baile", label: "Baile" },
+  { id: "avion", label: "Avión" },
+  { id: "giro", label: "Salto con giro" },
 ];
 
 // Personajes guardados con opciones que ya no existen: la celebración del remate pasa a brazos

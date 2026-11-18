@@ -6,22 +6,28 @@ import savedCaptures from "@/app/character/captured-gestures.json";
 
 export const ACTION_KEYS = {
   saque: { keys: [[0, "stand"], [0.32, "serveToss"], [0.48, "serveToss"], [0.55, "serveHit"], [0.78, "serveFollow"], [1, "stand"]], jump: [0.3, 0.85, 0.22] },
-  recepcion: { keys: [[0, "ready"], [0.3, "reception"], [0.62, "reception"], [1, "ready"]] },
-  colocacion: { keys: [[0, "ready"], [0.28, "set"], [0.44, "set"], [0.6, "setPush"], [1, "ready"]], jump: [0.4, 0.75, 0.08] },
+  recepcion: { keys: [[0, "ready"], [0.22, "receptionLoad"], [0.42, "reception"], [0.66, "receptionFollow"], [1, "ready"]] },
+  colocacion: { keys: [[0, "ready"], [0.2, "set"], [0.42, "set"], [0.56, "setPush"], [0.7, "setFollow"], [1, "ready"]], jump: [0.5, 0.8, 0.08] },
   remate: { keys: [[0, "ready"], [0.12, "spikeLoad"], [0.22, "spikeRise"], [0.32, "spikeArm"], [0.46, "spikeArm"], [0.53, "spikeHit"], [0.7, "spikeFollow"], [0.88, "land"], [1, "ready"]], jump: [0.16, 0.88, 0.8] },
-  bloqueo: { keys: [[0, "ready"], [0.15, "blockLoad"], [0.3, "block"], [0.72, "block"], [0.88, "land"], [1, "ready"]], jump: [0.16, 0.86, 0.6] },
+  bloqueo: { keys: [[0, "ready"], [0.14, "blockLoad"], [0.32, "block"], [0.5, "blockReach"], [0.66, "block"], [0.86, "land"], [1, "ready"]], jump: [0.16, 0.86, 0.6] },
   defensa: { keys: [[0, "ready"], [0.22, "digLow"], [0.42, "digLow"], [0.62, "digDive"], [0.85, "digDive"], [1, "ready"]] },
   // Las del perfil.
   toques: { keys: [[0, "bumpReady"], [0.42, "bumpHit"], [0.56, "bumpHit"], [1, "bumpReady"]] },
   dedos: { keys: [[0, "set"], [0.4, "setPush"], [0.56, "setPush"], [1, "set"]] },
   brazos: { keys: [[0, "ready"], [0.2, "blockLoad"], [0.42, "cheer"], [0.78, "cheer"], [0.9, "land"], [1, "ready"]], jump: [0.22, 0.86, 0.5] },
   puno: { keys: [[0, "ready"], [0.18, "fistLoad"], [0.34, "fistPump"], [0.5, "fistLoad"], [0.66, "fistPump"], [0.82, "fistLoad"], [1, "ready"]] },
+  // Baile: el peso de un lado a otro con un brazo arriba, cambiando al ritmo.
+  baile: { keys: [[0, "ready"], [0.12, "danceA"], [0.25, "danceB"], [0.38, "danceA"], [0.5, "danceB"], [0.62, "danceA"], [0.75, "danceB"], [0.88, "danceA"], [1, "ready"]] },
+  // Avión: brazos en cruz, inclinándose a un lado y a otro.
+  avion: { keys: [[0, "ready"], [0.15, "planeLevel"], [0.3, "planeA"], [0.5, "planeB"], [0.7, "planeA"], [0.85, "planeLevel"], [1, "ready"]] },
+  // Salto con giro: se agacha, salta con los brazos arriba dando una vuelta entera y cae.
+  giro: { keys: [[0, "ready"], [0.18, "blockLoad"], [0.38, "cheer"], [0.72, "cheer"], [0.86, "land"], [1, "ready"]], jump: [0.2, 0.84, 0.45] },
 };
 
 // Duración de cada gesto si no se ha ajustado (en milisegundos).
 export const DEFAULT_DURATIONS = {
   saque: 1000, recepcion: 750, colocacion: 750, remate: 950, bloqueo: 850, defensa: 850,
-  toques: 1000, dedos: 950, remate_perfil: 1700, brazos: 1500, puno: 1500,
+  toques: 1000, dedos: 950, remate_perfil: 1700, brazos: 1500, puno: 1500, baile: 1700, avion: 1800, giro: 1300,
 };
 
 // El editor cambia este objeto en vivo mientras ajustas, para verlo al reproducir.
@@ -69,7 +75,7 @@ export const gestureDuration = (action, fallback) =>
   capturedOf(action)?.duration ?? customTimes[action]?.duration ?? fallback ?? DEFAULT_DURATIONS[action] ?? 800;
 
 // La postura en la que se toca el balón: con tiempos propios, el contacto cae en ese momento.
-const HIT_KEY = { remate: "spikeHit", saque: "serveHit", colocacion: "setPush", recepcion: "reception", bloqueo: "block", defensa: "digDive" };
+const HIT_KEY = { remate: "spikeHit", saque: "serveHit", colocacion: "setPush", recepcion: "reception", bloqueo: "blockReach", defensa: "digDive" };
 export function hitFraction(action) {
   const captured = capturedOf(action);
   if (captured && Number.isFinite(captured.hit)) return captured.hit;

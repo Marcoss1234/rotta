@@ -1246,6 +1246,20 @@ function addHair(head, style, accent, hairColor, hairColor2 = null, split = "ver
   const sides = (radius, cover) =>
     piece(new THREE.SphereGeometry(radius, 22, 14, Math.PI * 1.5 + 0.95, Math.PI * 2 - 1.9, 0, Math.PI * cover));
   const tie = () => new THREE.MeshStandardMaterial({ color: accent });
+  // Lo que cuelga (coleta, trenza, melena, moño) va en un grupo que gira desde donde nace: así se balancea.
+  let swing = null;
+  const hanging = (pivot, amount) => {
+    swing = new THREE.Group();
+    swing.position.set(...pivot);
+    swing.userData.amount = amount;
+    holder.add(swing);
+    return (geometry, position, rotation = [0, 0, 0], scale = [1, 1, 1], pieceMaterial = material) => {
+      const mesh = piece(geometry, position, rotation, scale, pieceMaterial);
+      swing.add(mesh);
+      mesh.position.set(position[0] - pivot[0], position[1] - pivot[1], position[2] - pivot[2]);
+      return mesh;
+    };
+  };
 
   switch (style) {
     case "rapado":
@@ -1269,22 +1283,28 @@ function addHair(head, style, accent, hairColor, hairColor2 = null, split = "ver
     case "moño":
       sides(0.12, 0.62);
       cap(0.12, 0.55, 0.3);
-      piece(new THREE.SphereGeometry(0.058, 14, 10), [0, 0.1, 0.075]);
-      piece(new THREE.TorusGeometry(0.035, 0.008, 6, 14), [0, 0.07, 0.07], [0.9, 0, 0], [1, 1, 1], tie());
+      {
+        const bun = hanging([0, 0.07, 0.07], 0.35);
+        bun(new THREE.SphereGeometry(0.058, 14, 10), [0, 0.1, 0.075]);
+        bun(new THREE.TorusGeometry(0.035, 0.008, 6, 14), [0, 0.07, 0.07], [0.9, 0, 0], [1, 1, 1], tie());
+      }
       break;
     case "melena":
       sides(0.123, 0.66);
       cap(0.122, 0.55, 0.3);
       // Pelo suelto que cae por detrás hasta los hombros.
-      piece(new THREE.CylinderGeometry(0.112, 0.13, 0.24, 18, 1, true, -Math.PI / 2, Math.PI), [0, -0.12, 0.012]).material.side = THREE.DoubleSide;
+      hanging([0, 0, 0.012], 0.45)(new THREE.CylinderGeometry(0.112, 0.13, 0.24, 18, 1, true, -Math.PI / 2, Math.PI), [0, -0.12, 0.012]).material.side = THREE.DoubleSide;
       break;
     case "trenza":
       sides(0.12, 0.6);
       cap(0.12, 0.55, 0.3);
-      for (let index = 0; index < 5; index += 1) {
-        piece(new THREE.SphereGeometry(0.03 - index * 0.002, 10, 8), [0, -0.02 - index * 0.045, 0.125 + index * 0.012]);
+      {
+        const braid = hanging([0, -0.02, 0.125], 1);
+        for (let index = 0; index < 5; index += 1) {
+          braid(new THREE.SphereGeometry(0.03 - index * 0.002, 10, 8), [0, -0.02 - index * 0.045, 0.125 + index * 0.012]);
+        }
+        braid(new THREE.TorusGeometry(0.02, 0.006, 6, 12), [0, -0.235, 0.18], [1.2, 0, 0], [1, 1, 1], tie());
       }
-      piece(new THREE.TorusGeometry(0.02, 0.006, 6, 12), [0, -0.235, 0.18], [1.2, 0, 0], [1, 1, 1], tie());
       break;
     case "media":
       // Media melena corta (tipo bob) con flequillo.
@@ -1297,12 +1317,13 @@ function addHair(head, style, accent, hairColor, hairColor2 = null, split = "ver
       cap(0.12, 0.55, 0.3);
       piece(new THREE.SphereGeometry(0.045, 12, 8), [0, 0.03, 0.115]);
       piece(new THREE.TorusGeometry(0.03, 0.009, 6, 14), [0, 0.02, 0.15], [0, 0, 0], [1, 1, 1], tie());
-      piece(new THREE.CylinderGeometry(0.035, 0.012, 0.22, 10), [0, -0.08, 0.17], [-0.35, 0, 0]);
+      hanging([0, 0.02, 0.15], 1)(new THREE.CylinderGeometry(0.035, 0.012, 0.22, 10), [0, -0.08, 0.17], [-0.35, 0, 0]);
       break;
     default:
       cap(0.118, 0.55, 0.35);
   }
   if (hairColor2) paintTwoTone(holder, material, hairColor, hairColor2, split);
+  return swing;
 }
 
 // `player.character` es el personaje que ha elegido; si no tiene, sale el de siempre según su ficha.
@@ -1479,7 +1500,7 @@ export function createPlayer(scene, element, player, position, female = false, {
   };
   [-1, 1].forEach((sign) => headPiece(new THREE.SphereGeometry(0.026, 20, 14), [sign * 0.099, -0.005, 0.004], [0.42, 0.95, 0.72]));
   headPiece(new THREE.SphereGeometry(0.017, 20, 14), [0, -0.022, -0.1], [0.85, 1.05, 0.95]);
-  addHair(head, look.hair, rival ? 0xffffff : 0xff3800, hairColor, hairHex2(look.hair_color2), look.hair_split);
+  const hairSwing = addHair(head, look.hair, rival ? 0xffffff : 0xff3800, hairColor, hairHex2(look.hair_color2), look.hair_split);
   const headbandColor = accentHex(look.headband);
   if (headbandColor) {
     // Cinta en la frente, algo más alta por detrás.
@@ -1510,6 +1531,7 @@ export function createPlayer(scene, element, player, position, female = false, {
     // Tamaño a escala real según lo que mide (o una estatura normal si no la ha puesto).
     scale: figureScale(player?.height_cm, isFemale),
     eyes: eyeTextures?.iris ?? null, eyeLook: new THREE.Vector2(), lids, faces, nextBlink: 0,
+    hair: hairSwing ? { pivot: hairSwing, angle: new THREE.Vector2(), speed: new THREE.Vector2(), last: null, lastVelocity: new THREE.Vector3() } : null,
     tag: null, tagKey: "", motion: null, smooth: new Map(), yaw: rival ? Math.PI : 0,
   };
 }
@@ -1526,14 +1548,21 @@ const KEY_POSES = {
   stand: { p: [0, 0.95, 0], c: [0, 1.45, 0], h: [0, 1.66, -0.01], e: pair(0.24, 1.18, 0), a: pair(0.24, 0.93, -0.04), k: pair(0.11, 0.5, -0.03), f: pair(0.12, 0.04, 0) },
   // Posición de espera: piernas abiertas y flexionadas, peso delante, manos preparadas.
   ready: { p: [0, 0.8, 0.1], c: [0, 1.28, -0.1], h: [0, 1.5, -0.17], e: pair(0.28, 1.05, -0.2), a: pair(0.2, 0.95, -0.4), k: pair(0.21, 0.46, -0.14), f: pair(0.26, 0.04, 0.04) },
-  // Recepción de antebrazos: sentadilla profunda, tronco inclinado y los brazos juntos y estirados delante.
-  reception: { p: [0, 0.6, 0.18], c: [0, 1.05, -0.18], h: [0, 1.27, -0.28], e: pair(0.11, 0.86, -0.39), a: pair(0.03, 0.7, -0.6), k: pair(0.25, 0.47, -0.25), f: pair(0.31, 0.04, 0.02) },
+  // Recepción de antebrazos, en tres tiempos: baja y junta los brazos en plataforma, empuja con las piernas
+  // al tocar (los brazos no se balancean) y acompaña el balón hacia donde lo manda.
+  receptionLoad: { p: [0, 0.6, 0.17], c: [0, 1.06, -0.15], h: [0, 1.28, -0.26], e: pair(0.12, 0.85, -0.36), a: pair(0.035, 0.65, -0.55), k: pair(0.27, 0.46, -0.25), f: pair(0.33, 0.04, 0.02) },
+  reception: { p: [0, 0.69, 0.13], c: [0, 1.16, -0.14], h: [0, 1.38, -0.23], e: pair(0.11, 0.94, -0.39), a: pair(0.03, 0.77, -0.61), k: pair(0.24, 0.48, -0.21), f: pair(0.33, 0.04, 0.02) },
+  receptionFollow: { p: [0, 0.78, 0.08], c: [0, 1.26, -0.1], h: [0, 1.48, -0.17], e: pair(0.11, 1.04, -0.37), a: pair(0.03, 0.9, -0.58), k: pair(0.21, 0.47, -0.15), f: pair(0.3, 0.04, 0.03) },
   // Colocación: rodillas flexionadas, codos abiertos y las manos encima de la frente formando un triángulo.
   set: { p: [0, 0.86, 0.03], c: [0, 1.37, 0], h: [0, 1.59, -0.03], e: pair(0.3, 1.6, -0.16), a: pair(0.11, 1.84, -0.2), k: pair(0.16, 0.47, -0.1), f: pair(0.19, 0.04, 0.03) },
   setPush: { p: [0, 0.95, 0], c: [0, 1.45, -0.02], h: [0, 1.67, -0.04], e: pair(0.25, 1.77, -0.18), a: pair(0.09, 2.02, -0.27), k: pair(0.12, 0.51, -0.04), f: pair(0.14, 0.05, 0.02) },
+  // Final de la colocación: brazos estirados del todo hacia donde va el balón, de puntillas.
+  setFollow: { p: [0, 0.97, -0.01], c: [0, 1.47, -0.03], h: [0, 1.68, -0.05], e: pair(0.19, 1.88, -0.2), a: pair(0.12, 2.12, -0.32), k: pair(0.12, 0.53, -0.03), f: pair(0.14, 0.07, 0.03) },
   // Bloqueo: agachado para saltar y luego brazos estirados arriba y adelante, por encima de la red.
   blockLoad: { p: [0, 0.72, 0.06], c: [0, 1.2, -0.06], h: [0, 1.42, -0.1], e: pair(0.3, 1.18, -0.12), a: pair(0.22, 1.36, -0.26), k: pair(0.17, 0.44, -0.14), f: pair(0.18, 0.04, 0.03) },
   block: { p: [0, 0.95, 0.02], c: [0, 1.45, -0.05], h: [0, 1.66, -0.07], e: pair(0.21, 1.76, -0.12), a: pair(0.22, 2.04, -0.3), k: pair(0.12, 0.53, -0.06), f: pair(0.12, 0.09, 0.07) },
+  // En lo más alto, las manos pasan por encima de la red hacia el campo rival (y luego se recogen para no tocarla).
+  blockReach: { p: [0, 0.95, 0.04], c: [0, 1.45, -0.09], h: [0, 1.64, -0.12], e: pair(0.18, 1.77, -0.25), a: pair(0.17, 1.98, -0.52), k: pair(0.12, 0.53, -0.04), f: pair(0.12, 0.09, 0.09) },
   // Remate: batida con los brazos atrás, en el aire el cuerpo arqueado con el brazo armado detrás de la cabeza
   // y el otro apuntando al balón, golpe por delante en lo más alto y el brazo baja cruzando.
   spikeLoad: { p: [0, 0.7, 0.06], c: [0, 1.13, -0.2], h: [0, 1.33, -0.3], e: pair(0.24, 1.0, 0.25), a: pair(0.22, 0.95, 0.46), k: pair(0.15, 0.44, -0.16), f: pair(0.2, 0.04, 0.05) },
@@ -1587,6 +1616,33 @@ const KEY_POSES = {
     e: [[-0.24, 1.15, -0.02], [0.3, 1.45, -0.1]], a: [[-0.22, 0.92, -0.06], [0.24, 1.74, -0.18]],
     k: [[-0.12, 0.5, -0.04], [0.13, 0.64, -0.24]], f: [[-0.13, 0.04, 0], [0.13, 0.26, -0.1]],
   },
+  // Baile: en A el peso va a la izquierda con el brazo izquierdo arriba; B es lo mismo al otro lado.
+  danceA: {
+    p: [-0.05, 0.86, 0.02], c: [-0.07, 1.36, 0], h: [-0.09, 1.58, -0.02],
+    e: [[-0.33, 1.62, -0.05], [0.27, 1.22, -0.2]], a: [[-0.3, 1.96, -0.08], [0.04, 1.3, -0.3]],
+    k: [[-0.15, 0.47, -0.1], [0.12, 0.52, -0.05]], f: [[-0.21, 0.04, 0.02], [0.19, 0.04, 0.02]],
+  },
+  danceB: {
+    p: [0.05, 0.86, 0.02], c: [0.07, 1.36, 0], h: [0.09, 1.58, -0.02],
+    e: [[-0.27, 1.22, -0.2], [0.33, 1.62, -0.05]], a: [[-0.04, 1.3, -0.3], [0.3, 1.96, -0.08]],
+    k: [[-0.12, 0.52, -0.05], [0.15, 0.47, -0.1]], f: [[-0.19, 0.04, 0.02], [0.21, 0.04, 0.02]],
+  },
+  // Avión: brazos en cruz; en A se inclina a la izquierda (ese brazo baja) y en B a la derecha.
+  planeLevel: {
+    p: [0, 0.92, 0], c: [0, 1.42, -0.02], h: [0, 1.64, -0.04],
+    e: [[-0.44, 1.42, 0.02], [0.44, 1.42, 0.02]], a: [[-0.68, 1.42, 0.04], [0.68, 1.42, 0.04]],
+    k: pair(0.13, 0.5, -0.06), f: pair(0.15, 0.04, 0.01),
+  },
+  planeA: {
+    p: [-0.02, 0.9, 0], c: [-0.08, 1.4, -0.02], h: [-0.13, 1.6, -0.04],
+    e: [[-0.44, 1.3, 0.02], [0.4, 1.54, 0.02]], a: [[-0.64, 1.16, 0.04], [0.62, 1.68, 0.04]],
+    k: [[-0.15, 0.48, -0.08], [0.12, 0.52, -0.04]], f: pair(0.16, 0.04, 0.01),
+  },
+  planeB: {
+    p: [0.02, 0.9, 0], c: [0.08, 1.4, -0.02], h: [0.13, 1.6, -0.04],
+    e: [[-0.4, 1.54, 0.02], [0.44, 1.3, 0.02]], a: [[-0.62, 1.68, 0.04], [0.64, 1.16, 0.04]],
+    k: [[-0.12, 0.52, -0.04], [0.15, 0.48, -0.08]], f: pair(0.16, 0.04, 0.01),
+  },
   fistPump: {
     p: [0, 0.86, 0.05], c: [0, 1.34, -0.12], h: [0, 1.56, -0.16],
     e: [[-0.24, 1.13, -0.02], [0.3, 1.18, -0.12]], a: [[-0.22, 0.9, -0.06], [0.18, 1.0, -0.26]],
@@ -1626,18 +1682,29 @@ function capturedPose(captured, progress) {
   return mixPoses(frames[index], frames[index + 1], at - index);
 }
 
+// Los brazos llegan un poco pasados y vuelven (como un brazo de verdad, que tiene inercia).
+const overshoot = (t, amount = 1.15) => 1 + (amount + 1) * (t - 1) ** 3 + amount * (t - 1) ** 2;
+
 function actionPose(action, progress) {
   const captured = capturedOf(action);
   if (captured) return { pose: capturedPose(captured, progress), jump: 0 };
   const plan = gesturePlan(action);
   if (!plan) return null;
   const { keys } = plan;
+  // Los gestos con posturas propias del editor (remate y saque) se dejan tal cual se ajustaron.
+  const tuned = Object.keys(plan.bases ?? {}).length > 0;
   let pose = poseOf(keys[0][1]);
   for (let index = 1; index < keys.length; index += 1) {
     const [start, from] = keys[index - 1];
     const [end, to] = keys[index];
     if (progress <= end) {
-      pose = mixPoses(poseOf(from), poseOf(to), smoothStep(Math.min(1, Math.max(0, (progress - start) / (end - start)))));
+      const t = Math.min(1, Math.max(0, (progress - start) / (end - start)));
+      pose = mixPoses(poseOf(from), poseOf(to), smoothStep(t));
+      if (!tuned) {
+        const arms = mixPoses(poseOf(from), poseOf(to), overshoot(t));
+        pose.e = arms.e;
+        pose.a = arms.a;
+      }
       break;
     }
     pose = poseOf(to);
@@ -1677,10 +1744,22 @@ const vec = (point) => new THREE.Vector3(point[0], point[1], point[2]);
 export function posePoints(store, { stride, run, amount, action, time }, build = BUILDS.male) {
   const doing = action ? actionPose(action.action, action.progress) : null;
   let joints = doing ? doing.pose : runPose(stride, run, amount);
+  let hop = 0;
   if (!doing && amount < 0.05) {
-    // En espera, un balanceo muy suave del peso.
-    const sway = Math.sin(time / 480) * 0.012;
-    joints = { ...joints, p: [joints.p[0] + sway, joints.p[1], joints.p[2]], c: [joints.c[0] + sway * 1.4, joints.c[1], joints.c[2]], h: [joints.h[0] + sway * 1.6, joints.h[1], joints.h[2]] };
+    // En espera, vivo: el peso pasa de un pie al otro, las piernas rebotan un poco y cada pocos segundos
+    // da el saltito de espera del vóley. Cada jugador lleva su ritmo, para que no salten todos a la vez.
+    if (!store.has("idlePhase")) store.set("idlePhase", Math.random() * 6000);
+    const t = time + store.get("idlePhase");
+    const sway = Math.sin(t / 900) * 0.022;
+    const bob = (Math.sin(t / 260) * 0.5 + 0.5) * 0.012;
+    const cycle = (t % 5500) / 5500;
+    hop = cycle < 0.07 ? Math.sin((cycle / 0.07) * Math.PI) * 0.05 : 0;
+    joints = {
+      ...joints,
+      p: [joints.p[0] + sway, joints.p[1] - bob, joints.p[2]],
+      c: [joints.c[0] + sway * 1.4, joints.c[1] - bob, joints.c[2]],
+      h: [joints.h[0] + sway * 1.6, joints.h[1] - bob * 0.8, joints.h[2]],
+    };
   }
   const smooth = (key, point, amountSmooth = 0.4) => {
     const target = vec(point);
@@ -1692,7 +1771,7 @@ export function posePoints(store, { stride, run, amount, action, time }, build =
     previous.lerp(target, amountSmooth);
     return previous.clone();
   };
-  return pointsOf(joints, smooth, build, doing?.jump ?? 0, action ? STRIKE_HAND[action.action] ?? null : null, store);
+  return pointsOf(joints, smooth, build, doing?.jump ?? hop, action ? STRIKE_HAND[action.action] ?? null : null, store);
 }
 
 // Los brazos miden siempre lo mismo y no pueden dar la vuelta de golpe: en algún fotograma del gesto
@@ -1772,6 +1851,31 @@ export function actionTimeline(action, progress) {
 // Qué posturas clave forman cada gesto, en orden (para el editor).
 export const GESTURE_KEYS = Object.fromEntries(Object.entries(ACTION_KEYS).map(([name, plan]) => [name, [...new Set(plan.keys.map(([, key]) => key))]]));
 
+// El pelo que cuelga se queda atrás cuando la cabeza acelera y luego oscila hasta pararse (un muelle).
+const hairHeadAt = new THREE.Vector3();
+const hairHeadTurn = new THREE.Quaternion();
+function swingHair(rig) {
+  const hair = rig.hair;
+  rig.head.getWorldPosition(hairHeadAt);
+  if (!hair.last) hair.last = hairHeadAt.clone();
+  const velocity = hairHeadAt.clone().sub(hair.last);
+  hair.last.copy(hairHeadAt);
+  // Lo que ha cambiado la velocidad, visto desde la cabeza (adelante es z negativa).
+  const push = velocity.clone().sub(hair.lastVelocity).applyQuaternion(rig.head.getWorldQuaternion(hairHeadTurn).invert());
+  hair.lastVelocity.copy(velocity);
+  const amount = hair.pivot.userData.amount ?? 1;
+  const kick = Math.min(0.08, push.length()) / (push.length() || 1);
+  hair.speed.x += push.z * kick * 22 - hair.angle.x * 0.14 - hair.speed.x * 0.18;
+  hair.speed.y += -push.x * kick * 22 - hair.angle.y * 0.14 - hair.speed.y * 0.18;
+  hair.angle.add(hair.speed);
+  hair.angle.clampScalar(-0.6, 0.6);
+  hair.pivot.rotation.x = hair.angle.x * amount;
+  hair.pivot.rotation.z = hair.angle.y * amount;
+}
+
+// Los gestos de celebración: con ellos el personaje pone cara contenta.
+const CELEBRATION_ACTIONS = new Set(["brazos", "puno", "baile", "avion", "giro"]);
+
 export function posePlayer(rig, options) {
   const pts = posePoints(rig.smooth, options, rig.build);
   const { pelvis, chest, head: headPoint, torsoUp } = pts;
@@ -1845,6 +1949,21 @@ export function posePlayer(rig, options) {
   rig.body.rotation.set(0, 0, 0);
   const now = options.time ?? performance.now();
   const actionName = typeof options.action === "string" ? options.action : options.action?.action ?? null;
+  // Peso: en el aire se estira un poco según lo rápido que sube o baja; al caer se aplasta y rebota.
+  const jumpNow = rig.body.position.y;
+  const speed = jumpNow - (rig.lastJump ?? jumpNow);
+  if (jumpNow < 0.01 && (rig.lastJump ?? 0) > 0.05) rig.squash = 1;
+  rig.lastJump = jumpNow;
+  rig.squash = (rig.squash ?? 0) * 0.84;
+  const stretch = jumpNow > 0.01 ? Math.min(0.07, Math.abs(speed) * 2.2) : 0;
+  const squash = rig.squash > 0.01 ? Math.sin(rig.squash * Math.PI) * 0.09 : 0;
+  const tall = 1 + stretch - squash;
+  rig.body.scale.set(1 / Math.sqrt(tall), tall, 1 / Math.sqrt(tall));
+  if (actionName === "giro") {
+    // Una vuelta entera mientras está en el aire, empezando y acabando suave.
+    const air = Math.min(1, Math.max(0, ((options.action?.progress ?? 0) - 0.22) / 0.56));
+    rig.body.rotation.y = smoothStep(air) * Math.PI * 2;
+  }
   const still = !actionName && !options.stride && !options.run && !options.amount;
   if (still) {
     // Quieto: respira (el pecho se ensancha un poco) y se balancea muy poco.
@@ -1854,6 +1973,7 @@ export function posePlayer(rig, options) {
     rig.body.rotation.z = Math.sin(now * 0.0009) * 0.012;
     rig.head.position.y += breath * 0.006;
   }
+  if (rig.hair) swingHair(rig);
   if (rig.lids) {
     // Parpadea cada 2,5 a 6 segundos, durante un instante.
     if (!rig.nextBlink) rig.nextBlink = now + 1500 + Math.random() * 3000;
@@ -1862,7 +1982,7 @@ export function posePlayer(rig, options) {
   }
   if (rig.faces) {
     // Al celebrar sonríe con la boca abierta.
-    const happy = actionName === "brazos" || actionName === "puno";
+    const happy = CELEBRATION_ACTIONS.has(actionName);
     if (happy && !rig.faces.happy) rig.faces.happy = rig.faces.make();
     const wanted = happy ? rig.faces.happy : rig.faces.normal;
     if (rig.head.material.map !== wanted) {

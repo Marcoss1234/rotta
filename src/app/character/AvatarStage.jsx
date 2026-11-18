@@ -7,7 +7,7 @@ import { gestureDuration, hitFraction } from "@/app/character/gestureTimes.js";
 // El personaje en el perfil: se queda solo dando toques, colocándose el balón o mirando a la grada,
 // y al tocarlo hace su celebración.
 const BALL_R = 0.105;
-const DURATIONS = { toques: 1000, dedos: 950, remate: 1700, brazos: 1500, puno: 1500 };
+const DURATIONS = { toques: 1000, dedos: 950, remate: 1700, brazos: 1500, puno: 1500, baile: 1700, avion: 1800, giro: 1300 };
 // Lo que hace solo, en bucle: [gesto, veces]. `null` es quedarse quieto un rato.
 const PLAYLIST = [["toques", 6], [null, 1], ["dedos", 5], [null, 1]];
 const REST_MS = 1800;
