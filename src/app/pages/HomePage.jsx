@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, Zap } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, Volleyball, X, Zap } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   answerAttendance,
@@ -23,14 +23,13 @@ import CoinBurst from "@/app/components/CoinBurst.jsx";
 import ConfirmDialog from "@/app/components/board/ConfirmDialog.jsx";
 import TrainingStars from "@/app/components/TrainingStars.jsx";
 import usePolling from "@/app/usePolling.js";
-import GoingCourt from "@/app/components/GoingCourt.jsx";
+import GoingCourt, { initialsOf } from "@/app/components/GoingCourt.jsx";
 import InstallCard from "@/app/components/InstallCard.jsx";
-import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
+import { EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
 import MatchDialog from "@/app/components/MatchDialog.jsx";
 import NotificationsCard from "@/app/components/NotificationsCard.jsx";
 import ScheduleDialog from "@/app/components/ScheduleDialog.jsx";
 import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
-import RotationMark from "@/app/components/RotationMark.jsx";
 import { localToday, matchDayLabel, matchKindLabel, placeInfo } from "@/app/matches.js";
 import { nextTraining } from "@/app/nextTraining.js";
 import { roleLabel } from "@/app/roles.js";
@@ -38,6 +37,27 @@ import { TEAM_SCHEDULES, isTeamId, sessionsToSchedules, shareMatches } from "@/a
 import { TRAINING_VENUE_ADDRESS, TRAINING_VENUE_URL } from "../../../data/groups.js";
 
 const STORAGE_KEY = "tnt-equipo-visto";
+
+// "Buenos días", "Buenas tardes" o "Buenas noches", según la hora.
+function greeting(hour = new Date().getHours()) {
+  if (hour >= 6 && hour < 14) return "Buenos días";
+  if (hour >= 14 && hour < 21) return "Buenas tardes";
+  return "Buenas noches";
+}
+
+// El fondo de la cabecera: una pista de vóley vista desde arriba, girada, con su balón.
+function CourtBackdrop() {
+  return (
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
+      <div className="absolute -bottom-24 -right-28 h-72 w-[30rem] rotate-[-18deg] rounded-sm border-[3px] border-white/20 bg-white/[0.06]">
+        <span className="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 bg-white/30" />
+        <span className="absolute inset-y-0 left-[33.3%] w-[3px] bg-white/20" />
+        <span className="absolute inset-y-0 left-[66.6%] w-[3px] bg-white/20" />
+      </div>
+      <Volleyball className="absolute bottom-4 right-5 h-20 w-20 rotate-12 text-white/30" strokeWidth={1.4} />
+    </div>
+  );
+}
 
 function readStoredTeam() {
   try {
@@ -163,34 +183,39 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
   const [ref, hold] = useStayInPlace();
   return (
     <div data-testid="attendance-answer">
-      <p className="font-display text-sm font-extrabold">{question}</p>
+      <p className="font-display text-lg font-bold">{question}</p>
       {hint && <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-amber-200/90"><Coins aria-hidden="true" className="h-3.5 w-3.5" />{hint}</p>}
-      <div ref={ref} className="mt-2 grid grid-cols-2 gap-2">
-        {[["going", "Voy"], ["not_going", "No voy"]].map(([status, label]) => (
-          <span key={status} className="relative">
-            <button
-              type="button"
-              aria-disabled={busy}
-              aria-pressed={mine === status}
-              onClick={() => {
-                // Sin desactivar el botón: en el móvil, quitarle el foco puede mover la página.
-                if (busy) return;
-                hold();
-                onAnswer(status);
-              }}
-              className={`min-h-12 w-full rounded-lg font-display text-lg font-black aria-disabled:opacity-60 ${
-                mine === status
-                  ? status === "going"
-                    ? "bg-emerald-600 text-snow shadow-sm"
-                    : "bg-red-600 text-snow shadow-sm"
-                  : "border border-white/20 text-white hover:bg-white/5"
-              }`}
-            >
-              {label}
-            </button>
-            {burst && burst.status === status && <CoinBurst burst={burst} />}
-          </span>
-        ))}
+      <div ref={ref} className="mt-3 grid grid-cols-2 gap-2">
+        {[["going", "Voy", Check], ["not_going", "No voy", X]].map(([status, label, Icon]) => {
+          const chosen = mine === status;
+          const tone = chosen
+            ? status === "going"
+              ? "bg-emerald-500 text-snow shadow-[0_8px_24px_-8px_rgba(16,185,129,0.8)]"
+              : "bg-zinc-200 text-zinc-900"
+            : status === "going"
+              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-400/40 hover:bg-emerald-500/20"
+              : "bg-white/5 text-zinc-200 ring-1 ring-inset ring-white/15 hover:bg-white/10";
+          return (
+            <span key={status} className="relative">
+              <button
+                type="button"
+                aria-disabled={busy}
+                aria-pressed={chosen}
+                onClick={() => {
+                  // Sin desactivar el botón: en el móvil, quitarle el foco puede mover la página.
+                  if (busy) return;
+                  hold();
+                  onAnswer(status);
+                }}
+                className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl font-display text-xl font-bold transition-colors aria-disabled:opacity-60 ${tone}`}
+              >
+                <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={3} />
+                {label}
+              </button>
+              {burst && burst.status === status && <CoinBurst burst={burst} />}
+            </span>
+          );
+        })}
       </div>
       {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-300">{error}</p>}
     </div>
@@ -232,50 +257,141 @@ function AttendanceGroup({ group, people, currentUserId }) {
   );
 }
 
-// Siempre a la vista: cada grupo ya lleva su número, así que no hace falta un resumen aparte.
+// Quién va, de un vistazo: las caras de los que van y cuántos faltan. La lista entera, al tocar.
 function WhoIsGoing({ lists, currentUserId }) {
+  const [open, setOpen] = useState(false);
+  const going = lists.going ?? [];
+  const shown = going.slice(0, 5);
   return (
-    <div className="grid items-start gap-2 sm:grid-cols-3" data-testid="attendance-panel">
-      {ATTENDANCE_GROUPS.map((group) => (
-        <AttendanceGroup key={group.key} group={group} people={lists[group.key]} currentUserId={currentUserId} />
-      ))}
+    <div className="rounded-2xl bg-void/50 p-3" data-testid="attendance-panel">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center gap-3 text-left"
+      >
+        <span className="flex shrink-0 -space-x-2.5" aria-hidden="true">
+          {shown.length === 0 ? (
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-white/20 text-zinc-500">?</span>
+          ) : (
+            shown.map((person) => <Avatar key={person.id} name={person.name} picture={person.picture} className="h-9 w-9 text-[11px] ring-2 ring-panel" />)
+          )}
+          {going.length > shown.length && (
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-700 text-xs font-bold text-white ring-2 ring-panel">+{going.length - shown.length}</span>
+          )}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-display text-lg font-bold leading-tight">
+            <span className="text-emerald-300">{going.length}</span> {going.length === 1 ? "va" : "van"}
+          </span>
+          <span className="block text-xs text-zinc-400">
+            {lists.not_going?.length ?? 0} no {(lists.not_going?.length ?? 0) === 1 ? "va" : "van"} · {lists.no_answer?.length ?? 0} sin responder
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-zinc-300">
+          {open ? "Ocultar" : "Ver lista"}
+          <ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+        </span>
+      </button>
+      {open && (
+        <div className="mt-3 grid items-start gap-2 sm:grid-cols-3">
+          {ATTENDANCE_GROUPS.map((group) => (
+            <AttendanceGroup key={group.key} group={group} people={lists[group.key] ?? []} currentUserId={currentUserId} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
 function EventCard({ icon: Icon, label, status, action, testId, children }) {
   return (
-    <article className="overflow-hidden rounded-2xl border border-white/10 bg-panel shadow-lg shadow-black/30" data-testid={testId}>
-      <div className="grain relative flex min-h-11 items-center justify-between gap-2 bg-gradient-to-r from-tnt via-tnt to-tntdeep px-4 text-onbrand">
-        <span className="relative flex items-center gap-2 font-display text-sm font-black text-white">
-          <Icon aria-hidden="true" className="h-4 w-4" />
+    <article className="overflow-hidden rounded-3xl bg-panel ring-1 ring-white/10" data-testid={testId}>
+      <div className="flex min-h-14 items-center justify-between gap-2 px-4 pt-2">
+        <span className="flex items-center gap-2.5 text-sm font-semibold text-zinc-300">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-tnt text-onbrand">
+            <Icon aria-hidden="true" className="h-4 w-4" />
+          </span>
           {label}
-          {status && <span className="rounded-full bg-white px-2 py-0.5 text-[10px] not-italic tracking-normal text-tnt">{status}</span>}
+          {status && <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-bold text-snow">{status}</span>}
         </span>
-        {action && <span className="relative">{action}</span>}
+        {action && <span>{action}</span>}
       </div>
-      <div className="space-y-3 p-3">{children}</div>
+      <div className="space-y-4 px-4 pb-4">{children}</div>
     </article>
   );
 }
 
-// Día y hora: la hoja de calendario, la hora en grande y, debajo, la pista con quien va.
-function EventWhen({ iso, time, until, spoken, subtitle, teamId, people, titleId, currentUserId, aside = null }) {
+// "Hoy", "Mañana" o "jueves 20 nov".
+function dayText(iso) {
+  if (!iso) return null;
+  const [year, month, day] = iso.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const days = Math.round((date - today) / 86400000);
+  if (days === 0) return "Hoy";
+  if (days === 1) return "Mañana";
+  return date.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" }).replace(".", "");
+}
+
+// Cuánto falta, solo si es pronto: "en 40 min", "en 3 h".
+function startsInText(ms) {
+  if (ms === null || ms === undefined || ms <= 0) return null;
+  const minutes = Math.round(ms / 60000);
+  if (minutes < 60) return `en ${minutes} min`;
+  const hours = Math.round(minutes / 60);
+  return hours < 24 ? `en ${hours} h` : null;
+}
+
+// Día y hora en grande, con cuánto falta, y debajo la pista con quien va.
+function EventWhen({ iso, time, until, spoken, subtitle, teamId, people, titleId, currentUserId, aside = null, startsIn = null, before = null }) {
+  const day = dayText(iso);
+  const short = String(time ?? "").length <= 5;
   return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-3">
-        {iso && <DateBadge iso={iso} />}
+    <div className="space-y-4">
+      {before}
+      <div className="flex items-end gap-3">
         <div className="min-w-0 flex-1">
-          <p id={titleId} className="font-display text-4xl font-black leading-none tracking-tight">
+          {(day || startsIn) && (
+            <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-300">
+              {day && <span className="first-letter:uppercase">{day}</span>}
+              {startsIn && <span className="rounded-full bg-amber-300 px-2 py-0.5 text-xs font-bold text-amber-950">{startsIn}</span>}
+            </p>
+          )}
+          <p id={titleId} className={`mt-1 font-display font-extrabold leading-[0.9] tracking-tight tabular-nums ${short ? "text-6xl" : "text-3xl"}`}>
             <span className="sr-only">{spoken} </span>
             {time}
-            {until && <span className="ml-1 text-base font-bold text-zinc-400">– {until}</span>}
           </p>
-          <p className="mt-1.5 text-sm font-semibold text-zinc-300">{subtitle}</p>
+          {(until || subtitle) && <p className="mt-2 text-sm font-medium text-zinc-300">{until ? `Hasta las ${until}` : subtitle}</p>}
         </div>
         {aside}
       </div>
       <GoingCourt teamId={teamId} people={people} currentUserId={currentUserId} />
+    </div>
+  );
+}
+
+// Partido: nuestro equipo contra el rival, cara a cara.
+function Versus({ teamName, opponent }) {
+  const side = (name, ours) => (
+    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+      <span
+        className={`flex h-14 w-14 items-center justify-center rounded-full font-display text-lg font-extrabold ${
+          ours ? "bg-tnt text-onbrand" : "bg-zinc-200 text-zinc-900"
+        }`}
+        aria-hidden="true"
+      >
+        {ours ? <Volleyball className="h-7 w-7" /> : initialsOf(name)}
+      </span>
+      <span className="w-full truncate text-sm font-semibold">{name}</span>
+    </div>
+  );
+  return (
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl bg-void/50 px-3 py-4">
+      {side(teamName, true)}
+      <span className="font-display text-2xl font-extrabold text-zinc-500">vs</span>
+      {side(opponent, false)}
     </div>
   );
 }
@@ -346,8 +462,9 @@ function TrainingCard({ teamId, training, attendance, currentUserId, answerBusy,
         <EventWhen
           iso={training.date}
           time={training.start}
+          until={training.end}
+          startsIn={training.inProgress ? null : startsInText(training.startsAt)}
           spoken={training.title}
-          subtitle={training.detail}
           teamId={teamId}
           people={attendance?.going ?? []}
           titleId="training-title"
@@ -428,7 +545,7 @@ function LiveMatchButton({ match, onError }) {
   );
 }
 
-function MatchCard({ match, currentUserId, busy, onAnswer, onEdit, onError, coinBurst = null }) {
+function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onError, coinBurst = null }) {
   const editButton = match.can_edit && (
     <button
       type="button"
@@ -446,8 +563,9 @@ function MatchCard({ match, currentUserId, busy, onAnswer, onEdit, onError, coin
       <EventWhen
         iso={match.date}
         time={match.time}
-        spoken={matchDayLabel(match.date)}
-        subtitle={<>contra <span className="text-white">{match.opponent}</span></>}
+        spoken={`${matchDayLabel(match.date)} contra ${match.opponent}`}
+        startsIn={startsInText(matchStart(match) - Date.now())}
+        before={<Versus teamName={teamName || "Nosotros"} opponent={match.opponent} />}
         teamId={match.team_id}
         people={match.going}
         currentUserId={currentUserId}
@@ -560,6 +678,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
             <MatchCard
               key={match.id}
               match={match}
+              teamName={(teams.find((team) => team.id === match.team_id)?.name ?? "").replace(/^Club (Senior )?/, "")}
               currentUserId={user.id}
               busy={busyId === match.id}
               onAnswer={answer}
@@ -690,7 +809,7 @@ function TabButton({ id, selected, icon: Icon, label, badge, onSelect }) {
       aria-selected={selected}
       aria-controls={`panel-${id}`}
       onClick={() => onSelect(id)}
-      className={`relative flex min-h-12 flex-1 items-center justify-center gap-2 rounded-xl font-display text-[13px] font-black transition-colors ${
+      className={`relative flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors ${
         selected ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
       }`}
     >
@@ -821,38 +940,39 @@ export default function HomePage({ user, onAccessLost }) {
 
       <NotificationsCard variant="banner" />
 
-      <header className="relative overflow-hidden rounded-2xl bg-tnt p-5 text-onbrand">
-        <RotationMark className="absolute -right-12 -top-14 h-56 w-56 text-white/15" />
-        <div className="relative flex items-center gap-4">
-          <div className="min-w-0 flex-1">
-            <h1 className="break-words font-display text-4xl font-black leading-none tracking-tight md:text-5xl">Hola, {user.name.split(" ")[0]}</h1>
-            <p className="mt-2 text-sm font-semibold text-white/85">{roleLabel(user.role)}</p>
-            {coins && (
-              <Link
-                key={coinBurst?.key ?? "coins"}
-                to="/app/tienda"
-                aria-label={`Tienes ${coins.balance} Club Coins. Ir a la tienda`}
-                className={`${coinBurst ? "coin-pill-pop " : ""}mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-full bg-black/30 py-1 pl-1 pr-3 text-sm font-extrabold text-white ring-1 ring-amber-300/50 backdrop-blur-sm hover:bg-black/40`}
-              >
-                <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950">
-                  <Coins className="h-4 w-4" />
-                </span>
-                <span className="tabular-nums">{(shownCoins ?? coins.balance).toLocaleString("es-ES")}</span>
-                <span className="text-xs font-bold text-amber-200">Club Coins</span>
-                {coins.crown && <Crown aria-hidden="true" className="h-4 w-4 fill-amber-300 text-amber-400" />}
-              </Link>
-            )}
+      <header className="relative isolate overflow-hidden rounded-3xl bg-tnt px-5 pb-5 pt-6 text-onbrand">
+        <CourtBackdrop />
+        <div className="relative flex items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-sm font-semibold text-white/80">{greeting()},</p>
+            <h1 className="mt-1 break-words font-display text-5xl font-extrabold leading-[0.9] tracking-tight md:text-6xl">{user.name.split(" ")[0]}</h1>
+            <p className="mt-2 text-sm font-medium text-white/80">{roleLabel(user.role)}</p>
           </div>
           <Link to="/app/perfil" aria-label="Ir a tu perfil" className="shrink-0 rounded-full">
             <Avatar name={user.name} picture={user.picture} className="h-16 w-16 text-lg ring-4 ring-white/30" />
           </Link>
         </div>
+        {coins && (
+          <Link
+            key={coinBurst?.key ?? "coins"}
+            to="/app/tienda"
+            aria-label={`Tienes ${coins.balance} Club Coins. Ir a la tienda`}
+            className={`${coinBurst ? "coin-pill-pop " : ""}relative mt-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-black/35 py-1 pl-1 pr-4 text-white ring-1 ring-amber-300/50 backdrop-blur-sm hover:bg-black/45`}
+          >
+            <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950">
+              <Coins className="h-4 w-4" />
+            </span>
+            <span className="font-display text-lg font-bold tabular-nums">{(shownCoins ?? coins.balance).toLocaleString("es-ES")}</span>
+            <span className="text-xs font-semibold text-amber-200">Club Coins</span>
+            {coins.crown && <Crown aria-hidden="true" className="h-4 w-4 fill-amber-300 text-amber-400" />}
+          </Link>
+        )}
       </header>
 
       <TeamPicker teams={teams} teamId={teamId} onChange={setTeamId} />
 
-      <section aria-label="Agenda del equipo" className="space-y-3 rounded-2xl border border-white/10 bg-surface p-1.5 pb-2 md:p-3">
-        <div role="tablist" aria-label="Qué quieres ver" className="flex gap-1 rounded-xl bg-void/70 p-1">
+      <section aria-label="Agenda del equipo" className="space-y-4">
+        <div role="tablist" aria-label="Qué quieres ver" className="flex gap-1 rounded-full bg-panel p-1 ring-1 ring-white/10">
           <TabButton id="training" selected={shownTab === "training"} icon={Dumbbell} label="Entrenamientos" onSelect={setTab} />
           <TabButton id="matches" selected={shownTab === "matches"} icon={Trophy} label="Partidos" badge={matchBadge} onSelect={setTab} />
         </div>
