@@ -120,7 +120,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
               total={ourPoints}
               parts={[
                 { label: "Por aciertos nuestros (saque, ataque, bloqueo…)", value: report.origin.us_by_us, color: "bg-emerald-400" },
-                { label: "Por fallos del rival", value: report.origin.us_by_them, color: "bg-tnt" },
+                { label: "Por fallos del rival", value: report.origin.us_by_them, color: "bg-tnt text-onbrand" },
               ]}
             />
             <SplitBar
@@ -148,7 +148,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                     <span className={`w-12 shrink-0 text-right font-display text-lg font-black italic tabular-nums ${tone(item.percent)}`}>{item.percent}%</span>
                   </div>
                   <p className="mt-1 text-xs text-zinc-400">
-                    <span className="font-bold text-emerald-300">✓{item.good}</span> aciertos · <span className="font-bold text-red-300">✗{item.bad}</span> fallos
+                    <span className="font-bold text-emerald-300">✓{item.good}</span> aciertos{item.perfect > 0 && <> (<span className="font-bold text-amber-300">★{item.perfect}</span> {item.perfect === 1 ? "perfecta" : "perfectas"})</>} · <span className="font-bold text-red-300">✗{item.bad}</span> fallos
                   </p>
                   {(item.best || item.worst) && (
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
@@ -197,6 +197,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                       </span>
                       <span className="block text-xs text-zinc-400">
                         <span className="font-bold text-emerald-300">✓{player.good}</span> · <span className="font-bold text-red-300">✗{player.bad}</span>
+                        {player.perfect > 0 && <> · <span className="font-bold text-amber-300">★{player.perfect}</span> {player.perfect === 1 ? "perfecta" : "perfectas"}</>}
                         {player.points > 0 && <> · {player.points} {player.points === 1 ? "punto ganado" : "puntos ganados"}</>}
                         {player.errors > 0 && <> · {player.errors} {player.errors === 1 ? "punto regalado" : "puntos regalados"}</>}
                       </span>
@@ -211,7 +212,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                   <ul className="mt-2 flex flex-wrap gap-1">
                     {player.skills.map((item) => (
                       <li key={item.skill} className="rounded-md bg-white/[0.05] px-2 py-0.5 text-[11px] font-semibold text-zinc-200">
-                        {SKILL_LABEL[item.skill]} {item.good > 0 && <span className="text-emerald-300">✓{item.good}</span>} {item.bad > 0 && <span className="text-red-300">✗{item.bad}</span>}
+                        {SKILL_LABEL[item.skill]} {item.good > 0 && <span className="text-emerald-300">✓{item.good}</span>} {item.perfect > 0 && <span className="text-amber-300">★{item.perfect}</span>} {item.bad > 0 && <span className="text-red-300">✗{item.bad}</span>}
                       </li>
                     ))}
                   </ul>

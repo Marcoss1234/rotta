@@ -343,3 +343,39 @@ def test_el_entrenador_cambia_el_mvp_al_terminar(admin):
     assert cleared["mvp"] is None
     assert luis.get("/api/coins").json()["balance"] == luis_before + win
     assert admin.get("/api/matches/played?team_id=masculino").json()[0].get("mvp") is None
+
+
+def test_recepcion_perfecta_de_la_libero_cuenta_sin_dar_punto(admin):
+    vera = add_player(admin, "Vera", 3)
+    lola = add_player(admin, "Lola", 5)
+    game = start(admin, [vera, lola], best_of=3)
+    live_id = game["id"]
+    state = event(admin, live_id, type="stat", player_id=lola, result="good", skill="recepcion", perfect=True).json()
+    assert state["current"] == {"us": 0, "them": 0}
+    event(admin, live_id, type="stat", player_id=lola, result="good", skill="recepcion")
+    event(admin, live_id, type="stat", player_id=lola, result="good", skill="defensa", perfect=True)
+    event(admin, live_id, type="stat", player_id=vera, result="good", skill="ataque", point="us")
+    points(admin, live_id, "us", 24)
+    points(admin, live_id, "us", 25)
+    report = admin.post(f"/api/live/{live_id}/finish").json()["report"]
+    lola_row = next(row for row in report["players"] if row["name"] == "Lola")
+    assert (lola_row["good"], lola_row["perfect"], lola_row["balance"]) == (3, 2, 3)
+    assert {item["skill"]: item["perfect"] for item in lola_row["skills"]} == {"recepcion": 1, "defensa": 1}
+    reception = next(item for item in report["skills"] if item["skill"] == "recepcion")
+    assert (reception["good"], reception["perfect"], reception["percent"]) == (2, 1, 100)
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"result": "good", "skill": "ataque", "perfect": True},
+        {"result": "bad", "skill": "recepcion", "perfect": True},
+        {"result": "good", "skill": "recepcion", "point": "us", "perfect": True},
+        {"result": "good", "perfect": True},
+        {"result": "good", "skill": "recepcion", "perfect": False},
+    ],
+)
+def test_solo_recepcion_colocacion_o_defensa_acertadas_pueden_ser_perfectas(admin, body):
+    ana = add_player(admin, "Ana", 7)
+    game = start(admin, [ana])
+    assert event(admin, game["id"], type="stat", player_id=ana, **body).status_code == 422

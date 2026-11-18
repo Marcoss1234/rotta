@@ -121,7 +121,7 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
           >
             {sound ? <Volume2 aria-hidden="true" className="h-5 w-5" /> : <VolumeX aria-hidden="true" className="h-5 w-5" />}
             <span className="flex-1">Sonidos</span>
-            <span className={`relative h-6 w-11 rounded-full transition-colors ${sound ? "bg-tnt" : "bg-white/15"}`}>
+            <span className={`relative h-6 w-11 rounded-full transition-colors ${sound ? "bg-tnt text-onbrand" : "bg-white/15"}`}>
               <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${sound ? "left-[1.375rem]" : "left-0.5"}`} />
             </span>
           </button>

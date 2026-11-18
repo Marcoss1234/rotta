@@ -32,6 +32,8 @@ TEAM_NAMES = {team["id"]: team["name"] for team in TEAMS}
 Side = Literal["us", "them"]
 Skill = Literal["saque", "recepcion", "colocacion", "ataque", "bloqueo", "defensa"]
 Opponent = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=80)]
+# Lo que se puede apuntar como «perfecto» (la doble positiva): lo que no acaba el punto pero lo prepara.
+PERFECT_SKILLS = {"recepcion", "colocacion", "defensa"}
 
 router = APIRouter(prefix="/api/live")
 _indexes_ready = False
@@ -74,6 +76,8 @@ class LiveEvent(BaseModel):
     skill: Optional[Skill] = None
     # Un acierto o fallo que además acaba el punto: para quién es.
     point: Optional[Side] = None
+    # Recepción, colocación o defensa perfecta (doble positiva): sigue siendo un acierto, pero se cuenta aparte.
+    perfect: Optional[Literal[True]] = None
 
     @model_validator(mode="after")
     def check_shape(self):
@@ -81,6 +85,8 @@ class LiveEvent(BaseModel):
             raise ValueError("Indica solo de qué lado es")
         if self.type == "stat" and (self.result is None or self.side is not None):
             raise ValueError("Indica si es acierto o fallo")
+        if self.perfect and (self.type != "stat" or self.result != "good" or self.skill not in PERFECT_SKILLS or self.point):
+            raise ValueError("Solo una recepción, colocación o defensa acertada puede ser perfecta")
         return self
 
 
@@ -150,7 +156,7 @@ def match_report(live, lineup):
     """Todo lo que ha pasado en el partido, ordenado para leerlo (y debatirlo) al terminar."""
     names = {item["player_id"]: item for item in lineup}
     players = {}
-    skills = {skill: {"good": 0, "bad": 0, "players": {}} for skill in SKILLS}
+    skills = {skill: {"good": 0, "bad": 0, "perfect": 0, "players": {}} for skill in SKILLS}
     team = {"good": 0, "bad": 0}
     # Cómo llegó cada punto: nuestros (por acierto nuestro o fallo suyo) y suyos (por fallo nuestro o acierto suyo).
     origin = {"us_by_us": 0, "us_by_them": 0, "them_by_us": 0, "them_by_them": 0}
@@ -167,20 +173,24 @@ def match_report(live, lineup):
             detail[result] += 1
             player_id = event.get("player_id")
             skill = event.get("skill")
+            perfect = 1 if event.get("perfect") else 0
             if player_id:
-                row = players.setdefault(player_id, {"good": 0, "bad": 0, "points": 0, "errors": 0, "skills": {}})
+                row = players.setdefault(player_id, {"good": 0, "bad": 0, "points": 0, "errors": 0, "perfect": 0, "skills": {}})
                 row[result] += 1
+                row["perfect"] += perfect
                 if event.get("point") == "us" and result == "good":
                     row["points"] += 1
                 if event.get("point") == "them" and result == "bad":
                     row["errors"] += 1
                 if skill:
-                    per = row["skills"].setdefault(skill, {"good": 0, "bad": 0})
+                    per = row["skills"].setdefault(skill, {"good": 0, "bad": 0, "perfect": 0})
                     per[result] += 1
+                    per["perfect"] += perfect
             else:
                 team[result] += 1
             if skill:
                 skills[skill][result] += 1
+                skills[skill]["perfect"] += perfect
                 if player_id:
                     per = skills[skill]["players"].setdefault(player_id, {"good": 0, "bad": 0})
                     per[result] += 1
@@ -227,15 +237,20 @@ def match_report(live, lineup):
             "bad": row["bad"],
             "points": row["points"],
             "errors": row["errors"],
+            "perfect": row["perfect"],
             "balance": row["good"] - row["bad"],
             "percent": ratio(row["good"], row["bad"]),
-            "skills": [{"skill": skill, **row["skills"][skill], "percent": ratio(**row["skills"][skill])} for skill in SKILLS if skill in row["skills"]],
+            "skills": [
+                {"skill": skill, **row["skills"][skill], "percent": ratio(row["skills"][skill]["good"], row["skills"][skill]["bad"])}
+                for skill in SKILLS
+                if skill in row["skills"]
+            ],
         })
     player_rows.sort(key=lambda row: (-row["balance"], -row["good"], row["name"]))
     # Los que jugaron sin nada apuntado también salen, al final.
     for item in lineup:
         if item["player_id"] not in players:
-            player_rows.append({**person(item["player_id"]), "good": 0, "bad": 0, "points": 0, "errors": 0, "balance": 0, "percent": None, "skills": []})
+            player_rows.append({**person(item["player_id"]), "good": 0, "bad": 0, "points": 0, "errors": 0, "perfect": 0, "balance": 0, "percent": None, "skills": []})
 
     skill_rows = []
     for skill in SKILLS:
@@ -249,6 +264,7 @@ def match_report(live, lineup):
             "skill": skill,
             "good": data["good"],
             "bad": data["bad"],
+            "perfect": data["perfect"],
             "percent": ratio(data["good"], data["bad"]),
             "best": {**person(best[0]), "count": best[1]["good"]} if best and best[1]["good"] else None,
             "worst": {**person(worst[0]), "count": worst[1]["bad"]} if worst and worst[1]["bad"] else None,

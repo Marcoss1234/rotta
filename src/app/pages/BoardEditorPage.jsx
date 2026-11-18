@@ -1214,7 +1214,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   Fila
                 </button>
                 <button type="button" onClick={() => addElement(rivalToken(rivals))} className={chipClass}>
-                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-tnt ring-1 ring-white" />
+                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-tnt ring-1 ring-white text-onbrand" />
                   Rival
                 </button>
                 <button type="button" onClick={() => addElement(newBall(balls))} className={chipClass}>

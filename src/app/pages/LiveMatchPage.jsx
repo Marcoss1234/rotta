@@ -21,6 +21,17 @@ const SKILL_LABEL = Object.fromEntries(SKILLS);
 // Lo que gana el punto si sale bien, y lo que lo pierde si sale mal.
 const WINS_POINT = new Set(["saque", "ataque", "bloqueo"]);
 const LOSES_POINT = new Set(["saque", "recepcion", "colocacion", "ataque", "bloqueo", "defensa"]);
+// Lo que se puede apuntar como perfecto (la doble positiva): no da punto, pero prepara el ataque.
+const PERFECT_SKILLS = new Set(["recepcion", "colocacion", "defensa"]);
+// Lo que más hace cada posición, arriba del todo al tocarla. Así la líbero y la colocadora también suman en las
+// estadísticas aunque no acaben puntos.
+const POSITION_ACTIONS = {
+  Líbero: [["recepcion", true], ["recepcion", false], ["defensa", true], ["defensa", false]],
+  Colocador: [["colocacion", true], ["colocacion", false], ["defensa", false], ["saque", false]],
+  Receptor: [["recepcion", true], ["recepcion", false], ["ataque", false], ["defensa", false]],
+  Central: [["ataque", false], ["bloqueo", false], ["saque", false], ["defensa", false]],
+  Opuesto: [["ataque", false], ["bloqueo", false], ["saque", false], ["defensa", false]],
+};
 const POSITION_SHORT = { Líbero: "LIB", Colocador: "COL", Receptor: "REC", Central: "CEN", Opuesto: "OPU" };
 
 const firstName = (name) => name.trim().split(/\s+/)[0];
@@ -44,7 +55,7 @@ function describe(event, lineup, opponent) {
   const who = player ? firstName(player.name) : "Equipo";
   if (event.type === "point") return event.side === "us" ? "Punto Club" : `Punto ${opponent}`;
   if (event.type === "timeout") return `Tiempo muerto ${event.side === "us" ? "Club" : opponent}`;
-  const what = event.skill ? SKILL_LABEL[event.skill] : event.result === "good" ? "Acierto" : "Fallo";
+  const what = event.skill ? `${SKILL_LABEL[event.skill]}${event.perfect ? " perfecta" : ""}` : event.result === "good" ? "Acierto" : "Fallo";
   const mark = event.result === "good" ? "✓" : "✗";
   const point = event.point ? (event.point === "us" ? " · +1 Club" : ` · +1 ${opponent}`) : "";
   return `${who} · ${what} ${mark}${point}`;
@@ -228,6 +239,12 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
     dialog.showModal();
     return () => dialog.close();
   }, []);
+  const pointFor = (result, skill) => (result === "good" ? (WINS_POINT.has(skill) ? "us" : null) : LOSES_POINT.has(skill) ? "them" : null);
+  const pick = (result, skill, perfect = false) => onPick({ result, skill, point: pointFor(result, skill), ...(perfect ? { perfect: true } : {}) });
+  const quick = POSITION_ACTIONS[player.position] ?? [];
+  const noPointRole = player.position === "Líbero" || player.position === "Colocador";
+  const plusOne = (point) =>
+    point && <span className={`rounded-full px-1.5 text-[10px] font-black ${point === "us" ? "bg-tnt text-onbrand" : "bg-sky-600 text-snow"}`}>+1</span>;
   const column = (result) => (
     <div className="space-y-1.5">
       <p className={`flex items-center justify-center gap-1 text-xs font-black uppercase tracking-widest ${result === "good" ? "text-emerald-300" : "text-red-300"}`}>
@@ -235,19 +252,31 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
         {result === "good" ? "Acierto" : "Fallo"}
       </p>
       {SKILLS.map(([skill, label]) => {
-        const point = result === "good" ? (WINS_POINT.has(skill) ? "us" : null) : LOSES_POINT.has(skill) ? "them" : null;
+        const point = pointFor(result, skill);
+        const tone =
+          result === "good" ? "bg-emerald-500/15 text-emerald-50 ring-1 ring-emerald-400/30 hover:bg-emerald-500/25" : "bg-red-500/15 text-red-50 ring-1 ring-red-400/30 hover:bg-red-500/25";
         return (
-          <button
-            key={skill}
-            type="button"
-            onClick={() => onPick({ result, skill, point })}
-            className={`flex min-h-11 w-full items-center justify-between rounded-xl px-3 text-sm font-bold ${
-              result === "good" ? "bg-emerald-500/15 text-emerald-50 ring-1 ring-emerald-400/30 hover:bg-emerald-500/25" : "bg-red-500/15 text-red-50 ring-1 ring-red-400/30 hover:bg-red-500/25"
-            }`}
-          >
-            {label}
-            {point && <span className={`rounded-full px-1.5 text-[10px] font-black ${point === "us" ? "bg-tnt text-onbrand" : "bg-sky-600 text-snow"}`}>+1</span>}
-          </button>
+          <div key={skill} className="flex gap-1">
+            <button
+              type="button"
+              onClick={() => pick(result, skill)}
+              className={`flex min-h-11 min-w-0 flex-1 items-center justify-between gap-1 rounded-xl px-3 text-sm font-bold ${tone}`}
+            >
+              <span className="truncate">{label}</span>
+              {plusOne(point)}
+            </button>
+            {result === "good" && PERFECT_SKILLS.has(skill) && (
+              <button
+                type="button"
+                onClick={() => pick("good", skill, true)}
+                aria-label={`${label} perfecta`}
+                title={`${label} perfecta`}
+                className="flex min-h-11 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-400/15 text-amber-200 ring-1 ring-amber-300/40 hover:bg-amber-400/25"
+              >
+                <Star aria-hidden="true" className="h-4 w-4 fill-current" />
+              </button>
+            )}
+          </div>
         );
       })}
       <button
@@ -258,6 +287,36 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
         {result === "good" ? "Acierto sin punto" : "Fallo sin punto"}
       </button>
     </div>
+  );
+  const quickActions = quick.length > 0 && (
+    <section aria-labelledby="player-sheet-quick" className="mb-3 rounded-xl bg-white/[0.04] p-2 ring-1 ring-white/10">
+      <p id="player-sheet-quick" className="mb-1.5 px-1 text-xs font-black uppercase tracking-widest text-zinc-300">
+        Lo suyo · {player.position}
+      </p>
+      <div className="grid grid-cols-2 gap-1.5">
+        {quick.map(([skill, perfect]) => {
+          const point = pointFor("good", skill);
+          return (
+            <button
+              key={`${skill}-${perfect}`}
+              type="button"
+              onClick={() => pick("good", skill, perfect)}
+              className={`flex min-h-12 items-center justify-between gap-1 rounded-xl px-3 text-left text-sm font-bold ${
+                perfect
+                  ? "bg-amber-400/20 text-amber-50 ring-1 ring-amber-300/50 hover:bg-amber-400/30"
+                  : "bg-emerald-500/15 text-emerald-50 ring-1 ring-emerald-400/30 hover:bg-emerald-500/25"
+              }`}
+            >
+              <span>
+                {SKILL_LABEL[skill]} {perfect ? "perfecta" : point ? "" : "buena"}
+              </span>
+              {perfect ? <Star aria-hidden="true" className="h-4 w-4 shrink-0 fill-current text-amber-300" /> : plusOne(point)}
+            </button>
+          );
+        })}
+      </div>
+      {noPointRole && <p className="mt-1.5 px-1 text-[11px] leading-snug text-zinc-400">No dan punto, pero cuentan en sus estadísticas. ★ = perfecta (doble positiva).</p>}
+    </section>
   );
   return (
     <dialog
@@ -270,7 +329,7 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
       onClick={(event) => {
         if (event.target === dialogRef.current) onClose();
       }}
-      className="m-auto w-[calc(100%-1.5rem)] max-w-sm rounded-2xl border border-white/10 bg-surface p-3 font-body text-white backdrop:bg-black/70"
+      className="m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-sm overflow-y-auto rounded-2xl border border-white/10 bg-surface p-3 font-body text-white backdrop:bg-black/70"
     >
       <div className="mb-3 flex items-center gap-3">
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-tnt to-ember font-display text-lg font-black italic text-onbrand">{player.number ?? "–"}</span>
@@ -282,6 +341,7 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
       </div>
+      {quickActions}
       <div className="grid grid-cols-2 gap-2">
         {column("good")}
         {column("bad")}
@@ -306,6 +366,7 @@ function HelpDialog({ scorer, onClose }) {
         [Play, "Empezar", "Dale a «Empezar partido» cuando empiece: se avisa al equipo."],
         [Hand, "Titulares y banquillo", "Arrastra un jugador encima de otro para cambiarlos (también del banquillo a la pista)."],
         [MousePointerClick, "Aciertos y fallos", "Toca a un jugador y elige en qué ha acertado o fallado."],
+        [Star, "Líbero y colocador", "Arriba salen las acciones de su posición. Recepción, colocación y defensa no dan punto pero cuentan; ★ es perfecta (doble positiva)."],
         [Check, "Puntos", "«+1 punto» a quien lo gana. Si no lo apuntas a un jugador, cuenta como fallo o acierto del rival."],
         [Undo2, "Deshacer y reiniciar", "«Deshacer» quita lo último. En ⋮ → «Reiniciar partido» se empieza de cero."],
         [Flag, "Terminar", "En ⋮ → «Terminar partido»: eliges el MVP y se guarda. Si ganáis, +50 Club Coins a cada uno."],
