@@ -6,9 +6,9 @@ import { formatOverall, formatScore, overallOf, weightPercent } from "@/app/rank
 
 const fieldClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none";
-const primaryClass = "min-h-12 rounded-lg bg-tnt px-4 font-display text-sm font-extrabold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
+const primaryClass = "min-h-12 rounded-full bg-tnt px-4 font-display text-sm font-extrabold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryClass =
-  "min-h-12 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-12 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 
 // La barra empieza medio punto antes del 1: ese primer tramo significa "sin nota".
 const NO_SCORE = 0.5;
@@ -21,7 +21,7 @@ function OverallRing({ overall }) {
       style={{ background: `conic-gradient(#FF3800, #FF8800 ${fill}%, rgba(255,255,255,0.12) ${fill}%)` }}
     >
       <div className="flex h-[4.6rem] w-[4.6rem] flex-col items-center justify-center rounded-full bg-panel" aria-live="polite">
-        <span className={`font-display text-3xl font-black leading-none tabular-nums ${overallTone(overall)}`}>{formatOverall(overall)}</span>
+        <span className={`font-display text-3xl font-extrabold leading-none tabular-nums ${overallTone(overall)}`}>{formatOverall(overall)}</span>
         <span className="text-[9px] font-bold text-zinc-400">Overall</span>
       </div>
     </div>
@@ -83,7 +83,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
     >
       <div className="flex items-center gap-3 bg-gradient-to-r from-tnt/30 via-tnt/10 to-transparent p-5">
         <Avatar name={row.name} picture={row.picture} className="h-12 w-12 text-sm" />
-        <h2 id="rating-dialog-title" className="min-w-0 flex-1 break-words font-display text-2xl font-black leading-tight">{row.name}</h2>
+        <h2 id="rating-dialog-title" className="min-w-0 flex-1 break-words font-display text-2xl font-extrabold leading-tight">{row.name}</h2>
         <OverallRing overall={overall} />
       </div>
 
@@ -97,7 +97,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
                 type="button"
                 aria-pressed={item === position}
                 onClick={() => setPosition(item)}
-                className={`min-h-11 rounded-lg px-1 text-xs font-bold ${item === position ? "bg-white text-void" : "bg-void text-zinc-300 hover:text-white"}`}
+                className={`min-h-11 rounded-full px-1 text-xs font-bold ${item === position ? "bg-white text-void" : "bg-void text-zinc-300 hover:text-white"}`}
               >
                 {item}
               </button>
@@ -115,7 +115,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
                   <label htmlFor={`rating-${id}`} className="text-sm font-semibold text-zinc-200">
                     {label} <span className="text-xs font-bold text-ember">{weightPercent(positionWeights, id)}%</span>
                   </label>
-                  <span className="font-display text-2xl font-black tabular-nums">{text}</span>
+                  <span className="font-display text-2xl font-extrabold tabular-nums">{text}</span>
                 </div>
                 <input
                   id={`rating-${id}`}

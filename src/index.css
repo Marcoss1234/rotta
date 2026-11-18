@@ -79,7 +79,7 @@
 }
 
 /* En claro, cada tarjeta se separa del fondo con un borde fino y una sombra suave: así no se junta todo. */
-:root[data-theme="light"] :is(.bg-panel, .bg-surface):is(.rounded-lg, .rounded-xl, .rounded-2xl) {
+:root[data-theme="light"] :is(.bg-panel, .bg-surface):is(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl) {
   box-shadow:
     0 0 0 1px rgb(15 23 42 / 0.07),
     0 1px 2px rgb(15 23 42 / 0.08),

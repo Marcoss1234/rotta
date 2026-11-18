@@ -109,10 +109,10 @@ export default function PlayerDialog({ player, teams, defaultTeamId, onSave, onD
         {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
 
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" disabled={busy} onClick={onClose} className="min-h-11 rounded-lg border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
+          <button type="button" disabled={busy} onClick={onClose} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
             Cancelar
           </button>
-          <button type="submit" disabled={busy} className="min-h-11 rounded-lg bg-tnt text-sm font-bold text-onbrand disabled:opacity-50">
+          <button type="submit" disabled={busy} className="min-h-11 rounded-full bg-tnt text-sm font-bold text-onbrand disabled:opacity-50">
             {busy ? "Guardando…" : "Guardar"}
           </button>
         </div>
@@ -130,16 +130,16 @@ export default function PlayerDialog({ player, teams, defaultTeamId, onSave, onD
             <div className="space-y-2">
               <p className="text-sm text-zinc-200">¿Eliminar a {player.name} de la plantilla? No se puede deshacer.</p>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" disabled={busy} onClick={() => setConfirmingDelete(false)} className="min-h-11 rounded-lg border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={() => setConfirmingDelete(false)} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
                   No
                 </button>
-                <button type="button" disabled={busy} onClick={() => run(onDelete)} className="min-h-11 rounded-lg border border-red-300 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={() => run(onDelete)} className="min-h-11 rounded-full border border-red-300 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
                   Sí, eliminar
                 </button>
               </div>
             </div>
           ) : (
-            <button type="button" disabled={busy} onClick={() => setConfirmingDelete(true)} className="min-h-11 w-full rounded-lg text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
+            <button type="button" disabled={busy} onClick={() => setConfirmingDelete(true)} className="min-h-11 w-full rounded-full text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
               Eliminar de la plantilla
             </button>
           )}

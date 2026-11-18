@@ -27,7 +27,7 @@ export default function HonorsBanner({ honors }) {
             <p className="text-[11px] font-extrabold text-amber-200">
               {honors.month_title} de {monthName(champion.period)}
             </p>
-            <p className="truncate font-display text-lg font-black text-white">{champion.name}</p>
+            <p className="truncate font-display text-lg font-extrabold text-white">{champion.name}</p>
           </div>
           <span className="relative flex shrink-0 items-center gap-1 rounded-full bg-amber-300/15 px-2 py-1 text-xs font-extrabold text-amber-200">
             <Coins aria-hidden="true" className="h-3.5 w-3.5" />+{champion.coins}

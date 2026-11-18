@@ -81,7 +81,7 @@ export default function InstallCard({ variant = "card" }) {
   };
 
   return (
-    <section aria-labelledby={`install-title-${variant}`} className="rounded-xl border border-tnt/60 bg-panel p-4" data-testid={`install-${variant}`}>
+    <section aria-labelledby={`install-title-${variant}`} className="rounded-3xl border border-tnt/60 bg-panel p-4" data-testid={`install-${variant}`}>
       <div className="flex items-start gap-3">
         <img src="/rotta-logo.svg" alt="" className="h-11 w-11 shrink-0 rounded-xl" />
         <div className="min-w-0 flex-1">
@@ -97,7 +97,7 @@ export default function InstallCard({ variant = "card" }) {
 
       <div className="mt-3">
         {canPrompt ? (
-          <button type="button" onClick={install} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-tnt font-bold text-onbrand md:w-auto md:px-6">
+          <button type="button" onClick={install} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-tnt font-bold text-onbrand md:w-auto md:px-6">
             <Download aria-hidden="true" className="h-5 w-5" />
             Instalar app
           </button>
@@ -107,7 +107,7 @@ export default function InstallCard({ variant = "card" }) {
               type="button"
               aria-expanded={open}
               onClick={() => setOpen((current) => !current)}
-              className="min-h-11 w-full rounded-lg bg-tnt font-bold text-onbrand md:w-auto md:px-6"
+              className="min-h-11 w-full rounded-full bg-tnt font-bold text-onbrand md:w-auto md:px-6"
             >
               {open ? "Ocultar pasos" : "Ver cómo se hace"}
             </button>

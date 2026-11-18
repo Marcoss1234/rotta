@@ -31,7 +31,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h2 id="action-title" className="font-display text-lg font-black leading-tight">¿Qué hace {name}?</h2>
+          <h2 id="action-title" className="font-display text-lg font-extrabold leading-tight">¿Qué hace {name}?</h2>
           {time !== null && <p className="text-xs text-zinc-400">En el segundo {seconds(time)} de la jugada</p>}
         </div>
         <button type="button" onClick={onClose} aria-label="Cerrar" className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10">
@@ -49,7 +49,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
               onClick={() => onChoose("colocacion", tempo.value)}
               className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-void/70 px-3 text-left hover:border-tnt"
             >
-              <span className="flex h-9 w-11 shrink-0 items-center justify-center rounded-lg bg-tnt font-display text-base font-black text-onbrand">{tempo.short}</span>
+              <span className="flex h-9 w-11 shrink-0 items-center justify-center rounded-lg bg-tnt font-display text-base font-extrabold text-onbrand">{tempo.short}</span>
               <span>
                 <span className="block text-sm font-bold">{tempo.label}</span>
                 <span className="block text-xs text-zinc-400">{tempo.hint}</span>

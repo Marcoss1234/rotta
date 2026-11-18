@@ -58,7 +58,7 @@ function PhonePreview({ theme }) {
         {/* Cabecera con el escudo del club */}
         <header className="flex items-center justify-between px-4 pb-2 pt-4">
           <div className="flex items-center gap-2.5">
-            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand)] text-sm font-black text-[var(--on-brand)] ring-2 ring-[var(--accent)]">CV</span>
+            <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand)] text-sm font-extrabold text-[var(--on-brand)] ring-2 ring-[var(--accent)]">CV</span>
             <div className="leading-tight">
               <p className="text-sm font-extrabold">C.V. Club</p>
               <p className="text-xs text-[var(--muted)]">Senior Femenino</p>
@@ -73,7 +73,7 @@ function PhonePreview({ theme }) {
             <div aria-hidden="true" className="absolute -right-12 -top-14 h-36 w-36 rounded-full bg-[var(--accent)] opacity-60" />
             <div aria-hidden="true" className="absolute -right-2 top-16 h-16 w-16 rounded-full bg-white/15" />
             <p className="relative text-xs font-semibold opacity-85">Jueves 12 de noviembre</p>
-            <h2 className="relative mt-1 font-display text-3xl font-black leading-none">Hola, Carmen</h2>
+            <h2 className="relative mt-1 font-display text-3xl font-extrabold leading-none">Hola, Carmen</h2>
             <div className="relative mt-3 flex flex-wrap items-center gap-2">
               <span className="flex items-center gap-1.5 rounded-full bg-[var(--surface)] px-2.5 py-1 text-xs font-extrabold text-[var(--text)]">
                 <Coins aria-hidden="true" className="h-3.5 w-3.5 text-[var(--gold)]" />1.225
@@ -110,10 +110,10 @@ function PhonePreview({ theme }) {
             <div className="mt-2 flex items-center gap-3">
               <div className="w-14 shrink-0 overflow-hidden rounded-xl bg-white text-center shadow-sm ring-1 ring-black/10">
                 <span className="block bg-[var(--calendar)] py-0.5 text-[10px] font-extrabold text-white">Nov</span>
-                <span className="block pb-1 pt-0.5 font-display text-2xl font-black leading-none text-zinc-900">12</span>
+                <span className="block pb-1 pt-0.5 font-display text-2xl font-extrabold leading-none text-zinc-900">12</span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="font-display text-xl font-black leading-tight">20:45 – 22:15</p>
+                <p className="font-display text-xl font-extrabold leading-tight">20:45 – 22:15</p>
                 <p className="text-xs text-[var(--muted)]">Pabellón municipal</p>
               </div>
             </div>
@@ -147,7 +147,7 @@ function PhonePreview({ theme }) {
                   <PersonDot name={entry.name} size={entry.place === 1 ? "h-11 w-11" : "h-9 w-9"} ring="ring-transparent" />
                   <span className="text-xs font-bold">{entry.name}</span>
                   <div className={`flex w-full items-start justify-center rounded-t-lg pt-0.5 ${entry.height}`} style={{ background: `linear-gradient(180deg, ${entry.crown}, ${entry.crown}99)` }}>
-                    <span className="font-display text-base font-black leading-none text-zinc-900">{entry.score}</span>
+                    <span className="font-display text-base font-extrabold leading-none text-zinc-900">{entry.score}</span>
                   </div>
                 </li>
               ))}
@@ -217,7 +217,7 @@ export default function ThemeLabPage() {
         <div className="space-y-5">
           <header>
             <p className="text-xs font-extrabold text-zinc-500">Rotta · prueba de temas</p>
-            <h1 className="mt-1 font-display text-3xl font-black leading-tight md:text-4xl">Los colores de tu club</h1>
+            <h1 className="mt-1 font-display text-3xl font-extrabold leading-tight md:text-4xl">Los colores de tu club</h1>
             <p className="mt-1 max-w-prose text-sm text-zinc-600">
               El club elige sus dos colores una vez y toda la app se tiñe. Cada persona elige si la ve en claro u oscuro.
               Verde, dorado y rojo significan lo mismo en todos los clubs: vas, coins y mensajes nuevos.

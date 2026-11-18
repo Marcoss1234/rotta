@@ -31,16 +31,16 @@ function ChannelList({ channels, selectedId, onSelect }) {
               type="button"
               onClick={() => onSelect(channel.id)}
               aria-current={selected ? "true" : undefined}
-              className={`relative flex min-h-16 w-full items-center gap-3 overflow-hidden rounded-xl border px-3 py-2 text-left transition-colors ${
-                selected ? "border-tnt/70 bg-gradient-to-r from-tnt/30 to-panel" : "border-white/5 bg-gradient-to-r from-white/[0.05] to-panel hover:border-white/25"
+              className={`relative flex min-h-[4.5rem] w-full items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 text-left transition-colors ${
+                selected ? "bg-tnt/15 ring-2 ring-tnt" : "bg-panel ring-1 ring-white/10 hover:ring-white/25"
               }`}
             >
-              <span aria-hidden="true" className="flex h-11 w-11 shrink-0 -skew-x-6 items-center justify-center rounded-lg bg-tnt text-onbrand">
-                <Icon className="h-5 w-5 skew-x-6 text-white" />
+              <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand">
+                <Icon className="h-5 w-5 text-white" />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-baseline justify-between gap-2">
-                  <span className="truncate font-display text-base font-black leading-tight">{channelLabel(channel)}</span>
+                  <span className="truncate font-display text-base font-extrabold leading-tight">{channelLabel(channel)}</span>
                   {channel.last_message && (
                     <span className={`shrink-0 text-[11px] font-semibold ${unread ? "text-ember" : "text-zinc-500"}`}>{lastMessageTime(channel.last_message.created_at)}</span>
                   )}
@@ -50,7 +50,7 @@ function ChannelList({ channels, selectedId, onSelect }) {
                 </span>
               </span>
               {unread && (
-                <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-tnt px-1.5 font-display text-xs font-black text-onbrand">
+                <span className="flex h-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-tnt px-1.5 font-display text-xs font-extrabold text-onbrand">
                   <span className="sr-only">Sin leer: </span>
                   {channel.unread >= 100 ? "99+" : channel.unread}
                 </span>
@@ -105,7 +105,7 @@ export default function ChatPage({ onAccessLost }) {
         <RankingHero title="Chat" subtitle={totalUnread > 0 ? (totalUnread === 1 ? "1 mensaje sin leer" : `${totalUnread} mensajes sin leer`) : "Todo leído"} />
       </div>
 
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && !channels && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {channels && (
@@ -123,9 +123,9 @@ export default function ChatPage({ onAccessLost }) {
               onAccessLost={onAccessLost}
             />
           ) : (
-            <div className="hidden flex-1 flex-col items-center justify-center gap-3 rounded-2xl border border-white/5 bg-panel md:flex">
+            <div className="hidden flex-1 flex-col items-center justify-center gap-3 rounded-2xl ring-1 ring-white/10 bg-panel md:flex">
               <MessagesSquare aria-hidden="true" className="h-12 w-12 text-tnt" />
-              <p className="font-display text-2xl font-black">Elige un chat</p>
+              <p className="font-display text-2xl font-extrabold">Elige un chat</p>
             </div>
           )}
         </div>

@@ -56,7 +56,7 @@ export default function BackupCard() {
 
   const old = !last || Date.now() - new Date(last).getTime() > 7 * 86400000;
   return (
-    <section aria-labelledby="backup-title" className="rounded-xl border border-white/10 bg-panel p-4">
+    <section aria-labelledby="backup-title" className="rounded-3xl ring-1 ring-white/10 bg-panel p-4">
       <div className="flex items-start gap-3">
         <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-ember">
           <DatabaseBackup className="h-5 w-5" />
@@ -78,7 +78,7 @@ export default function BackupCard() {
         type="button"
         onClick={download}
         disabled={busy}
-        className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-white text-sm font-bold text-void hover:bg-zinc-200 disabled:opacity-60 sm:w-auto sm:px-4"
+        className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-white text-sm font-bold text-void hover:bg-zinc-200 disabled:opacity-60 sm:w-auto sm:px-4"
       >
         <Download aria-hidden="true" className="h-4 w-4" />
         {busy ? "Preparando la copia…" : "Descargar copia"}

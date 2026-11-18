@@ -61,10 +61,10 @@ export default function TokenDialog({ element, player, busy, onApply, onRemove, 
           {player ? (
             <Avatar name={player.name} picture={player.picture} className="h-12 w-12 text-sm" />
           ) : (
-            <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tnt text-sm font-black text-onbrand">{element.label}</span>
+            <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-tnt text-sm font-extrabold text-onbrand">{element.label}</span>
           )}
           <div className="min-w-0 flex-1">
-            <h2 id="token-dialog-title" className="break-words font-display text-xl font-black leading-tight">{title}</h2>
+            <h2 id="token-dialog-title" className="break-words font-display text-xl font-extrabold leading-tight">{title}</h2>
             {player && <p className="mt-0.5 text-xs font-semibold text-zinc-400">En su ficha: {player.position}</p>}
           </div>
           <button type="button" onClick={close} aria-label="Cerrar" className="-mr-1 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center self-start rounded-lg text-zinc-300 hover:bg-white/5">

@@ -29,7 +29,7 @@ export default function NameDialog({ title, label, initialName, confirmLabel, bu
       className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/70"
     >
       <form onSubmit={submit}>
-        <h2 id="name-dialog-title" className="font-display text-lg font-black">{title}</h2>
+        <h2 id="name-dialog-title" className="font-display text-lg font-extrabold">{title}</h2>
         <label htmlFor="name-dialog-input" className="mt-3 block text-xs font-semibold text-zinc-400">{label}</label>
         <input
           ref={inputRef}

@@ -125,7 +125,7 @@ function PasswordAccess({ onSignedIn }) {
 
       {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
 
-      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-lg bg-tnt font-bold text-onbrand disabled:opacity-60">
+      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt font-bold text-onbrand disabled:opacity-60">
         {busy ? "Un momento…" : registering ? "Crear cuenta" : "Entrar"}
       </button>
     </form>

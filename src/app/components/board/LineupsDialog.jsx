@@ -113,7 +113,7 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-tnt via-ember to-transparent text-onbrand" />
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h2 id="lineups-title" className="font-display text-xl font-black">Alineaciones</h2>
+              <h2 id="lineups-title" className="font-display text-xl font-extrabold">Alineaciones</h2>
               <p className="text-xs text-zinc-400">Toca una para ponerla en la pista. Se puede deshacer.</p>
             </div>
             <button type="button" onClick={onClose} aria-label="Cerrar" className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10">

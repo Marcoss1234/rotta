@@ -125,14 +125,14 @@ function LiveNow() {
           to={`/app/directo/${item.id}`}
           className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 via-tnt to-ember p-3 shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow"
         >
-          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/25 px-2 py-1 text-[10px] font-black">
+          <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/25 px-2 py-1 text-[10px] font-extrabold">
             <span aria-hidden="true" className="pulse-dot h-2 w-2 rounded-full bg-white" />
             En directo
           </span>
-          <span className="min-w-0 flex-1 truncate font-display text-base font-black">
+          <span className="min-w-0 flex-1 truncate font-display text-base font-extrabold">
             {item.team_name.replace(/^Club /, "")} vs {item.opponent}
           </span>
-          <span className="shrink-0 text-right font-display font-black leading-none tabular-nums">
+          <span className="shrink-0 text-right font-display font-extrabold leading-none tabular-nums">
             <span className="block text-xl">
               {item.won.us}-{item.won.them}
             </span>
@@ -235,7 +235,7 @@ function AttendanceGroup({ group, people, currentUserId }) {
       <h3 className={`flex items-center gap-2 font-display text-sm font-extrabold ${group.tint}`}>
         <Icon aria-hidden="true" className="h-[18px] w-[18px]" />
         {group.title}
-        <span className="ml-auto font-display text-2xl font-black leading-none tabular-nums text-white">{people.length}</span>
+        <span className="ml-auto font-display text-2xl font-extrabold leading-none tabular-nums text-white">{people.length}</span>
       </h3>
       {people.length === 0 ? (
         <p className="mt-2 text-sm text-zinc-500">{group.empty}</p>
@@ -449,7 +449,7 @@ function TrainingCard({ teamId, training, attendance, currentUserId, answerBusy,
       type="button"
       onClick={onEditSchedule}
       aria-label="Editar el horario de entrenamiento"
-      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-white hover:bg-white/10"
+      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-white hover:bg-white/10"
     >
       <Pencil aria-hidden="true" className="h-4 w-4" />
       Editar horario
@@ -521,7 +521,7 @@ function LiveMatchButton({ match, onError }) {
         {playing ? <span aria-hidden="true" className="pulse-dot h-2.5 w-2.5 rounded-full bg-white" /> : <Zap aria-hidden="true" className="h-5 w-5 fill-white" />}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block font-display text-lg font-black leading-tight">
+        <span className="block font-display text-lg font-extrabold leading-tight">
           {!live || live.status === "pending" ? (match.can_edit ? "Entrar al partido" : "Ver el partido") : playing ? (match.can_edit ? "Seguir el partido" : "Ver en directo") : "Ver el partido"}
         </span>
         <span className="block text-xs font-semibold text-white/80">
@@ -529,7 +529,7 @@ function LiveMatchButton({ match, onError }) {
         </span>
       </span>
       {live && live.status !== "pending" && (
-        <span className="shrink-0 text-right font-display font-black leading-none tabular-nums">
+        <span className="shrink-0 text-right font-display font-extrabold leading-none tabular-nums">
           <span className="block text-2xl">
             {live.won.us}-{live.won.them}
           </span>
@@ -551,7 +551,7 @@ function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onE
       type="button"
       onClick={() => onEdit(match)}
       aria-label={`Editar el partido contra ${match.opponent}`}
-      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-lg px-3 text-sm font-semibold text-white hover:bg-white/10"
+      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-white hover:bg-white/10"
     >
       <Pencil aria-hidden="true" className="h-4 w-4" />
       Editar
@@ -661,9 +661,9 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
   return (
     <section aria-labelledby="matches-title" className="space-y-3">
       <div className="flex items-center justify-between gap-3 border-b border-white/15 pb-2">
-        <h2 id="matches-title" className="font-display text-2xl font-black">Próximos</h2>
+        <h2 id="matches-title" className="font-display text-2xl font-extrabold">Próximos</h2>
         {canManage && (
-          <button type="button" onClick={() => setEditing({ match: null })} className="flex min-h-11 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
+          <button type="button" onClick={() => setEditing({ match: null })} className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
             <Plus aria-hidden="true" className="h-4 w-4" />
             Añadir partido
           </button>
@@ -671,7 +671,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
       </div>
       {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
       {matches.length === 0 ? (
-        <p className="rounded-xl bg-panel p-4 text-sm text-zinc-400">No hay partidos programados para este equipo.</p>
+        <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">No hay partidos programados para este equipo.</p>
       ) : (
         <div className="space-y-3">
           {matches.map((match) => (
@@ -691,7 +691,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
       )}
       <Link to={`/app/partidos/jugados?equipo=${teamId}`} data-testid="played-link" className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-panel px-4 hover:bg-white/5">
         <History aria-hidden="true" className="h-5 w-5 shrink-0 text-ember" />
-        <span className="flex-1 font-display text-lg font-black">Partidos jugados</span>
+        <span className="flex-1 font-display text-lg font-extrabold">Partidos jugados</span>
         <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
       </Link>
       {editing && (

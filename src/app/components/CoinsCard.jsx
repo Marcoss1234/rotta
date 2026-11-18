@@ -36,9 +36,9 @@ export default function CoinsCard({ coins }) {
         </span>
         <div className="min-w-0 flex-1">
           <h2 id="coins-title" className="text-xs font-extrabold text-amber-200/80">Club Coins</h2>
-          <p className="font-display text-3xl font-black leading-none tabular-nums text-white">{amount}</p>
+          <p className="font-display text-3xl font-extrabold leading-none tabular-nums text-white">{amount}</p>
         </div>
-        <Link to="/app/tienda" className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 pl-3 pr-2 text-sm font-black text-void shadow-[0_4px_14px_rgba(245,197,66,0.35)]">
+        <Link to="/app/tienda" className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 pl-3 pr-2 text-sm font-extrabold text-void shadow-[0_4px_14px_rgba(245,197,66,0.35)]">
           <ShoppingBag aria-hidden="true" className="h-4 w-4" />
           Tienda
           <ChevronRight aria-hidden="true" className="h-4 w-4" />

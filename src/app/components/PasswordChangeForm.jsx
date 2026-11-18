@@ -33,7 +33,7 @@ export default function PasswordChangeForm({ currentLabel = "Contraseña actual"
       <PasswordField id="current-password" label={currentLabel} value={current} onChange={setCurrent} autoComplete="current-password" disabled={busy} />
       <PasswordField id="new-password" label="Nueva contraseña" value={next} onChange={setNext} autoComplete="new-password" hint="Al menos 8 caracteres." disabled={busy} />
       {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
-      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-lg bg-tnt px-6 font-bold text-onbrand disabled:opacity-60 md:w-auto">
+      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt px-6 font-bold text-onbrand disabled:opacity-60 md:w-auto">
         {busy ? "Guardando…" : "Cambiar contraseña"}
       </button>
     </form>

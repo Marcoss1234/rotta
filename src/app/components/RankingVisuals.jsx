@@ -17,6 +17,20 @@ export function RankingHero({ title, subtitle, stacked = false, children }) {
   );
 }
 
+// Título de una tarjeta: el icono en un círculo del color del club y el texto al lado.
+export function CardTitle({ icon: Icon, id, children, as: Tag = "h2" }) {
+  return (
+    <Tag id={id} className="flex items-center gap-2.5 font-display text-xl font-bold">
+      {Icon && (
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand">
+          <Icon aria-hidden="true" className="h-4 w-4" />
+        </span>
+      )}
+      {children}
+    </Tag>
+  );
+}
+
 // Elegir equipo: una sola fila que se desliza si no caben todos.
 export function GroupPicker({ groups, groupId, onChange }) {
   if (groups.length < 2) return null;
@@ -66,7 +80,7 @@ export function overallTone(overall) {
 
 export function OverallNumber({ overall, className = "text-3xl" }) {
   return (
-    <span className={`font-display font-black leading-none tabular-nums ${overallTone(overall)} ${className}`}>
+    <span className={`font-display font-extrabold leading-none tabular-nums ${overallTone(overall)} ${className}`}>
       <span className="sr-only">Overall </span>{formatOverall(overall)}
     </span>
   );

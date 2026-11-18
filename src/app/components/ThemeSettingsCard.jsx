@@ -78,7 +78,7 @@ function ClubColors() {
               type="button"
               aria-pressed={active}
               onClick={() => pick({ brand: palette.brand, accent: palette.accent, mode: palette.mode })}
-              className={`flex min-h-11 items-center gap-2 rounded-lg px-2 text-left text-xs font-semibold ring-1 ${active ? "bg-white/10 ring-tnt" : "ring-white/10 hover:bg-white/5"}`}
+              className={`flex min-h-11 items-center gap-2 rounded-full px-2 text-left text-xs font-semibold ring-1 ${active ? "bg-white/10 ring-tnt" : "ring-white/10 hover:bg-white/5"}`}
             >
               <span aria-hidden="true" className="relative h-7 w-7 shrink-0 overflow-hidden rounded-full ring-1 ring-black/20" style={{ background: palette.mode === "dark" ? "#0B0C0F" : "#F4F5F8" }}>
                 <span className="absolute inset-y-0 right-0 w-1/2" style={{ background: palette.brand }} />
@@ -117,10 +117,10 @@ function ClubColors() {
       {message && <p role="status" className="text-sm font-semibold text-emerald-300">{message}</p>}
       {changed && (
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => previewClub(saved)} className="min-h-11 rounded-lg text-sm font-bold text-zinc-200 ring-1 ring-white/15 hover:bg-white/5">
+          <button type="button" onClick={() => previewClub(saved)} className="min-h-11 rounded-full text-sm font-bold text-zinc-200 ring-1 ring-white/15 hover:bg-white/5">
             Deshacer
           </button>
-          <button type="button" disabled={busy} onClick={save} className="min-h-11 rounded-lg bg-tnt text-sm font-bold text-onbrand disabled:opacity-60">
+          <button type="button" disabled={busy} onClick={save} className="min-h-11 rounded-full bg-tnt text-sm font-bold text-onbrand disabled:opacity-60">
             {busy ? "Guardando…" : "Guardar para todos"}
           </button>
         </div>
@@ -131,9 +131,9 @@ function ClubColors() {
 
 export default function ThemeSettingsCard({ isAdmin }) {
   return (
-    <section aria-labelledby="theme-title" className="space-y-3 rounded-xl bg-panel p-4">
+    <section aria-labelledby="theme-title" className="space-y-3 rounded-3xl bg-panel p-4">
       <div>
-        <h2 id="theme-title" className="font-display text-xl font-black">Apariencia</h2>
+        <h2 id="theme-title" className="font-display text-xl font-extrabold">Apariencia</h2>
         <p className="text-sm text-zinc-400">"Del club" usa el fondo que ha elegido tu club; "Auto" sigue a tu móvil.</p>
       </div>
       <ModePicker />

@@ -168,7 +168,7 @@ export default function AppLayout({ isAdmin, user, children }) {
               to={to}
               end={end}
               className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold transition-colors ${
+                `flex min-h-11 items-center gap-3 rounded-full px-3 text-sm font-semibold transition-colors ${
                   isActive ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
                 }`
               }

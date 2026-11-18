@@ -29,7 +29,7 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
   };
 
   return (
-    <li className="space-y-3 rounded-xl border border-white/10 bg-panel p-3" data-testid="access-request">
+    <li className="space-y-3 rounded-2xl ring-1 ring-white/10 bg-panel p-3" data-testid="access-request">
       <div className="flex items-center gap-3">
         <Avatar name={person.name} picture={person.picture} className="h-10 w-10 text-sm" />
         <div className="min-w-0">
@@ -60,10 +60,10 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
       </div>
       {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
       <div className="grid grid-cols-2 gap-2">
-        <button type="button" disabled={busy} onClick={() => decide({ status: "rejected" })} className="min-h-11 rounded-lg border border-white/30 text-sm font-semibold text-white hover:bg-white/5 disabled:opacity-50">
+        <button type="button" disabled={busy} onClick={() => decide({ status: "rejected" })} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white/5 disabled:opacity-50">
           Rechazar
         </button>
-        <button type="button" disabled={busy || !teamId} onClick={() => decide({ status: "approved", role, team_id: teamId })} className="min-h-11 rounded-lg bg-tnt text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50">
+        <button type="button" disabled={busy || !teamId} onClick={() => decide({ status: "approved", role, team_id: teamId })} className="min-h-11 rounded-full bg-tnt text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50">
           {busy ? "Guardando…" : "Aceptar"}
         </button>
       </div>
@@ -89,15 +89,15 @@ export default function AccessRequestsPage({ onAccessLost }) {
   return (
     <div className="space-y-6">
       <RankingHero title="Nuevos" subtitle={people ? `${people.length} esperando acceso` : ""} stacked>
-        <Link to="/app" className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg bg-white pl-2 pr-3 text-sm font-extrabold text-void hover:bg-zinc-200">
+        <Link to="/app" className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white pl-2 pr-3 text-sm font-extrabold text-void hover:bg-zinc-200">
           <ChevronLeft aria-hidden="true" className="h-4 w-4" />
           Inicio
         </Link>
       </RankingHero>
 
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && !people && <p role="status" className="text-zinc-300">Cargando…</p>}
-      {people?.length === 0 && <p className="rounded-xl bg-panel p-4 text-sm text-zinc-400">No hay nadie esperando acceso.</p>}
+      {people?.length === 0 && <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">No hay nadie esperando acceso.</p>}
       {people?.length > 0 && (
         <ul className="space-y-2">
           {people.map((person) => (

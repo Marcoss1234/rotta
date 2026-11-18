@@ -101,12 +101,12 @@ export default function TrainingStars({ teamId, onAccessLost }) {
       <div className="flex items-start gap-3">
         <Star aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 fill-amber-300 text-amber-300" />
         <div className="min-w-0 flex-1">
-          <h2 id="stars-title" className="font-display text-lg font-black leading-tight">Destacados del entreno {dayLabel(data.date)}</h2>
+          <h2 id="stars-title" className="font-display text-lg font-extrabold leading-tight">Destacados del entreno {dayLabel(data.date)}</h2>
           <p className="text-sm text-zinc-300">
             Elige a los {data.max} que mejor lo han hecho: cada uno gana +{data.coins} Club Coins.
           </p>
         </div>
-        <span className="shrink-0 rounded-full bg-amber-300/15 px-2 py-0.5 text-xs font-black tabular-nums text-amber-200">
+        <span className="shrink-0 rounded-full bg-amber-300/15 px-2 py-0.5 text-xs font-extrabold tabular-nums text-amber-200">
           {chosen.length}/{data.max}
         </span>
       </div>
@@ -145,7 +145,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
           type="button"
           disabled={busy || !changed}
           onClick={save}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 font-display text-base font-black text-void disabled:opacity-70"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 font-display text-base font-extrabold text-void disabled:opacity-70"
         >
           {!changed && saved ? (
             <>

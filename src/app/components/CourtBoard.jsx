@@ -59,7 +59,7 @@ function Badge({ player, lifted = false }) {
   return (
     <span className="flex w-[4.5rem] select-none flex-col items-center gap-0.5">
       <span
-        className={`relative flex h-11 w-11 items-center justify-center rounded-full border-[3px] text-sm font-black shadow-[0_3px_8px_rgba(0,0,0,0.55)] motion-safe:transition-transform ${
+        className={`relative flex h-11 w-11 items-center justify-center rounded-full border-[3px] text-sm font-extrabold shadow-[0_3px_8px_rgba(0,0,0,0.55)] motion-safe:transition-transform ${
           isLibero ? "border-amber-300 bg-amber-300 text-zinc-950" : "border-white bg-zinc-950 text-white"
         } ${lifted ? "scale-110" : ""}`}
       >
@@ -73,7 +73,7 @@ function Badge({ player, lifted = false }) {
               className="pointer-events-none h-full w-full rounded-full object-cover"
             />
             {player.number !== null && (
-              <span className="absolute -bottom-1 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-950 px-1 text-[10px] font-black text-white ring-2 ring-white">
+              <span className="absolute -bottom-1 -right-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-zinc-950 px-1 text-[10px] font-extrabold text-white ring-2 ring-white">
                 {player.number}
               </span>
             )}
@@ -83,7 +83,7 @@ function Badge({ player, lifted = false }) {
         )}
       </span>
       <span className="flex max-w-full flex-col items-center rounded-md bg-black/75 px-1.5 py-px text-center leading-none backdrop-blur-[2px]">
-        <span className="max-w-full truncate text-[11px] font-semibold leading-4 text-white">{shortName(player.name)}</span>
+        <span className="max-w-full truncate text-[11px] font-semibold leading-4 text-snow">{shortName(player.name)}</span>
         {role && <span className="max-w-full truncate pb-0.5 text-[9px] font-medium leading-3 tracking-wide text-zinc-300">{role}</span>}
       </span>
     </span>
@@ -154,7 +154,7 @@ function PositionPicker({ player, onPick, onClose }) {
                 type="button"
                 aria-pressed={current}
                 onClick={() => onPick(position)}
-                className={`min-h-11 rounded-lg border text-sm font-semibold ${
+                className={`min-h-11 rounded-full border text-sm font-semibold ${
                   current ? "border-tnt bg-tnt text-onbrand" : "border-white/20 text-zinc-100 hover:bg-white/5"
                 }`}
               >
@@ -163,7 +163,7 @@ function PositionPicker({ player, onPick, onClose }) {
             );
           })}
         </div>
-        <button type="button" onClick={onClose} className="mt-3 min-h-11 w-full rounded-lg text-sm font-semibold text-zinc-300 hover:bg-white/5">
+        <button type="button" onClick={onClose} className="mt-3 min-h-11 w-full rounded-full text-sm font-semibold text-zinc-300 hover:bg-white/5">
           Cancelar
         </button>
       </div>
@@ -313,8 +313,8 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
   const rightStand = family.filter((_, index) => index % 2 === 1);
 
   return (
-    <section aria-labelledby="court-title" className="rounded-2xl border border-white/5 bg-panel p-4">
-      <h2 id="court-title" className="font-display text-2xl font-black">Pista</h2>
+    <section aria-labelledby="court-title" className="rounded-3xl bg-panel p-4 ring-1 ring-white/10">
+      <h2 id="court-title" className="font-display text-2xl font-bold">Pista</h2>
       {canEdit && (
         <p id="court-help" className="mt-1 text-xs text-zinc-400">
           Arrastra cada chapa a donde quieras. Se guarda sola, y si la sacas de la pista vuelve al banquillo. Tócala para cambiar su puesto.
@@ -356,7 +356,7 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
       <CourtSideStands side="right" label="Gradas, lado derecho" people={rightStand} />
       </div>
 
-      <div className="mx-auto mt-3 max-w-sm rounded-lg border border-white/15 p-3" data-testid="court-bench">
+      <div className="mx-auto mt-3 max-w-sm rounded-2xl border border-white/15 p-3" data-testid="court-bench">
         <h3 className="font-display text-sm font-extrabold text-zinc-200">Banquillo · {onBench.length}</h3>
         {onBench.length === 0 ? (
           <p className="mt-1 text-sm text-zinc-400">No hay nadie en el banquillo.</p>

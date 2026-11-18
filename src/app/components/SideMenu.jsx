@@ -60,20 +60,20 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
           closing ? "side-menu-out" : "side-menu-in"
         }`}
       >
-        <div className="relative overflow-hidden bg-gradient-to-br from-tnt via-tnt to-tntdeep p-4 pb-5 text-onbrand">
+        <div className="relative overflow-hidden bg-tnt p-4 pb-5 text-onbrand">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <img src="/rotta-logo.svg" alt="" className="h-8 w-8 rounded-full object-cover ring-2 ring-white/30" />
+              <img src="/rotta-logo.svg" alt="" className="h-8 w-8 rounded-[30%] object-cover" />
               <span className="font-display text-sm font-extrabold">Rotta</span>
             </span>
             <button type="button" onClick={onClose} aria-label="Cerrar el menú" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
               <X aria-hidden="true" className="h-6 w-6" />
             </button>
           </div>
-          <NavLink to="/app/perfil" onClick={onClose} className="mt-4 flex items-center gap-3 rounded-xl bg-black/20 p-2.5 hover:bg-black/30">
+          <NavLink to="/app/perfil" onClick={onClose} className="mt-4 flex items-center gap-3 rounded-2xl bg-black/20 p-2.5 hover:bg-black/30">
             <Avatar name={user.name} picture={user.picture} className="h-12 w-12 text-base ring-2 ring-white/40" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-display text-lg font-black leading-tight">{user.name}</span>
+              <span className="block truncate font-display text-lg font-extrabold leading-tight">{user.name}</span>
               <span className="block text-xs font-semibold text-white/80">{roleLabel(user.role)} · Ver perfil</span>
             </span>
             <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-white/70" />
@@ -92,8 +92,8 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
                       end={end}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex min-h-12 items-center gap-3 rounded-xl px-3 text-[15px] font-semibold ${
-                          isActive ? "bg-tnt text-onbrand shadow-[0_4px_14px_rgba(255,56,0,0.3)]" : "text-zinc-200 hover:bg-white/5"
+                        `flex min-h-12 items-center gap-3 rounded-full px-4 text-[15px] font-semibold ${
+                          isActive ? "bg-tnt text-onbrand" : "text-zinc-200 hover:bg-white/5"
                         }`
                       }
                     >

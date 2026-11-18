@@ -116,10 +116,10 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 
   return (
     // Mientras se edita, el personaje se queda arriba y más pequeño para ver cada cambio.
-    <section className={`overflow-hidden rounded-2xl bg-gradient-to-b from-tnt/25 via-surface to-void ring-1 ring-white/10 ${editing ? "sticky top-0 z-20 shadow-xl shadow-black/60" : "relative"}`} aria-label="Tu ficha">
+    <section className={`overflow-hidden rounded-3xl bg-gradient-to-b from-tnt/30 via-surface to-void ring-1 ring-white/10 ${editing ? "sticky top-0 z-20 shadow-xl shadow-black/60" : "relative"}`} aria-label="Tu ficha">
       <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-10 mx-auto h-64 w-64 rounded-full bg-tnt/30 blur-3xl" />
       {player?.number !== null && player?.number !== undefined && (
-        <span aria-hidden="true" className="pointer-events-none absolute -right-3 top-6 select-none font-display text-[10rem] font-black leading-none text-white/[0.07]">
+        <span aria-hidden="true" className="pointer-events-none absolute -right-3 top-6 select-none font-display text-[10rem] font-extrabold leading-none text-white/[0.07]">
           {player.number}
         </span>
       )}
@@ -143,7 +143,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 
       {/* Debajo del personaje, para no taparle las piernas. */}
       <div className={`relative px-4 pb-4 pt-3 ${editing ? "hidden" : ""}`}>
-          <h1 className="break-words font-display text-4xl font-black leading-none tracking-tight">{user.name}</h1>
+          <h1 className="break-words font-display text-4xl font-extrabold leading-none tracking-tight">{user.name}</h1>
           <p className="mt-1.5 text-sm font-semibold text-white/85">
             {roleLabel(user.role)}{user.also_plays && user.role !== "jugador" ? " · también juega" : ""}
             {profile.team_name ? ` · ${shortTeam(profile.team_name)}` : ""}
@@ -158,11 +158,11 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
           )}
           {with3D && !editing && (
             <div className="pointer-events-auto mt-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => playRef.current?.()} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg border border-white/25 bg-black/30 text-sm font-bold backdrop-blur hover:bg-white/10">
+              <button type="button" onClick={() => playRef.current?.()} className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-white/25 bg-black/30 text-sm font-bold backdrop-blur hover:bg-white/10">
                 <Sparkles aria-hidden="true" className="h-4 w-4" />
                 Celebrar
               </button>
-              <button type="button" onClick={onEdit} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-tnt text-sm font-bold text-onbrand">
+              <button type="button" onClick={onEdit} className="flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-tnt text-sm font-bold text-onbrand">
                 <Shirt aria-hidden="true" className="h-4 w-4" />
                 Editar personaje
               </button>
@@ -189,10 +189,10 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCancel, onSave, owned }) {
   const changed = !sameLook(draft, saved);
   return (
-    <section aria-labelledby="character-title" className="space-y-4 rounded-2xl border border-tnt/40 bg-panel p-4">
+    <section aria-labelledby="character-title" className="space-y-4 rounded-3xl border border-tnt/40 bg-panel p-4">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="character-title" className="font-display text-2xl font-black">Tu personaje</h2>
-        <button type="button" onClick={() => onChange(randomLook(draft))} className="flex min-h-11 items-center gap-1.5 rounded-lg border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
+        <h2 id="character-title" className="font-display text-2xl font-bold">Tu personaje</h2>
+        <button type="button" onClick={() => onChange(randomLook(draft))} className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
           <Shuffle aria-hidden="true" className="h-4 w-4" />
           Al azar
         </button>
@@ -201,10 +201,10 @@ function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCan
       <CharacterEditor look={draft} onChange={onChange} onTabChange={onTabChange} owned={owned} />
       {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
       <div className="sticky bottom-0 z-30 grid grid-cols-2 gap-2 bg-panel pt-2">
-        <button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-lg border border-white/30 font-semibold hover:bg-white/5 disabled:opacity-50">
+        <button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-full border border-white/30 font-semibold hover:bg-white/5 disabled:opacity-50">
           Cancelar
         </button>
-        <button type="button" disabled={busy || !changed} onClick={onSave} className="min-h-12 rounded-lg bg-tnt font-bold text-onbrand disabled:opacity-50">
+        <button type="button" disabled={busy || !changed} onClick={onSave} className="min-h-12 rounded-full bg-tnt font-bold text-onbrand disabled:opacity-50">
           {busy ? "Guardando…" : "Guardar"}
         </button>
       </div>
@@ -223,7 +223,7 @@ function Stats({ profile }) {
   return (
     <dl className="grid grid-cols-2 gap-2 md:grid-cols-4">
       {tiles.map(({ label, value, small, icon: Icon }) => (
-        <div key={label} className="rounded-xl bg-panel p-3">
+        <div key={label} className="rounded-2xl bg-panel p-3">
           <dt className="flex items-center gap-1 text-xs text-zinc-400">
             {Icon && <Icon aria-hidden="true" className="h-3.5 w-3.5" />}
             {label}
@@ -237,7 +237,7 @@ function Stats({ profile }) {
 
 function Card({ title, hint, children }) {
   return (
-    <section className="space-y-3 rounded-xl bg-panel p-4">
+    <section className="space-y-3 rounded-3xl bg-panel p-4">
       <div>
         <h2 className="font-display text-lg font-bold">{title}</h2>
         {hint && <p className="text-sm text-zinc-400">{hint}</p>}
@@ -517,12 +517,12 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
           <HandPicker value={form.hand} onChange={set("hand")} />
         </Card>
 
-        {error && <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+        {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
         {saved && !dirty && <p role="status" className="text-sm font-semibold text-green-300">Cambios guardados.</p>}
 
         {(dirty || saving) && (
           <div className="sticky bottom-0 z-30 md:bottom-4">
-            <button type="submit" disabled={saving} className="min-h-12 w-full rounded-lg bg-tnt font-bold text-onbrand shadow-xl shadow-black/50 disabled:opacity-60">
+            <button type="submit" disabled={saving} className="min-h-12 w-full rounded-full bg-tnt font-bold text-onbrand shadow-xl shadow-black/50 disabled:opacity-60">
               {saving ? "Guardando…" : "Guardar cambios"}
             </button>
           </div>
@@ -582,7 +582,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
           type="button"
           onClick={signOut}
           disabled={signingOut}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-white/20 font-semibold hover:bg-white/5 disabled:opacity-60"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full border border-white/20 font-semibold hover:bg-white/5 disabled:opacity-60"
         >
           <LogOut aria-hidden="true" className="h-4 w-4" />
           Cerrar sesión

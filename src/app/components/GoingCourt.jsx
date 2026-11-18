@@ -27,7 +27,7 @@ function CourtPlayer({ person, spot, mine }) {
       <span className="relative block w-[46%]">
         <span
           style={{ fontSize: "3.6cqw" }}
-          className={`flex aspect-square items-center justify-center overflow-hidden rounded-full border-2 bg-zinc-950 font-black text-white shadow-[0_2px_6px_rgba(0,0,0,0.5)] ${mine ? "border-ember" : "border-white"}`}
+          className={`flex aspect-square items-center justify-center overflow-hidden rounded-full border-2 bg-zinc-950 font-extrabold text-white shadow-[0_2px_6px_rgba(0,0,0,0.5)] ${mine ? "border-ember" : "border-white"}`}
         >
           {person.picture ? (
             <img src={person.picture} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
@@ -36,7 +36,7 @@ function CourtPlayer({ person, spot, mine }) {
           )}
         </span>
         {person.number !== null && person.number !== undefined && (
-          <span style={{ fontSize: "3cqw", minWidth: "4.4cqw", padding: "0.3cqw 0.6cqw" }} className="absolute -bottom-[6%] -right-[24%] rounded-full bg-tnt text-center font-black leading-none text-onbrand">
+          <span style={{ fontSize: "3cqw", minWidth: "4.4cqw", padding: "0.3cqw 0.6cqw" }} className="absolute -bottom-[6%] -right-[24%] rounded-full bg-tnt text-center font-extrabold leading-none text-onbrand">
             {person.number}
           </span>
         )}
@@ -59,7 +59,7 @@ function PositionCounts({ people }) {
         const count = people.filter((person) => person.position === position).length;
         return (
           <li key={position} className={`rounded-md bg-void/60 py-1 text-center ${count === 0 ? "opacity-50" : ""}`}>
-            <span className={`block font-display text-lg font-black leading-none tabular-nums ${count > 0 ? "text-ember" : "text-zinc-400"}`}>{count}</span>
+            <span className={`block font-display text-lg font-extrabold leading-none tabular-nums ${count > 0 ? "text-ember" : "text-zinc-400"}`}>{count}</span>
             <span aria-hidden="true" className="mt-0.5 block text-[10px] font-bold text-zinc-300">{POSITION_SHORT[position]}</span>
             <span className="sr-only">{position}</span>
           </li>

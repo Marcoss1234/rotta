@@ -124,7 +124,7 @@ function VideoDialog({ video, onClose }) {
       }}
       className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/80"
     >
-      <h2 id="video-title" className="font-display text-xl font-black">Vídeo listo</h2>
+      <h2 id="video-title" className="font-display text-xl font-extrabold">Vídeo listo</h2>
       <video src={video.url} controls playsInline className="mx-auto mt-3 max-h-[50dvh] rounded-lg bg-black" />
       <div className={`mt-4 grid gap-2 ${canShare ? "grid-cols-2" : "grid-cols-1"}`}>
         {canShare && (
@@ -905,7 +905,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   value={board.name}
                   maxLength={60}
                   onChange={(event) => changeBoard({ name: event.target.value })}
-                  className="block min-h-8 w-full truncate rounded-md bg-transparent px-1.5 font-display text-lg font-black leading-tight text-white hover:bg-white/5 focus:bg-white/10 focus:outline-none"
+                  className="block min-h-8 w-full truncate rounded-md bg-transparent px-1.5 font-display text-lg font-extrabold leading-tight text-white hover:bg-white/5 focus:bg-white/10 focus:outline-none"
                 />
                 <p aria-live="polite" className={`truncate px-1.5 text-[11px] font-semibold ${status === "error" ? "text-red-300" : "text-zinc-500"}`}>
                   {boardKindLabel(board.kind)} · {STATUS_LABEL[status] ?? (board.private ? "Solo la ves tú" : board.published ? "Publicada" : "Borrador")}
@@ -927,7 +927,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             </>
           ) : (
             <>
-              <h1 className="min-w-0 flex-1 truncate px-1 font-display text-xl font-black">{board.name}</h1>
+              <h1 className="min-w-0 flex-1 truncate px-1 font-display text-xl font-extrabold">{board.name}</h1>
             </>
           )}
         </div>
@@ -1080,7 +1080,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         )}
 
         {countdown !== null && countdown > 0 && (
-          <span aria-live="assertive" className="pointer-events-none absolute inset-0 flex items-center justify-center font-display text-9xl font-black text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.7)]">
+          <span aria-live="assertive" className="pointer-events-none absolute inset-0 flex items-center justify-center font-display text-9xl font-extrabold text-white [text-shadow:0_4px_24px_rgba(0,0,0,0.7)]">
             {countdown}
           </span>
         )}
@@ -1089,7 +1089,7 @@ export default function BoardEditorPage({ onAccessLost }) {
       {planner && (
         <div className="shrink-0 border-t border-white/10 bg-panel px-2 pb-[env(safe-area-inset-bottom)] pt-2">
           <p aria-live="polite" className="px-1 text-sm font-bold text-white">
-            <span className="mr-1.5 rounded-full bg-tnt px-2 py-0.5 text-[11px] font-black text-onbrand">Paso {planner.steps.length + 1}</span>
+            <span className="mr-1.5 rounded-full bg-tnt px-2 py-0.5 text-[11px] font-extrabold text-onbrand">Paso {planner.steps.length + 1}</span>
             {plannerStage === "player" && (planner.steps.length === 0 ? "Toca al jugador que tiene el balón" : "¿Quién juega ahora? Tócalo")}
             {plannerStage === "action" && "Elige qué hace"}
             {plannerStage === "target" && "Toca en la pista dónde manda el balón"}
@@ -1161,7 +1161,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               role="tab"
               aria-selected={shownMode === id}
               onClick={() => chooseMode(id)}
-              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-black ${
+              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-extrabold ${
                 shownMode === id ? "bg-white text-void" : "text-zinc-300 hover:bg-white/5"
               }`}
             >
@@ -1234,7 +1234,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   <button type="button" onClick={() => setMenu(menu === "lineup" ? null : "lineup")} aria-expanded={menu === "lineup"} className={chipClass}>
                     <Users aria-hidden="true" className="h-4 w-4" />
                     Alineación
-                    {lineups?.length ? <span className="rounded-full bg-tnt px-1.5 text-[10px] font-black text-onbrand">{lineups.length}</span> : null}
+                    {lineups?.length ? <span className="rounded-full bg-tnt px-1.5 text-[10px] font-extrabold text-onbrand">{lineups.length}</span> : null}
                     <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
                 </div>

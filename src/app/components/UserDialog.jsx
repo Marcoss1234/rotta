@@ -4,11 +4,11 @@ import { accountLabel, ROLES, roleLabel } from "@/app/roles.js";
 const selectClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white focus:border-white focus:outline-none";
 const labelClass = "mb-1.5 block text-sm font-semibold text-zinc-300";
-const primaryClass = "min-h-11 rounded-lg bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
+const primaryClass = "min-h-11 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryClass =
-  "min-h-11 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 const dangerClass =
-  "min-h-11 rounded-lg border border-red-300 px-4 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-full border border-red-300 px-4 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:cursor-not-allowed disabled:opacity-50";
 
 function TemporaryPassword({ user, onCreate }) {
   const [state, setState] = useState("idle");
@@ -40,7 +40,7 @@ function TemporaryPassword({ user, onCreate }) {
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
       {state === "idle" && (
-        <button type="button" onClick={() => setState("confirming")} className="min-h-11 w-full rounded-lg text-sm font-semibold text-zinc-200 hover:bg-white/5">
+        <button type="button" onClick={() => setState("confirming")} className="min-h-11 w-full rounded-full text-sm font-semibold text-zinc-200 hover:bg-white/5">
           ¿Ha olvidado su contraseña?
         </button>
       )}
@@ -274,7 +274,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
               </div>
             </div>
           ) : (
-            <button type="button" disabled={busy} onClick={() => setConfirmingRemoval(true)} className="min-h-11 w-full rounded-lg text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
+            <button type="button" disabled={busy} onClick={() => setConfirmingRemoval(true)} className="min-h-11 w-full rounded-full text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
               Quitar acceso
             </button>
           )}
