@@ -64,6 +64,45 @@ function placeLimb(mesh, from, to) {
   mesh.quaternion.setFromUnitVectors(UP, direction.normalize());
 }
 
+// Rotta: la cabeza un poco más grande que la de una persona, como un personaje de videojuego.
+// Así se reconoce a cada uno en el móvil. Todo lo que cuelga de la cabeza (pelo, gafas, corona) crece con ella.
+export const HEAD_GROW = 1.38;
+
+// Brillo de contorno: los bordes del personaje se iluminan un poco y se despegan del fondo, como una figura.
+// Va dentro del material (no son mallas extra), así que no pesa aunque haya doce en la pizarra.
+export function withRim(material, color = 0xfff1e6, strength = 0.32) {
+  const rimColor = new THREE.Color(color);
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.rimColor = { value: rimColor };
+    shader.uniforms.rimStrength = { value: strength };
+    shader.fragmentShader = shader.fragmentShader
+      .replace("void main() {", "uniform vec3 rimColor;\nuniform float rimStrength;\nvoid main() {")
+      .replace(
+        "#include <opaque_fragment>",
+        "float rimFactor = pow(1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0), 3.0);\noutgoingLight += rimColor * rimFactor * rimStrength;\n#include <opaque_fragment>",
+      );
+  };
+  material.customProgramCacheKey = () => `rim-${strength}`;
+  return material;
+}
+
+// Brazo o pierna con músculo: de `start` (radio en el punto de partida) crece hasta `peak` hacia `at`
+// (0 = partida, 1 = llegada) y baja a `end`. Mismo tamaño y orientación que un cilindro de alto 1.
+function muscle(start, peak, end, at, material, segments = 28) {
+  const steps = 16;
+  const extra = peak - (start + (end - start) * at);
+  const points = [];
+  for (let i = 0; i <= steps; i += 1) {
+    const t = i / steps;
+    // El bulto sube suave hasta `at` y baja suave hasta el final.
+    const u = t < at ? (t / at) * 0.5 : 0.5 + ((t - at) / (1 - at)) * 0.5;
+    points.push(new THREE.Vector2(start + (end - start) * t + extra * Math.sin(Math.PI * u), t - 0.5));
+  }
+  const mesh = new THREE.Mesh(new THREE.LatheGeometry(points, segments), material);
+  mesh.castShadow = true;
+  return mesh;
+}
+
 // Un segmento que se estrecha: `start` es el radio en el punto de partida y `end` en el de llegada.
 function taper(start, end, material, segments = 28) {
   const mesh = new THREE.Mesh(new THREE.CylinderGeometry(end, start, 1, segments, 1, true), material);
@@ -736,28 +775,40 @@ function shortsTexture(jersey) {
 // La cara se dibuja en la textura de la cabeza. En una esfera, la parte de delante queda en el 75 % del ancho.
 // Iris y pupilas en una capa propia, recortada por el blanco del ojo, para que los ojos puedan
 // moverse sin mover la cabeza. Devuelve null con los ojos sonrientes (no hay iris que mover).
+// Ojos más grandes que los de una persona: dan expresión al personaje.
+const EYE_GROW = 1.55;
+// Separación de cada ojo al centro de la cara, en la textura (antes 28: con ojos más grandes, algo más).
+const EYE_GAP = 31;
+function eyeSize(look) {
+  return look.eyes === "almond" ? { width: 11 * EYE_GROW, height: 6.5 * EYE_GROW } : { width: 9.5 * EYE_GROW, height: 9 * EYE_GROW };
+}
+
 function eyeLayer(look) {
   if (look.eyes === "smiley") return null;
-  const width = look.eyes === "almond" ? 11 : 9.5;
-  const height = look.eyes === "almond" ? 6.5 : 9;
+  const { width, height } = eyeSize(look);
   const eyes = (draw) => canvasTexture(512, 256, (context, w) => {
-    [-1, 1].forEach((side) => draw(context, w * 0.75 + side * 28, 122));
+    [-1, 1].forEach((side) => draw(context, w * 0.75 + side * EYE_GAP, 122));
   });
   const iris = eyes((context, x, y) => {
-    const gradient = context.createRadialGradient(x, y, 1, x, y, 6);
-    gradient.addColorStop(0, "#7a4a2a");
+    const radius = 6 * EYE_GROW;
+    const gradient = context.createRadialGradient(x, y + 2, 1, x, y, radius);
+    gradient.addColorStop(0, "#9a6a3e");
     gradient.addColorStop(1, "#3b2416");
     context.fillStyle = gradient;
     context.beginPath();
-    context.arc(x, y + 0.5, 6, 0, Math.PI * 2);
+    context.arc(x, y + 0.5, radius, 0, Math.PI * 2);
     context.fill();
     context.fillStyle = "#0b0b0d";
     context.beginPath();
-    context.arc(x, y + 0.5, 2.9, 0, Math.PI * 2);
+    context.arc(x, y + 0.5, radius * 0.5, 0, Math.PI * 2);
     context.fill();
+    // Dos brillos: uno grande arriba y uno pequeño abajo. Es lo que da vida a la mirada.
     context.fillStyle = "#FFFFFF";
     context.beginPath();
-    context.arc(x - 2.1, y - 2.1, 1.7, 0, Math.PI * 2);
+    context.arc(x - radius * 0.38, y - radius * 0.38, radius * 0.32, 0, Math.PI * 2);
+    context.fill();
+    context.beginPath();
+    context.arc(x + radius * 0.35, y + radius * 0.4, radius * 0.14, 0, Math.PI * 2);
     context.fill();
   });
   // Máscara: solo se ve el iris dentro del blanco del ojo (un pelín más pequeño que el contorno).
@@ -767,12 +818,31 @@ function eyeLayer(look) {
     context.fillStyle = "#fff";
     [-1, 1].forEach((side) => {
       context.beginPath();
-      context.ellipse(w * 0.75 + side * 28, 122, width - 1.2, height - 1.2, 0, 0, Math.PI * 2);
+      context.ellipse(w * 0.75 + side * EYE_GAP, 122, width - 1.2, height - 1.2, 0, 0, Math.PI * 2);
       context.fill();
     });
   });
   mask.colorSpace = THREE.NoColorSpace;
   return { iris, mask };
+}
+
+// Párpados cerrados: piel sobre los ojos y la línea de las pestañas. Se ve un instante al parpadear.
+function eyelidTexture(look, skin) {
+  const { width, height } = eyeSize(look);
+  return canvasTexture(512, 256, (context, w) => {
+    [-1, 1].forEach((side) => {
+      const x = w * 0.75 + side * EYE_GAP;
+      context.fillStyle = skin;
+      context.beginPath();
+      context.ellipse(x, 122, width + 2, height + 2, 0, 0, Math.PI * 2);
+      context.fill();
+      context.strokeStyle = "#27272a";
+      context.lineWidth = 3;
+      context.beginPath();
+      context.ellipse(x, 120, width, height * 0.45, 0, Math.PI * 0.1, Math.PI * 0.9);
+      context.stroke();
+    });
+  });
 }
 
 function faceTexture(look, female, hairColor, skin) {
@@ -858,13 +928,13 @@ function faceTexture(look, female, hairColor, skin) {
     context.lineWidth = browWeight;
     [-1, 1].forEach((side) => {
       context.beginPath();
-      context.moveTo(cx + side * 40, eyeY - 18);
-      context.quadraticCurveTo(cx + side * 28, eyeY - 25, cx + side * 15, eyeY - 19);
+      context.moveTo(cx + side * 48, eyeY - 24);
+      context.quadraticCurveTo(cx + side * EYE_GAP, eyeY - 33, cx + side * 16, eyeY - 25);
       context.stroke();
     });
     // Ojos con blanco, iris de color, pupila y brillo; el párpado de arriba un poco más marcado.
     [-1, 1].forEach((side) => {
-      const x = cx + side * 28;
+      const x = cx + side * EYE_GAP;
       if (look.eyes === "smiley") {
         context.lineWidth = 4.5;
         context.strokeStyle = ink;
@@ -873,8 +943,7 @@ function faceTexture(look, female, hairColor, skin) {
         context.stroke();
         return;
       }
-      const width = look.eyes === "almond" ? 11 : 9.5;
-      const height = look.eyes === "almond" ? 6.5 : 9;
+      const { width, height } = eyeSize(look);
       context.save();
       context.beginPath();
       context.ellipse(x, eyeY, width, height, 0, 0, Math.PI * 2);
@@ -915,9 +984,9 @@ function faceTexture(look, female, hairColor, skin) {
         context.stroke();
       }
     });
-    // Mejillas y pecas.
-    if (look.blush) {
-      context.fillStyle = "rgba(244,114,128,0.28)";
+    // Mejillas: siempre un poco de color, que da vida; más si eligió coloretes. Y pecas.
+    {
+      context.fillStyle = look.blush ? "rgba(244,114,128,0.32)" : "rgba(244,114,128,0.13)";
       [-1, 1].forEach((side) => {
         context.beginPath();
         context.ellipse(cx + side * 40, 146, 11, 6, 0, 0, Math.PI * 2);
@@ -941,12 +1010,12 @@ function faceTexture(look, female, hairColor, skin) {
       context.arc(cx, 164, 12, Math.PI * 0.2, Math.PI * 0.8);
       context.stroke();
     } else if (look.mouth === "grin" || look.mouth === "open") {
-      context.moveTo(cx - 12, 170);
-      context.quadraticCurveTo(cx, 186, cx + 12, 170);
+      context.moveTo(cx - 16, 168);
+      context.quadraticCurveTo(cx, 192, cx + 16, 168);
       context.closePath();
       context.fill();
       context.fillStyle = "#FFFFFF";
-      context.fillRect(cx - 8, 170, 16, 3);
+      context.fillRect(cx - 11, 168, 22, 4);
     } else if (look.mouth === "soft") {
       context.arc(cx, 168, 7, Math.PI * 0.25, Math.PI * 0.75);
       context.stroke();
@@ -1256,9 +1325,14 @@ export function createPlayer(scene, element, player, position, female = false, {
   const skinColor = skinHex(look.skin);
   const hairColor = hairHex(look.hair_color);
   // Piel con un brillo suave y tela con el reflejo de la ropa de deporte.
-  const skin = new THREE.MeshPhysicalMaterial({ color: skinColor, roughness: 0.52, sheen: 0.35, sheenRoughness: 0.6, sheenColor: 0xffc4ad });
+  // La piel con un poco de calor propio: en la sombra no se queda gris (como si la luz la atravesara un poco).
+  const skin = withRim(
+    new THREE.MeshPhysicalMaterial({ color: skinColor, roughness: 0.6, sheen: 0.25, sheenRoughness: 0.6, sheenColor: 0xffb49a, emissive: 0x5a2410, emissiveIntensity: 0.12 }),
+    0xffc9a8,
+    0.18,
+  );
   const fabric = (color, roughness = 0.72) =>
-    new THREE.MeshPhysicalMaterial({ color, roughness, sheen: 0.9, sheenRoughness: 0.45, sheenColor: 0xbfbfbf });
+    withRim(new THREE.MeshPhysicalMaterial({ color, roughness, sheen: 0.9, sheenRoughness: 0.45, sheenColor: 0xbfbfbf }), 0xffffff, 0.22);
   const shirt = fabric(special ? "#ffffff" : jersey.shirt);
   // Las especiales llevan su estampado por todo el cuerpo y las mangas.
   if (special) shirt.map = shirtPatternTexture(special);
@@ -1274,13 +1348,13 @@ export function createPlayer(scene, element, player, position, female = false, {
 
   const parts = {
     shortLegs: pair(() => taper(0.098, 0.088, shorts)),
-    thighs: pair(() => taper(0.09, 0.068, skin)),
+    thighs: pair(() => muscle(0.09, 0.104, 0.064, 0.3, skin)),
     kneePads: pair(() => taper(0.074, 0.07, pads)),
-    shins: pair(() => taper(0.066, 0.048, skin)),
+    shins: pair(() => muscle(0.062, 0.082, 0.044, 0.26, skin)),
     socks: pair(() => taper(0.054, 0.05, socks)),
     sleeves: pair(() => taper(0.068, 0.062, shirt)),
-    upperArms: pair(() => taper(0.057, 0.05, skin)),
-    foreArms: pair(() => taper(0.05, 0.041, skin)),
+    upperArms: pair(() => muscle(0.055, 0.066, 0.047, 0.42, skin)),
+    foreArms: pair(() => muscle(0.049, 0.06, 0.037, 0.22, skin)),
   };
   const wristColor = accentHex(look.wristbands);
   if (wristColor) {
@@ -1368,9 +1442,10 @@ export function createPlayer(scene, element, player, position, female = false, {
   waist.scale.set(shape.torsoWide, 1, shape.torsoDeep);
 
   const neck = add(taper(0.05, 0.046, skin));
-  neck.userData.girth = [shape.neck, shape.neck];
-  const head = add(new THREE.Mesh(new THREE.SphereGeometry(0.104, 48, 32), new THREE.MeshPhysicalMaterial({ map: faceTexture(look, isFemale, hairColor, skinColor), roughness: 0.55, sheen: 0.35, sheenRoughness: 0.6, sheenColor: 0xffc4ad })));
-  head.scale.set(1.16, 1.34, 1.2);
+  neck.userData.girth = [shape.neck * 1.3, shape.neck * 1.3];
+  const faceMap = faceTexture(look, isFemale, hairColor, skinColor);
+  const head = add(new THREE.Mesh(new THREE.SphereGeometry(0.104, 48, 32), withRim(new THREE.MeshPhysicalMaterial({ map: faceMap, roughness: 0.6, sheen: 0.25, sheenRoughness: 0.6, sheenColor: 0xffb49a }), 0xffc9a8, 0.18)));
+  head.scale.set(1.16 * HEAD_GROW, 1.34 * HEAD_GROW, 1.2 * HEAD_GROW);
   head.castShadow = true;
   const eyeTextures = eyeLayer(look);
   if (eyeTextures) {
@@ -1380,6 +1455,19 @@ export function createPlayer(scene, element, player, position, female = false, {
     );
     head.add(eyeShell);
   }
+  // Párpados para parpadear (encima de los ojos) y la cara contenta para celebrar, que se hace al usarla.
+  let lids = null;
+  if (look.eyes !== "smiley") {
+    lids = new THREE.Mesh(
+      new THREE.SphereGeometry(0.1049, 48, 32),
+      new THREE.MeshStandardMaterial({ map: eyelidTexture(look, skinColor), transparent: true, depthWrite: false, roughness: 0.6 }),
+    );
+    lids.visible = false;
+    head.add(lids);
+  }
+  const faces = { normal: faceMap, happy: null, make: () => faceTexture({ ...look, mouth: "grin" }, isFemale, hairColor, skinColor) };
+  // Para liberar las dos caras al quitar el personaje (solo una está puesta en cada momento).
+  head.userData.faces = faces;
   // Orejas y nariz con volumen: la cabeza deja de ser una bola pintada.
   const headPiece = (geometry, position, scale) => {
     const mesh = new THREE.Mesh(geometry, skin);
@@ -1421,7 +1509,7 @@ export function createPlayer(scene, element, player, position, female = false, {
     group, body, parts, joints, caps, shoes, torso, front, back, collar, waist, neck, head, name, ring, rival, build, look, shape,
     // Tamaño a escala real según lo que mide (o una estatura normal si no la ha puesto).
     scale: figureScale(player?.height_cm, isFemale),
-    eyes: eyeTextures?.iris ?? null, eyeLook: new THREE.Vector2(),
+    eyes: eyeTextures?.iris ?? null, eyeLook: new THREE.Vector2(), lids, faces, nextBlink: 0,
     tag: null, tagKey: "", motion: null, smooth: new Map(), yaw: rival ? Math.PI : 0,
   };
 }
@@ -1737,7 +1825,7 @@ export function posePlayer(rig, options) {
   rig.collar.position.copy(neckBase);
   rig.collar.quaternion.copy(turn).multiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2));
   // La cabeza es grande: se sube un poco para que no se hunda en los hombros.
-  rig.head.position.copy(headPoint).addScaledVector(torsoUp, 0.035);
+  rig.head.position.copy(headPoint).addScaledVector(torsoUp, 0.035 + 0.07 * (HEAD_GROW - 1));
   // La cabeza mira hacia donde va el tronco, sin doblarse del todo...
   const headTurn = new THREE.Quaternion().slerpQuaternions(new THREE.Quaternion(), turn, 0.5);
   if (options.lookAt) {
@@ -1755,6 +1843,33 @@ export function posePlayer(rig, options) {
 
   rig.body.position.y = pts.jump;
   rig.body.rotation.set(0, 0, 0);
+  const now = options.time ?? performance.now();
+  const actionName = typeof options.action === "string" ? options.action : options.action?.action ?? null;
+  const still = !actionName && !options.stride && !options.run && !options.amount;
+  if (still) {
+    // Quieto: respira (el pecho se ensancha un poco) y se balancea muy poco.
+    const breath = Math.sin(now * 0.0021) * 0.5 + 0.5;
+    rig.torso.scale.x *= 1 + breath * 0.025;
+    rig.torso.scale.z *= 1 + breath * 0.035;
+    rig.body.rotation.z = Math.sin(now * 0.0009) * 0.012;
+    rig.head.position.y += breath * 0.006;
+  }
+  if (rig.lids) {
+    // Parpadea cada 2,5 a 6 segundos, durante un instante.
+    if (!rig.nextBlink) rig.nextBlink = now + 1500 + Math.random() * 3000;
+    rig.lids.visible = now >= rig.nextBlink && now < rig.nextBlink + 120;
+    if (now >= rig.nextBlink + 120) rig.nextBlink = now + 2500 + Math.random() * 3500;
+  }
+  if (rig.faces) {
+    // Al celebrar sonríe con la boca abierta.
+    const happy = actionName === "brazos" || actionName === "puno";
+    if (happy && !rig.faces.happy) rig.faces.happy = rig.faces.make();
+    const wanted = happy ? rig.faces.happy : rig.faces.normal;
+    if (rig.head.material.map !== wanted) {
+      rig.head.material.map = wanted;
+      rig.head.material.needsUpdate = true;
+    }
+  }
   if (rig.eyes) {
     // Los ojos siguen el punto con rapidez, dentro del blanco del ojo.
     let eyeX = 0;
@@ -1797,6 +1912,8 @@ export function studioLighting(renderer, scene, intensity = 0.6) {
 export function disposeObject(object) {
   object.traverse((child) => {
     child.geometry?.dispose?.();
+    child.userData?.faces?.normal?.dispose?.();
+    child.userData?.faces?.happy?.dispose?.();
     const materials = Array.isArray(child.material) ? child.material : child.material ? [child.material] : [];
     materials.forEach((material) => {
       material.map?.dispose?.();

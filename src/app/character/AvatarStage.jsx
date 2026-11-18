@@ -86,7 +86,9 @@ export default function AvatarStage({ look, name, number, position, heightCm = n
     mount.appendChild(renderer.domElement);
 
     const scene = new THREE.Scene();
-    const environment = studioLighting(renderer, scene, 0.55);
+    const environment = studioLighting(renderer, scene, 0.5);
+    // Algo menos de exposición que en la pizarra: con la luz del escenario, la piel clara se quemaba y parecía yeso.
+    renderer.toneMappingExposure = 0.92;
     const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 50);
     camera.position.set(0, 1.45, 5.1);
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -100,18 +102,26 @@ export default function AvatarStage({ look, name, number, position, heightCm = n
     controls.autoRotate = !calm;
     controls.autoRotateSpeed = 0.7;
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x3a2a22, 0.6));
-    const key = new THREE.SpotLight(0xfff4ea, 32, 14, Math.PI / 6, 0.5, 1.2);
+    scene.add(new THREE.HemisphereLight(0xfff3e8, 0x3a2a22, 0.55));
+    const key = new THREE.SpotLight(0xfff1e4, 22, 14, Math.PI / 6, 0.5, 1.2);
     key.position.set(1.8, 5, 3);
     key.target.position.set(0, 0.9, 0);
     key.castShadow = true;
     key.shadow.mapSize.set(1024, 1024);
     key.shadow.bias = -0.0005;
     scene.add(key, key.target);
-    // Contraluz naranja del club.
-    const rim = new THREE.DirectionalLight(0xff6a2b, 1.6);
+    // Relleno cálido desde delante a la izquierda: suaviza las sombras de la cara.
+    const fill = new THREE.DirectionalLight(0xffd9c2, 0.7);
+    fill.position.set(-2.5, 1.6, 3);
+    scene.add(fill);
+    // Contraluz con el color del club (el de los botones), para que la figura se despegue del fondo.
+    const brand = getComputedStyle(document.documentElement).getPropertyValue("--c-tnt").trim().split(/\s+/).map(Number);
+    const rimColor = brand.length === 3 && brand.every(Number.isFinite) ? new THREE.Color(brand[0] / 255, brand[1] / 255, brand[2] / 255) : new THREE.Color(0xff6a2b);
+    const rim = new THREE.DirectionalLight(rimColor, 2.4);
     rim.position.set(-2.5, 2.5, -3);
-    scene.add(rim);
+    const rim2 = new THREE.DirectionalLight(rimColor, 1.4);
+    rim2.position.set(2.5, 2, -3);
+    scene.add(rim, rim2);
 
     const floor = new THREE.Mesh(new THREE.CircleGeometry(2.4, 48), new THREE.MeshStandardMaterial({ map: floorTexture(), transparent: true, roughness: 0.85 }));
     floor.rotation.x = -Math.PI / 2;
