@@ -1191,6 +1191,11 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
         let ballInSight = false;
         if (previous && run * amount > 0.35 && step > 0.05) {
           wanted = Math.atan2(-(element.x - previous.x) * W, -(element.y - previous.y) * H);
+        } else if (ballSpot && ballSpot.distanceTo(at) < 1.6 && Math.abs(at.z) > 8.3) {
+          // El que va a sacar (detrás de la línea de fondo, con el balón al lado) mira al centro de la pista:
+          // si miraba al balón, que lo lleva a un lado, se quedaba de perfil.
+          wanted = Math.atan2(at.x, at.z);
+          ballInSight = true;
         } else if (ballSpot && ballSpot.distanceTo(at) > 0.4) {
           const toBall = Math.atan2(-(ballSpot.x - at.x), -(ballSpot.z - at.z));
           let offset = toBall - baseYaw;
