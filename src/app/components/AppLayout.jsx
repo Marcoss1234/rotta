@@ -7,6 +7,8 @@ import MenuHint from "@/app/components/MenuHint.jsx";
 import SideMenu from "@/app/components/SideMenu.jsx";
 import TapSplash from "@/app/components/TapSplash.jsx";
 import usePolling from "@/app/usePolling.js";
+import ClubCrest from "@/app/components/ClubCrest.jsx";
+import { useClubIdentity } from "@/app/clubIdentity.js";
 
 const UNREAD_POLL_MS = 30000;
 const CHAT_PATH = "/app/chat";
@@ -101,6 +103,7 @@ export default function AppLayout({ isAdmin, user, children }) {
   const { pathname } = useLocation();
   const items = navItems(isAdmin, user, pathname);
   const unread = useUnreadChat(pathname);
+  const club = useClubIdentity();
   const mainRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -158,8 +161,8 @@ export default function AppLayout({ isAdmin, user, children }) {
       {showHint && <MenuHint hidden={hiddenLabels} onOpen={openMenu} onDismiss={() => setHintDismissed(true)} />}
       <aside className="hidden w-60 shrink-0 flex-col gap-8 border-r border-white/10 bg-surface p-5 md:flex">
         <div className="flex items-center gap-3">
-          <img src="/rotta-logo.svg" alt="" className="h-10 w-10 rounded-full object-cover" />
-          <span className="font-display text-lg font-extrabold leading-tight">Rotta</span>
+          <ClubCrest className="h-10 w-10 shrink-0" />
+          <span className="font-display text-lg font-extrabold leading-tight">{club.name}</span>
         </div>
         <nav aria-label="Secciones" className="flex flex-col gap-1">
           {items.map(({ to, end, label, icon }) => (

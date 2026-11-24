@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { logout } from "@/app/api.js";
 import { accountLabel } from "@/app/roles.js";
+import ClubCrest from "@/app/components/ClubCrest.jsx";
 
 export default function AccessStatusPage({ user, onSignedOut, onRefresh }) {
   const [busy, setBusy] = useState(false);
@@ -18,7 +19,7 @@ export default function AccessStatusPage({ user, onSignedOut, onRefresh }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-void px-6 text-center font-body text-white">
       <div className="w-full max-w-sm space-y-5">
-        <img src="/rotta-logo.svg" alt="" className="mx-auto h-20 w-20 rounded-full object-cover" />
+        <ClubCrest className="mx-auto h-20 w-20" />
         <h1 className="font-display text-2xl font-extrabold">
           {rejected ? "No tienes acceso" : "Tu acceso está pendiente"}
         </h1>

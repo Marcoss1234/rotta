@@ -11,6 +11,7 @@ import ChatPage from "@/app/pages/ChatPage.jsx";
 import ConsentPage from "@/app/pages/ConsentPage.jsx";
 import { consentIsCurrent } from "@/app/privacy.js";
 import { loadClubStructure } from "@/app/teams.js";
+import { loadClubIdentity, useClubIdentity } from "@/app/clubIdentity.js";
 import EventsPage from "@/app/pages/EventsPage.jsx";
 import HomePage from "@/app/pages/HomePage.jsx";
 import LoginPage from "@/app/pages/LoginPage.jsx";
@@ -40,11 +41,12 @@ function FullScreenMessage({ children }) {
 export default function PrivateApp() {
   const [session, setSession] = useState({ state: "loading", user: null });
   useAppViewport();
+  const club = useClubIdentity();
 
   const refresh = useCallback(async () => {
     try {
       // Los equipos del club, a la vez que la sesión: así ninguna pantalla se pinta con los de serie.
-      const [user] = await Promise.all([getMe(), loadClubStructure()]);
+      const [user] = await Promise.all([getMe(), loadClubStructure(), loadClubIdentity()]);
       setSession({ state: "ready", user });
     } catch (error) {
       setSession({ state: error.status === 401 ? "anonymous" : "error", user: null });
@@ -52,9 +54,12 @@ export default function PrivateApp() {
   }, []);
 
   useEffect(() => {
-    document.title = "App | Rotta";
     refresh();
   }, [refresh]);
+
+  useEffect(() => {
+    document.title = `App | ${club.name}`;
+  }, [club.name]);
 
   const userId = session.user?.status === "approved" ? session.user.id : null;
   useEffect(() => {

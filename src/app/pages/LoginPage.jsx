@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { getAuthConfig, loginWithGoogle, loginWithPassword, registerAccount } from "@/app/api.js";
 import PasswordField, { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
+import ClubCrest from "@/app/components/ClubCrest.jsx";
+import { useClubIdentity } from "@/app/clubIdentity.js";
 
 const GOOGLE_SCRIPT = "https://accounts.google.com/gsi/client";
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
@@ -184,6 +186,7 @@ function DemoAccess({ onSignedIn }) {
 
 export default function LoginPage({ onSignedIn }) {
   const buttonRef = useRef(null);
+  const club = useClubIdentity();
   // Google sigue en modo de prueba: el botón solo sale en /app?google, para quien ya entra con Google.
   const [googleReady, setGoogleReady] = useState(() => new URLSearchParams(window.location.search).has("google"));
   const [error, setError] = useState("");
@@ -240,9 +243,9 @@ export default function LoginPage({ onSignedIn }) {
     <div className="flex min-h-screen flex-col bg-void px-6 py-8 font-body text-white">
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6">
         <div className="flex flex-col items-center gap-3 text-center">
-          <img src="/rotta-logo.svg" alt="Escudo del club Rotta" className="h-20 w-20 rounded-full object-cover" />
+          <ClubCrest className="h-20 w-20" alt={`Escudo de ${club.name}`} />
           <div className="space-y-1">
-            <h1 className="font-display text-3xl font-extrabold">Rotta</h1>
+            <h1 className="font-display text-3xl font-extrabold">{club.name}</h1>
             <p className="text-base leading-relaxed text-zinc-300">Plantillas, chat y entrenamientos del club.</p>
           </div>
         </div>

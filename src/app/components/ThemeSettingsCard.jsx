@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Check, Moon, Palette, Sun, SunMoon } from "lucide-react";
 import { PALETTES, buildTheme, contrast } from "@/app/theme.js";
 import { saveClubTheme, useThemeControls } from "@/app/useTheme.js";
+import ClubIdentitySettings from "@/app/components/ClubIdentitySettings.jsx";
 
 const MODES = [
   { id: "club", label: "Del club", icon: Palette },
@@ -137,6 +138,7 @@ export default function ThemeSettingsCard({ isAdmin }) {
         <p className="text-sm text-zinc-400">"Del club" usa el fondo que ha elegido tu club; "Auto" sigue a tu móvil.</p>
       </div>
       <ModePicker />
+      {isAdmin && <ClubIdentitySettings />}
       {isAdmin && <ClubColors />}
     </section>
   );

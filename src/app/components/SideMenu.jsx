@@ -4,6 +4,8 @@ import { NavLink } from "react-router-dom";
 import Avatar from "@/app/components/Avatar.jsx";
 import { roleLabel } from "@/app/roles.js";
 import { setSoundEnabled, soundEnabled } from "@/app/components/board/boardSounds.js";
+import ClubCrest from "@/app/components/ClubCrest.jsx";
+import { useClubIdentity } from "@/app/clubIdentity.js";
 
 const CLOSE_MS = 220;
 
@@ -11,6 +13,7 @@ const CLOSE_MS = 220;
 export default function SideMenu({ open, onClose, user, groups, unread }) {
   const [shown, setShown] = useState(open);
   const [closing, setClosing] = useState(false);
+  const club = useClubIdentity();
   const panelRef = useRef(null);
   // Sonidos de la app (el "plup" de los botones y los golpes de la pizarra 3D).
   const [sound, setSound] = useState(soundEnabled);
@@ -63,8 +66,8 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
         <div className="relative overflow-hidden bg-tnt p-4 pb-5 text-onbrand">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <img src="/rotta-logo.svg" alt="" className="h-8 w-8 rounded-[30%] object-cover" />
-              <span className="font-display text-sm font-extrabold">Rotta</span>
+              <ClubCrest className="h-8 w-8 shrink-0" rottaClassName="rounded-[30%] object-cover" />
+              <span className="font-display text-sm font-extrabold">{club.name}</span>
             </span>
             <button type="button" onClick={onClose} aria-label="Cerrar el menú" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
               <X aria-hidden="true" className="h-6 w-6" />

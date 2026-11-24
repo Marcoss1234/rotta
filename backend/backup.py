@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 
 from auth import require_admin
+from clubs import current_club
 from database import get_db
 
 # Copia de seguridad: todo lo que cuesta rehacer, en un archivo que el administrador se descarga.
@@ -57,7 +58,7 @@ async def download_backup(user=Depends(require_admin), db=Depends(get_db)):
         content=json_util.dumps(payload, ensure_ascii=False, indent=1),
         media_type="application/json",
         headers={
-            "Content-Disposition": f'attachment; filename="copia-tnt-{now.date().isoformat()}.json"',
+            "Content-Disposition": f'attachment; filename="copia-{current_club.get() or "club"}-{now.date().isoformat()}.json"',
             "Cache-Control": "no-store",
         },
     )

@@ -90,6 +90,10 @@ async def create_club(client, slug, name):
         raise ValueError(f"Ya hay un club con el código «{slug}»")
     club = {"slug": slug, "name": name.strip(), "db_name": f"club_{slug.replace('-', '_')}", "created_at": datetime.now(timezone.utc)}
     await central_db(client).clubs.insert_one(dict(club))
+    # Su nombre sale ya en la app (el administrador lo puede cambiar luego, con el escudo).
+    await client[club["db_name"]].club_settings.update_one(
+        {"id": "club"}, {"$set": {"identity.name": club["name"][:40]}}, upsert=True
+    )
     forget_cache()
     return club
 

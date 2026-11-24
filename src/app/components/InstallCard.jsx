@@ -1,6 +1,7 @@
 import { useState, useSyncExternalStore } from "react";
 import { Download, EllipsisVertical, Share, SquarePlus, X } from "lucide-react";
 import { canPromptInstall, installPlatform, promptInstall, subscribeToInstall } from "@/app/installPrompt.js";
+import ClubCrest from "@/app/components/ClubCrest.jsx";
 
 const DISMISSED_KEY = "tnt-instalar-oculto";
 
@@ -83,7 +84,7 @@ export default function InstallCard({ variant = "card" }) {
   return (
     <section aria-labelledby={`install-title-${variant}`} className="rounded-3xl border border-tnt/60 bg-panel p-4" data-testid={`install-${variant}`}>
       <div className="flex items-start gap-3">
-        <img src="/rotta-logo.svg" alt="" className="h-11 w-11 shrink-0 rounded-xl" />
+        <ClubCrest className="h-11 w-11 shrink-0" rottaClassName="rounded-xl" />
         <div className="min-w-0 flex-1">
           <h2 id={`install-title-${variant}`} className="font-display text-base font-bold">Ten la app en tu móvil</h2>
           <p className="text-sm text-zinc-300">Con su icono en la pantalla de inicio, sin buscar el enlace en WhatsApp.</p>
