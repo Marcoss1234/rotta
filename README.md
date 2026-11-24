@@ -15,6 +15,32 @@ pip install -r backend/requirements-dev.txt
 - **Desarrollo normal:** `npm run dev`, con el backend (`uvicorn server:app --app-dir backend --port 8000`) y un `backend/.env` con su propia base de datos. **Nunca** la del TNT.
 - **Tests:** `cd backend && python -m pytest -q`.
 
+## Copias de seguridad
+
+GitHub Actions hace cada día (03:30 UTC) una copia cifrada de todas las bases de Atlas, es decir, de todos los clubs (`.github/workflows/backup-db.yml`). Cada copia se guarda 30 días: pestaña **Actions** → «Copia de seguridad de la base de datos» → una ejecución → **Artifacts**. También se puede lanzar a mano con **Run workflow**.
+
+Es aparte de la descarga que tiene cada administrador en la app (`backend/backup.py`): esa es un JSON de su club, sin contraseñas y sin forma automática de restaurarlo. La de GitHub es la copia completa con la que se puede devolver todo a como estaba.
+
+Necesita dos secretos en GitHub (Settings → Secrets and variables → Actions):
+- `BACKUP_MONGO_URI`: la conexión de Atlas. Mejor con un usuario de base de datos que solo pueda leer (rol *readAnyDatabase*).
+- `BACKUP_PASSPHRASE`: una frase larga para cifrar las copias. **Guárdala también fuera de GitHub** (gestor de contraseñas): sin ella las copias no se pueden abrir.
+
+Atlas tiene que dejar entrar conexiones de GitHub: en Network Access, `0.0.0.0/0` (es lo mismo que ya necesita Render).
+
+**Restaurar una copia** (hacen falta `mongorestore`, de las MongoDB Database Tools, y `openssl`):
+
+```bash
+# 1. Descomprimir el .zip descargado de Artifacts: dentro está rotta-AAAA-MM-DD-HHMM.archive.gz.enc
+# 2. Primero en una base de pruebas, para ver que está bien:
+RESTORE_URI="mongodb+srv://..." BACKUP_PASSPHRASE="..." \
+  tools/restore-db.sh rotta-AAAA-MM-DD-HHMM.archive.gz.enc --nsInclude='rotta.*' --nsFrom='rotta.*' --nsTo='rotta_prueba.*'
+# 3. Para volver la base real a como estaba en la copia (borra lo que se hizo después):
+RESTORE_URI="mongodb+srv://..." BACKUP_PASSPHRASE="..." \
+  tools/restore-db.sh rotta-AAAA-MM-DD-HHMM.archive.gz.enc --drop
+```
+
+Una copia a mano desde el ordenador: `MONGO_URI=... BACKUP_PASSPHRASE=... tools/backup-db.sh` (la deja en `backups/`, que no se sube a git).
+
 ## Plan
 
 ### 1. Imprescindible antes de que entre un club

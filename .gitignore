@@ -10,3 +10,6 @@ __pycache__/
 
 # Vídeos de jugadores para capturar gestos: no se suben.
 tools/captura-gestos/videos/
+
+# Copias de seguridad de la base de datos (tools/backup-db.sh)
+backups/

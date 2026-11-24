@@ -1,0 +1,41 @@
+name: Copia de seguridad de la base de datos
+
+# Cada día a las 03:30 UTC (04:30 en España en invierno) y a mano desde la pestaña Actions.
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: backup-db
+  cancel-in-progress: false
+
+jobs:
+  backup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar mongodump
+        run: |
+          curl -fsSL -o tools.deb https://fastdl.mongodb.org/tools/db/mongodb-database-tools-ubuntu2404-x86_64-100.10.0.deb
+          sudo apt-get install -y ./tools.deb
+          mongodump --version
+
+      - name: Hacer la copia
+        env:
+          MONGO_URI: ${{ secrets.BACKUP_MONGO_URI }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: bash tools/backup-db.sh backups
+
+      - name: Guardar la copia (30 días)
+        uses: actions/upload-artifact@v4
+        with:
+          name: copia-${{ github.run_number }}
+          path: backups/*.enc
+          retention-days: 30
+          if-no-files-found: error
