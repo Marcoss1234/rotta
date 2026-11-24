@@ -52,6 +52,16 @@ export const Button = forwardRef(function Button(
   );
 });
 
+/** Un enlace con aspecto de botón (abrir un mapa, ir a otra web). Mismas props de aspecto que Button. */
+export const LinkButton = forwardRef(function LinkButton({ variant = "secondary", size = "md", icon: Icon, block = false, className, children, ...rest }, ref) {
+  return (
+    <a ref={ref} className={cx(BASE, BUTTON_VARIANTS[variant], SIZES[size], block && "w-full", className)} {...rest}>
+      {Icon && <Icon aria-hidden="true" className={ICON_SIZES[size]} />}
+      {children}
+    </a>
+  );
+});
+
 /** Botón solo con icono. `label` es obligatorio: es lo que se lee en voz alta y sale al pasar el ratón. */
 export const IconButton = forwardRef(function IconButton({ icon: Icon, label, variant = "quiet", size = "md", className, type = "button", ...rest }, ref) {
   return (

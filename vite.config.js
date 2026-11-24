@@ -54,6 +54,12 @@ export default defineConfig({
       "@": path.resolve(__dirname, "src"),
     },
   },
+  // Pruebas de la web (npm test): componentes de React en un navegador simulado (jsdom).
+  test: {
+    environment: "jsdom",
+    setupFiles: ["./src/test/setup.js"],
+    include: ["src/**/*.test.{js,jsx}"],
+  },
   server: {
     proxy: {
       // La demo (npm run demo) usa otro puerto para no chocar con el backend normal.

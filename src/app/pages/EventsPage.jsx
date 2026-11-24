@@ -9,7 +9,8 @@ import { localToday, placeInfo } from "@/app/matches.js";
 import { MATCH_TEAM_PHRASE } from "@/app/teams.js";
 
 const WEEKDAYS = ["L", "M", "X", "J", "V", "S", "D"];
-const PILLS_PER_DAY = 2;
+const PILLS_PER_DAY = 2; // en el ordenador: el texto de los dos primeros
+const MARKS_PER_DAY = 3; // en el móvil: marcas (no caben textos de 12 px en siete columnas)
 
 const pad = (number) => String(number).padStart(2, "0");
 const capitalize = (text) => text.charAt(0).toUpperCase() + text.slice(1);
@@ -42,10 +43,16 @@ const isMatch = (item) => item.type === "match";
 // Partidos en el color del club; eventos en neutro. Los dos con su texto legible en todos los temas.
 const pillClass = (item) => (isMatch(item) ? "bg-club text-on-club" : "bg-raised text-ink ring-1 ring-inset ring-line");
 
+// Marcas del móvil: forma y color distintos, para no depender solo del color.
+// Partido: círculo relleno del club (club-ui: se ve sobre cualquier fondo). Evento: cuadrado hueco.
+const MatchMark = () => <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-club-ui" />;
+const EventMark = () => <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-[3px] ring-2 ring-inset ring-ink-muted" />;
+
 function DayCell({ iso, items, selected, onSelect }) {
   const today = iso === localToday();
   const day = Number(iso.slice(8));
   const extra = items.length - PILLS_PER_DAY;
+  const extraMarks = items.length - MARKS_PER_DAY;
   return (
     <button
       type="button"
@@ -53,7 +60,7 @@ function DayCell({ iso, items, selected, onSelect }) {
       aria-label={`${dayTitle(iso)}${items.length ? `: ${items.map((item) => (isMatch(item) ? "partido" : item.title)).join(", ")}` : ", nada"}`}
       onClick={() => onSelect(iso)}
       className={cx(
-        "flex min-h-[5.25rem] min-w-0 flex-col gap-0.5 rounded-field p-0.5 text-left transition md:min-h-28 md:p-1.5",
+        "flex min-h-[3.75rem] min-w-0 flex-col gap-1 rounded-field p-1 text-left transition md:min-h-28 md:gap-0.5 md:p-1.5",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
         selected ? "bg-club-soft ring-2 ring-club-ui" : items.length ? "bg-panel ring-1 ring-line hover:ring-control" : "ring-1 ring-line/60 hover:ring-line",
       )}
@@ -61,12 +68,18 @@ function DayCell({ iso, items, selected, onSelect }) {
       <span className={cx("flex h-6 w-6 items-center justify-center rounded-full font-display text-sm font-extrabold", today ? "bg-club text-on-club" : items.length ? "text-ink" : "text-ink-muted")}>
         {day}
       </span>
+      {items.length > 0 && (
+        <span className="flex flex-wrap items-center gap-1 px-0.5 md:hidden">
+          {items.slice(0, MARKS_PER_DAY).map((item) => (isMatch(item) ? <MatchMark key={item.id} /> : <EventMark key={item.id} />))}
+          {extraMarks > 0 && <span className="text-xs font-bold leading-none text-ink-muted">+{extraMarks}</span>}
+        </span>
+      )}
       {items.slice(0, PILLS_PER_DAY).map((item) => (
-        <span key={item.id} className={`block overflow-hidden whitespace-nowrap rounded px-0.5 py-0.5 text-[9.5px] font-bold leading-tight tracking-tight md:truncate md:px-1 md:text-xs md:tracking-normal ${pillClass(item)}`}>
+        <span key={item.id} className={`hidden truncate rounded px-1 py-0.5 text-xs font-bold leading-tight md:block ${pillClass(item)}`}>
           {isMatch(item) ? "Partido" : item.title}
         </span>
       ))}
-      {extra > 0 && <span className="px-1 text-[10px] font-bold leading-tight text-ink-muted md:text-xs">+{extra}</span>}
+      {extra > 0 && <span className="hidden px-1 text-xs font-bold leading-tight text-ink-muted md:block">+{extra}</span>}
     </button>
   );
 }
@@ -169,6 +182,14 @@ export default function EventsPage({ onAccessLost }) {
               : <span key={`hueco-${index}`} aria-hidden="true" />
           ))}
         </div>
+        <p aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs font-semibold text-ink-muted md:hidden">
+          <span className="flex items-center gap-1.5"><MatchMark /> Partido</span>
+          <span className="flex items-center gap-1.5"><EventMark /> Evento</span>
+          <span className="flex items-center gap-1.5">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-club font-display text-xs font-extrabold text-on-club">{Number(today.slice(8))}</span>
+            Hoy
+          </span>
+        </p>
       </section>
 
       {error && <Notice tone="error">{error}</Notice>}

@@ -8,10 +8,12 @@ Para verlos todos: `npm run demo` y abrir `/componentes` (solo existe en desarro
 | Componente | Para qué | Props principales |
 | --- | --- | --- |
 | `Button` | Acciones | `variant`: `primary` (color del club, una por zona), `secondary`, `quiet`, `danger`, `danger-quiet` · `size`: `sm`, `md`, `lg` · `icon` · `busy` + `busyLabel` · `block` |
+| `LinkButton` | Un enlace con aspecto de botón (mapa, otra web) | las de `Button` (por defecto `secondary`) + `href`, `target`... |
 | `IconButton` | Acción solo con icono | `icon`, `label` (obligatorio: se lee en voz alta) · `variant` · `size` |
 | `Card` | Separar un bloque | `level`: `base`, `raised` (dentro de otra tarjeta), `outline`, `accent` (lo tuyo o lo elegido) · `padding`: `none`, `sm`, `md` · `as` · `interactive` |
 | `CardHeader` | Título de una tarjeta | `title`, `subtitle`, `action` |
-| `Tabs` | Apartados dentro de una pantalla | `items` (`id`, `label`, `icon`, `count`), `value`, `onChange`, `label` · teclado: flechas, Inicio, Fin |
+| `Tabs` | Apartados dentro de una pantalla | `id` (de `useId()`), `items` (`id`, `label`, `icon`, `count`, `disabled`), `value`, `onChange`, `label`, `hasPanels` · teclado: flechas, Inicio, Fin (se salta las desactivadas) |
+| `TabPanel` | El contenido de cada pestaña | `tabsId` (el mismo `id` de `Tabs`), `tab`, `value` · enlazado con `aria-controls` y `aria-labelledby` |
 | `ChipGroup` | Elegir equipo, filtros, opciones | `options` (`value`, `label`, `count`), `value`, `onChange`, `label`, `multiple`, `scroll` |
 | `Field` | Etiqueta, ayuda y error de un campo | `id`, `label`, `optional`, `hint`, `error` |
 | `Input`, `Textarea`, `Select` | Campos | los de HTML + `invalid`, `hint`, `error` (para enlazarlos) |
@@ -25,3 +27,7 @@ Reglas de uso:
 - Tarjetas por función, no para todo: dentro de una tarjeta, separa con `border-line` o con `level="raised"`.
 - Textos de 12 px como mínimo.
 - Lo propio de una pantalla (el calendario, la pista) se queda en su pantalla, pero con los mismos colores del tema.
+
+Pruebas: `npm test` (Vitest + Testing Library + jsdom). Cada componente tiene su `*.test.jsx` al lado, con clics,
+selección, teclado, estados desactivados y Escape. jsdom no trae `showModal()` ni `close()` de `<dialog>`:
+`src/test/setup.js` los completa como en el navegador (incluidos sus errores), para no tapar fallos del componente.

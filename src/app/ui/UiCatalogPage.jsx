@@ -1,14 +1,15 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { CalendarDays, Plus, Settings2, Trash2, Trophy } from "lucide-react";
 import { STYLES, THEMES } from "@/app/themes.js";
 import { useThemeControls } from "@/app/useTheme.js";
-import { Badge, Button, Card, CardHeader, ChipGroup, Dialog, EmptyState, Field, IconButton, Input, Notice, Select, Tabs, Textarea } from "./index.js";
+import { Badge, Button, Card, CardHeader, ChipGroup, Dialog, EmptyState, Field, IconButton, Input, Notice, Select, TabPanel, Tabs, Textarea } from "./index.js";
 
 // Catálogo de los componentes comunes, con el tema y el modo de verdad (solo en desarrollo y en la demo).
 // Sirve para revisarlos en Lima, Naranja y Tinta, en claro y en oscuro, antes de llevarlos a más pantallas.
 export default function UiCatalogPage() {
   const { club, choice, chooseMode, previewClub } = useThemeControls();
   const [tab, setTab] = useState("entrenos");
+  const tabsId = useId();
   const [team, setTeam] = useState("femenino");
   const [filters, setFilters] = useState(["colocador"]);
   const [dialog, setDialog] = useState(null);
@@ -43,7 +44,10 @@ export default function UiCatalogPage() {
       <Card>
         <CardHeader title="Pestañas y selectores" />
         <div className="mt-4 space-y-4">
-          <Tabs label="Qué ver" value={tab} onChange={setTab} items={[{ id: "entrenos", label: "Entrenamientos", icon: CalendarDays }, { id: "partidos", label: "Partidos", icon: Trophy, count: 2 }]} />
+          <Tabs id={tabsId} label="Qué ver" value={tab} onChange={setTab} items={[{ id: "entrenos", label: "Entrenamientos", icon: CalendarDays }, { id: "partidos", label: "Partidos", icon: Trophy, count: 2 }, { id: "torneos", label: "Torneos", disabled: true }]} />
+          <TabPanel tabsId={tabsId} tab="entrenos" value={tab} className="rounded-field text-sm text-ink-muted">Martes y jueves a las 20:45.</TabPanel>
+          <TabPanel tabsId={tabsId} tab="partidos" value={tab} className="rounded-field text-sm text-ink-muted">Sábado 28 contra CV Bahía.</TabPanel>
+          <TabPanel tabsId={tabsId} tab="torneos" value={tab} />
           <ChipGroup label="Equipo" scroll value={team} onChange={setTeam} options={[{ value: "masculino", label: "Masculino" }, { value: "femenino", label: "Femenino" }, { value: "escuela", label: "Escuela LM" }, { value: "playa", label: "Playa" }]} />
           <ChipGroup label="Posiciones" multiple value={filters} onChange={setFilters} options={[{ value: "colocador", label: "Colocador", count: 2 }, { value: "central", label: "Central", count: 2 }, { value: "libero", label: "Líbero", count: 1 }]} />
         </div>

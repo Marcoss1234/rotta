@@ -322,6 +322,9 @@ export function themeContrastChecks(theme) {
     ["Aviso de error en tarjeta", theme.dangerText, mix(theme.surface, theme.danger, 0.1), 4.5],
     ["Aviso de error en el fondo", theme.dangerText, mix(theme.bg, theme.danger, 0.1), 4.5],
     ["Aviso de éxito en el fondo", theme.successText, mix(theme.bg, theme.success, 0.1), 4.5],
+    // Calendario del móvil (Eventos): marcas de partido (club-ui) y de evento (texto secundario), también en el día elegido.
+    ["Marca de evento sobre tarjeta", theme.muted, theme.surface, 3],
+    ["Marca de evento sobre el día elegido", theme.muted, theme.clubSoft, 3],
     ["Texto dorado sobre tarjeta", theme.goldText, theme.surface, 4.5],
     // Segundo color del club: solo donde da información (el adorno, `stripe`, no lo necesita).
     ["Segundo color como texto sobre tarjeta", theme.accentText, theme.surface, 4.5],

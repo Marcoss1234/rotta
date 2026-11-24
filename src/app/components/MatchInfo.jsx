@@ -1,4 +1,5 @@
 import { MapPin, Navigation, StickyNote } from "lucide-react";
+import { LinkButton } from "@/app/ui/index.js";
 
 const fromIso = (iso) => {
   const [year, month, day] = iso.split("-").map(Number);
@@ -27,15 +28,9 @@ export function EventPlace({ place, url }) {
       <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-ember" />
       <p className="min-w-0 flex-1 text-sm text-zinc-200">{place}</p>
       {url && (
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-zinc-900 hover:bg-zinc-200"
-        >
-          <Navigation aria-hidden="true" className="h-4 w-4" />
+        <LinkButton href={url} target="_blank" rel="noopener noreferrer" size="sm" icon={Navigation}>
           Cómo llegar
-        </a>
+        </LinkButton>
       )}
     </div>
   );
