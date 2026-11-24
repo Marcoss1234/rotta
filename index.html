@@ -5,7 +5,24 @@
     <link rel="icon" href="/rotta-logo.svg" type="image/svg+xml" />
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0A0A0C" />
+    <meta name="theme-color" content="#090D18" />
+    <script>
+      // Antes de pintar nada: el tema, el modo y los colores con los que se vio la app la última vez en este
+      // móvil (los guarda src/app/useTheme.js). Así no sale un instante con otros colores al abrirla.
+      try {
+        var painted = JSON.parse(localStorage.getItem("rotta-pintado") || "null");
+        if (painted && painted.vars) {
+          var root = document.documentElement;
+          root.style.cssText = painted.vars;
+          root.dataset.theme = painted.theme;
+          root.dataset.rotta = painted.rotta;
+          root.dataset.onbrand = painted.onbrand;
+          document.querySelector('meta[name="theme-color"]').setAttribute("content", painted.bg);
+        }
+      } catch (error) {
+        // Sin almacenamiento o con datos viejos: la app se pinta igual al arrancar.
+      }
+    </script>
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="Rotta" />

@@ -14,6 +14,7 @@ export const DEFAULT_STYLE = "tinta";
 export const THEMES = {
   lima: {
     name: "Rotta Lima",
+    traits: ["Esquinas más rectas", "Números estrechos de marcador", "Fondos con un toque verde"],
     description: "Deportivo, moderno y tecnológico",
     shape: { card: "14px", control: "12px" },
     numbers: { width: "78%", weight: 700 },
@@ -23,6 +24,7 @@ export const THEMES = {
   },
   naranja: {
     name: "Rotta Naranja",
+    traits: ["Formas redondas", "Números anchos y con peso", "Fondos cálidos"],
     description: "Voleibol y personalidad",
     shape: { card: "26px", control: "999px" },
     numbers: { width: "100%", weight: 800 },
@@ -32,6 +34,7 @@ export const THEMES = {
   },
   tinta: {
     name: "Rotta Tinta",
+    traits: ["Formas suaves", "Números finos y elegantes", "Fondos azul tinta"],
     description: "Elegante, profesional y sobrio",
     shape: { card: "18px", control: "999px" },
     numbers: { width: "90%", weight: 600 },

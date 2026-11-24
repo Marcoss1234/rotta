@@ -1,4 +1,4 @@
-import { createContext, createElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { createContext, createElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { clubHeaders, clubSlug } from "@/app/club.js";
 import { buildRottaTheme, buildTheme, hexToRgb, resolveStyle, textOn, themeVariables } from "@/app/theme.js";
 import { DEFAULT_STYLE } from "@/app/themes.js";
@@ -37,6 +37,13 @@ export function resolveThemeMode(choice, club) {
 }
 
 const triplet = (hex) => hexToRgb(hex).join(" ");
+
+/** Si dos ajustes del club se pintan igual (colores, modo y tema). */
+export const sameClubTheme = (a, b) =>
+  a.brand.toUpperCase() === b.brand.toUpperCase() && a.accent.toUpperCase() === b.accent.toUpperCase() && a.mode === b.mode && resolveStyle(a.style) === resolveStyle(b.style);
+
+// Lo último que se pintó en este móvil, para que index.html lo ponga antes de cargar la app (sin parpadeo).
+const PAINTED_KEY = "rotta-pintado";
 
 // Lo que depende del color del club, en el modo de la persona y en oscuro (para la pista, la pizarra y el
 // directo, que van siempre en oscuro: index.css cambia unas por otras dentro de .force-dark).
@@ -79,6 +86,11 @@ export function applyTheme(club, choice) {
     if (name.startsWith("--")) root.style.setProperty(name, value);
   });
   document.querySelector('meta[name="theme-color"]')?.setAttribute("content", rotta.bg);
+  try {
+    window.localStorage.setItem(PAINTED_KEY, JSON.stringify({ theme: mode, rotta: rotta.style, onbrand: root.dataset.onbrand, vars: root.style.cssText, bg: rotta.bg }));
+  } catch {
+    // Sin almacenamiento: la próxima vez la app tardará un instante más en salir con sus colores.
+  }
   return theme;
 }
 
@@ -113,21 +125,34 @@ export const useThemeControls = () => useContext(ThemeContext);
 
 /** Envuelve toda la app: carga los colores del club y los aplica. */
 export function ThemeProvider({ children }) {
-  const [club, setClub] = useState(() => readStorage(CLUB_KEY, DEFAULT_CLUB));
+  // `club` es lo que se pinta (puede ser una vista previa del administrador); `savedClub`, lo guardado en el club.
+  const [savedClub, setSavedClub] = useState(() => readStorage(CLUB_KEY, DEFAULT_CLUB));
+  const [club, setClub] = useState(savedClub);
   const [choice, setChoice] = useState(() => readStorage(MODE_KEY, "club"));
   const [, setSystemTick] = useState(0);
+  const previewing = useRef(false);
+  previewing.current = !sameClubTheme(club, savedClub);
 
+  // Lo guardado en el servidor: al abrir la app y cada vez que se vuelve a ella (si un administrador lo ha
+  // cambiado, el resto lo ve sin cerrarla). Mientras un administrador prueba colores, no se le pisan.
   useEffect(() => {
     let cancelled = false;
-    fetchClubTheme()
-      .then((saved) => {
-        if (cancelled) return;
-        writeStorage(CLUB_KEY, saved);
-        setClub(saved);
-      })
-      .catch(() => {});
+    const refresh = () => {
+      if (document.visibilityState === "hidden") return;
+      fetchClubTheme()
+        .then((saved) => {
+          if (cancelled) return;
+          writeStorage(CLUB_KEY, saved);
+          setSavedClub(saved);
+          if (!previewing.current) setClub(saved);
+        })
+        .catch(() => {});
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
     return () => {
       cancelled = true;
+      document.removeEventListener("visibilitychange", refresh);
     };
   }, []);
 
@@ -150,7 +175,15 @@ export function ThemeProvider({ children }) {
     setChoice(next);
   }, []);
   const previewClub = useCallback((next) => setClub(next), []);
+  // Después de guardar: lo guardado pasa a ser lo de todos (y lo que se pinta).
+  const commitClub = useCallback((stored) => {
+    setSavedClub(stored);
+    setClub(stored);
+  }, []);
 
-  const value = useMemo(() => ({ club, choice, theme, chooseMode, previewClub }), [club, choice, theme, chooseMode, previewClub]);
+  const value = useMemo(
+    () => ({ club, savedClub, choice, theme, chooseMode, previewClub, commitClub }),
+    [club, savedClub, choice, theme, chooseMode, previewClub, commitClub],
+  );
   return createElement(ThemeContext.Provider, { value }, children);
 }
