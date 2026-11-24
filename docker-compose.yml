@@ -28,7 +28,8 @@ services:
     init: true
     stop_grace_period: 30s
     environment:
-      MONGO_URL: mongodb://${MONGO_APP_USERNAME:?Set MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD:?Set MONGO_APP_PASSWORD}@mongo:27017/?authSource=admin
+      MONGO_URI: mongodb://${MONGO_APP_USERNAME:?Set MONGO_APP_USERNAME}:${MONGO_APP_PASSWORD:?Set MONGO_APP_PASSWORD}@mongo:27017/?authSource=admin
+      PORT: 8000
       DB_NAME: ${DB_NAME:?Set DB_NAME}
       CENTRAL_DB_NAME: ${CENTRAL_DB_NAME:-rotta}
       DEFAULT_CLUB: ${DEFAULT_CLUB:-}

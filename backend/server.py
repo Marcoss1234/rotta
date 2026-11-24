@@ -1,11 +1,13 @@
 import logging
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from attendance import router as attendance_router
@@ -130,6 +132,10 @@ app.include_router(live_router)
 app.include_router(shop_router)
 if os.environ.get("ENABLE_PUBLIC_WRITE_ROUTES", "").lower() == "true":
     app.include_router(legacy_router)
+
+frontend_dist = Path(__file__).resolve().parents[1] / "frontend-dist"
+if frontend_dist.is_dir():
+    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
 
 origins = [
     origin.strip()

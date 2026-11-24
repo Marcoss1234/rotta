@@ -15,9 +15,9 @@ _client = None
 def get_client():
     """La conexión con MongoDB. Se crea la primera vez que hace falta."""
     global _client
-    mongo_url = os.environ.get("MONGO_URL")
+    mongo_url = os.environ.get("MONGO_URI") or os.environ.get("MONGO_URL")
     if not mongo_url:
-        raise RuntimeError("MONGO_URL debe configurarse")
+        raise RuntimeError("MONGO_URI debe configurarse")
     if _client is None:
         _client = AsyncIOMotorClient(mongo_url, serverSelectionTimeoutMS=5000)
     return _client

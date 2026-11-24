@@ -41,3 +41,9 @@ Ver logs:
 ```sh
 docker compose logs -f api web mongo
 ```
+
+## Render y MongoDB Atlas
+
+`render.yaml` define un único servicio Docker gratuito en Frankfurt. El contenedor publica la web y la API juntas; Render proporciona `PORT` en tiempo de ejecución y la API lee `MONGO_URI`. Al crear el Blueprint desde la rama `main`, completa `MONGO_URI`, `GOOGLE_CLIENT_ID` y `ADMIN_EMAILS` en el panel de Render. No pongas esos valores en el repositorio.
+
+Guarda los datos en Atlas, no en el disco local de Render: los servicios gratuitos pueden dormirse y su sistema de archivos es efímero. El plan gratuito también tiene límites de uso y puede tardar en despertar. Si permites `0.0.0.0/0` en Atlas para que Render pueda conectarse desde IPs dinámicas, usa una contraseña larga y un usuario de base de datos con los permisos mínimos necesarios.
