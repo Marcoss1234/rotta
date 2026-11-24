@@ -4,20 +4,54 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Colores del tema (en RGB para poder usar transparencias). El color del club y el segundo color
-   los pone src/app/useTheme.js según los ajustes del club; claro u oscuro, según cada persona. */
+/* Colores del tema (en RGB para poder usar transparencias).
+   - Fondos, textos, grises, esquinas y números: de cada tema de Rotta (data-rotta) y modo (data-theme),
+     en src/theme-palette.css (generado desde src/app/themes.js).
+   - Todo lo que depende del color del club: lo pone src/app/useTheme.js (src/app/theme.js, buildRottaTheme).
+   Los valores de aquí solo valen hasta que arranca la app: Tinta oscuro con el morado de Rotta. */
 :root {
-  --c-white: 255 255 255;
+  --c-white: 233 237 246;
   --c-snow: 255 255 255;
-  --c-void: 11 12 15;
-  --c-surface: 18 19 24;
-  --c-panel: 21 23 28;
+  --c-void: 9 13 24;
+  --c-surface: 16 23 42;
+  --c-panel: 16 23 42;
+  --c-raised: 23 32 54;
+  --c-line: 31 41 67;
+  --c-control: 86 99 138;
+  --c-muted: 142 153 180;
   --c-tnt: 124 58 237;
   --c-tntdeep: 93 43 178;
   --c-ember: 34 211 238;
   --c-onbrand: 255 255 255;
   --c-onbrand-inverse: 15 17 21;
   --c-onember: 15 17 21;
+  --c-club: 124 58 237;
+  --c-club-ui: 152 104 241;
+  --c-club-text: 168 128 244;
+  --c-club-label: 168 128 244;
+  --c-club-soft: 33 31 74;
+  --c-on-club: 255 255 255;
+  --c-rotta: 143 168 255;
+  --c-rotta-text: 167 186 255;
+  --c-on-rotta: 15 17 21;
+  --c-stripe: 34 211 238;
+  --c-accent-ui: 34 211 238;
+  --c-live-club: 124 58 237;
+  --c-live-accent: 14 116 144;
+  --c-ember-dark: 34 211 238;
+  --c-onember-dark: 15 17 21;
+  --c-club-ui-dark: 152 104 241;
+  --c-club-text-dark: 168 128 244;
+  --c-club-label-dark: 168 128 244;
+  --c-club-soft-dark: 33 31 74;
+  --c-rotta-dark: 143 168 255;
+  --c-rotta-text-dark: 167 186 255;
+  --c-on-rotta-dark: 15 17 21;
+  --c-accent-ui-dark: 34 211 238;
+  --radius-card: 18px;
+  --radius-control: 999px;
+  --num-width: 90%;
+  --num-weight: 600;
   --void: rgb(var(--c-void));
   --surface: rgb(var(--c-surface));
   --tnt: rgb(var(--c-tnt));
@@ -45,11 +79,7 @@
 }
 
 :root[data-theme="light"] {
-  /* En claro, "blanco" es el color del texto y los fondos son grises claros con tarjetas blancas. */
-  --c-white: 26 29 36;
-  --c-void: 222 226 232;
-  --c-surface: 244 245 248;
-  --c-panel: 244 245 248;
+  /* En claro, "blanco" es el color del texto (los valores, de cada tema en src/theme-palette.css). */
   color-scheme: light;
 }
 
@@ -64,14 +94,24 @@
   --c-void: var(--c-onbrand-inverse);
 }
 
-/* La pista, la pizarra y el partido en directo van siempre en oscuro, también con la app en claro. */
+/* La pista, la pizarra y el partido en directo van siempre en oscuro, también con la app en claro.
+   Los fondos y grises oscuros del tema están en src/theme-palette.css; aquí, lo que depende del club. */
 :root[data-theme="light"] .force-dark {
-  --c-white: 255 255 255;
-  --c-void: 11 12 15;
-  --c-surface: 18 19 24;
-  --c-panel: 21 23 28;
   color-scheme: dark;
   color: rgb(var(--c-white));
+}
+
+.force-dark {
+  --c-ember: var(--c-ember-dark);
+  --c-onember: var(--c-onember-dark);
+  --c-club-ui: var(--c-club-ui-dark);
+  --c-club-text: var(--c-club-text-dark);
+  --c-club-label: var(--c-club-label-dark);
+  --c-club-soft: var(--c-club-soft-dark);
+  --c-rotta: var(--c-rotta-dark);
+  --c-rotta-text: var(--c-rotta-text-dark);
+  --c-on-rotta: var(--c-on-rotta-dark);
+  --c-accent-ui: var(--c-accent-ui-dark);
 }
 
 :root[data-theme="light"] .force-dark :is(.bg-panel, .bg-surface) {
@@ -86,9 +126,9 @@
     0 6px 16px -6px rgb(15 23 42 / 0.12);
 }
 
-/* Una tarjeta dentro de otra va en un gris algo más oscuro y sin sombra: si no, se funden. */
+/* Una tarjeta dentro de otra va en el relleno del tema y sin sombra: si no, se funden. */
 :root[data-theme="light"] :is(.bg-panel, .bg-surface) :is(.bg-panel, .bg-surface) {
-  background-color: rgb(231 234 239);
+  background-color: rgb(var(--c-raised));
   box-shadow: none;
 }
 
@@ -96,6 +136,14 @@
 .text-snow {
   --c-white: 255 255 255;
   --c-void: 15 17 21;
+}
+
+/* Números de marcador (hora, sets, coins, notas): más estrechos o más anchos según el tema. */
+.font-score {
+  font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+  font-stretch: var(--num-width);
+  font-weight: var(--num-weight);
+  font-variant-numeric: tabular-nums;
 }
 
 html {
@@ -209,13 +257,13 @@ body {
 .rating-range::-webkit-slider-runnable-track {
   height: 8px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--tnt), var(--ember)) 0 / var(--fill) 100% no-repeat, rgba(255, 255, 255, 0.12);
+  background: linear-gradient(90deg, rgb(var(--c-club-ui)), rgb(var(--c-accent-ui))) 0 / var(--fill) 100% no-repeat, rgb(var(--c-white) / 0.12);
 }
 
 .rating-range::-moz-range-track {
   height: 8px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--tnt), var(--ember)) 0 / var(--fill) 100% no-repeat, rgba(255, 255, 255, 0.12);
+  background: linear-gradient(90deg, rgb(var(--c-club-ui)), rgb(var(--c-accent-ui))) 0 / var(--fill) 100% no-repeat, rgb(var(--c-white) / 0.12);
 }
 
 .rating-range::-webkit-slider-thumb {

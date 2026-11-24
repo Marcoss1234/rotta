@@ -1,6 +1,7 @@
 import { createContext, createElement, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { clubHeaders, clubSlug } from "@/app/club.js";
-import { buildTheme, hexToRgb, themeVariables } from "@/app/theme.js";
+import { buildRottaTheme, buildTheme, hexToRgb, resolveStyle, textOn, themeVariables } from "@/app/theme.js";
+import { DEFAULT_STYLE } from "@/app/themes.js";
 
 // Pinta toda la app con los colores del club y el modo (claro u oscuro) que elige cada persona.
 // Los colores se guardan también en el móvil para que la app salga ya pintada al abrirla.
@@ -8,7 +9,7 @@ import { buildTheme, hexToRgb, themeVariables } from "@/app/theme.js";
 // Cada club guarda sus colores aparte: en un móvil con dos clubs no se mezclan.
 const CLUB_KEY = `rotta-tema-club${clubSlug ? `-${clubSlug}` : ""}`;
 const MODE_KEY = "rotta-modo";
-const DEFAULT_CLUB = { brand: "#7C3AED", accent: "#22D3EE", mode: "dark" };
+const DEFAULT_CLUB = { brand: "#7C3AED", accent: "#22D3EE", mode: "dark", style: DEFAULT_STYLE };
 export const MODE_CHOICES = ["club", "light", "dark", "auto"];
 
 const readStorage = (key, fallback) => {
@@ -37,24 +38,47 @@ export function resolveThemeMode(choice, club) {
 
 const triplet = (hex) => hexToRgb(hex).join(" ");
 
+// Lo que depende del color del club, en el modo de la persona y en oscuro (para la pista, la pizarra y el
+// directo, que van siempre en oscuro: index.css cambia unas por otras dentro de .force-dark).
+const CLUB_VARIABLES = {
+  "club": "club", "club-ui": "clubUi", "club-text": "clubText", "club-label": "clubLabel", "club-soft": "clubSoft", "on-club": "onClub",
+  "rotta": "rotta", "rotta-text": "rottaText", "on-rotta": "onRotta", "stripe": "stripe", "accent-ui": "accentUi",
+  "live-club": "liveClub", "live-accent": "liveAccent",
+};
+const DARK_VARIABLES = ["club-ui", "club-text", "club-label", "club-soft", "rotta", "rotta-text", "on-rotta", "accent-ui"];
+
+function applyRottaTheme(root, club, mode) {
+  const style = resolveStyle(club.style);
+  const rotta = buildRottaTheme(style, mode, club.brand, club.accent);
+  const dark = mode === "dark" ? rotta : buildRottaTheme(style, "dark", club.brand, club.accent);
+  root.dataset.rotta = style;
+  Object.entries(CLUB_VARIABLES).forEach(([name, key]) => root.style.setProperty(`--c-${name}`, triplet(rotta[key])));
+  DARK_VARIABLES.forEach((name) => root.style.setProperty(`--c-${name}-dark`, triplet(dark[CLUB_VARIABLES[name]])));
+  // El segundo color de las pantallas de hoy (text-ember...) va ya ajustado para que se lea.
+  root.style.setProperty("--c-ember-dark", triplet(dark.accentText));
+  root.style.setProperty("--c-onember-dark", triplet(textOn(dark.accentText)));
+  return rotta;
+}
+
 export function applyTheme(club, choice) {
   const mode = resolveThemeMode(choice, club);
   const theme = buildTheme(club.brand, mode, club.accent);
   const root = document.documentElement;
   root.dataset.theme = mode;
+  const rotta = applyRottaTheme(root, club, mode);
   // Si el texto encima del color del club es claro u oscuro (lo usa src/theme-palette.css).
   root.dataset.onbrand = theme.onBrand === "#FFFFFF" ? "light" : "dark";
   // Lo que usan las clases de siempre (bg-tnt, text-ember...) y el código nuevo (var(--brand)...).
   root.style.setProperty("--c-tnt", triplet(theme.brand));
   root.style.setProperty("--c-tntdeep", triplet(theme.brandStrong));
-  root.style.setProperty("--c-ember", triplet(theme.accent));
+  root.style.setProperty("--c-ember", triplet(rotta.accentText));
   root.style.setProperty("--c-onbrand", triplet(theme.onBrand));
   root.style.setProperty("--c-onbrand-inverse", triplet(theme.onBrand === "#FFFFFF" ? "#0F1115" : "#FFFFFF"));
-  root.style.setProperty("--c-onember", triplet(theme.onAccent));
+  root.style.setProperty("--c-onember", triplet(textOn(rotta.accentText)));
   Object.entries(themeVariables(theme)).forEach(([name, value]) => {
     if (name.startsWith("--")) root.style.setProperty(name, value);
   });
-  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", theme.bg);
+  document.querySelector('meta[name="theme-color"]')?.setAttribute("content", rotta.bg);
   return theme;
 }
 

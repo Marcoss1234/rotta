@@ -6,8 +6,9 @@
 // Uso:  npm run comprobar-temas
 //       node tools/comprobar-temas.mjs --avisos       también cuenta los avisos que verá el administrador
 //       node tools/comprobar-temas.mjs --sin-reglas   sin los ajustes automáticos (debe fallar: prueba que el script detecta fallos)
+import { readFileSync } from "node:fs";
 import { buildRottaTheme, contrast, PALETTES, themeContrastChecks } from "../src/app/theme.js";
-import { STYLES } from "../src/app/themes.js";
+import { DEFAULT_STYLE, STYLES } from "../src/app/themes.js";
 
 const withoutRules = process.argv.includes("--sin-reglas");
 const showWarnings = process.argv.includes("--avisos");
@@ -32,6 +33,13 @@ for (let hue = 0; hue < 360; hue += 10) {
 const clubColors = [...new Set([...PALETTES.flatMap((palette) => [palette.brand, palette.accent]), ...HARD, ...sweep].map((color) => color.toUpperCase()))];
 const secondColors = (brand) => [brand, "#FFFFFF", "#F5C542"];
 
+// La web (src/app/themes.js) y el servidor (backend/club_settings.py) tienen que permitir los mismos temas
+// y el mismo por defecto. (backend/tests/test_club_settings.py lo comprueba también desde Python.)
+const backend = readFileSync(new URL("../backend/club_settings.py", import.meta.url), "utf8");
+const backendStyles = [...(backend.match(/^ThemeStyle = Literal\[([^\]]*)\]/m)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((match) => match[1]);
+const backendDefault = backend.match(/^DEFAULT_STYLE = "([^"]+)"/m)?.[1];
+const sameStyles = backendStyles.length > 0 && [...backendStyles].sort().join() === [...STYLES].sort().join() && backendDefault === DEFAULT_STYLE;
+
 // Sin reglas: el color del club tal cual en todas partes (lo que pasaría sin theme.js).
 const raw = (theme) => ({
   ...theme,
@@ -39,6 +47,10 @@ const raw = (theme) => ({
   clubLabel: theme.club,
   clubUi: theme.club,
   onClub: contrast(theme.club, "#FFFFFF") >= contrast(theme.club, "#0F1115") ? "#FFFFFF" : "#0F1115",
+  accentText: theme.accent,
+  accentUi: theme.accent,
+  liveClub: theme.club,
+  liveAccent: theme.accent,
 });
 
 let total = 0;
@@ -76,6 +88,12 @@ console.log(`${total.toLocaleString("es-ES")} comprobaciones de contraste.`);
 if (showWarnings) {
   console.log("\nAvisos que vería el administrador (no son fallos):");
   for (const [key, count] of warnings) console.log(`  ${key}: ${count} colores`);
+}
+if (sameStyles) {
+  console.log(`✓ La web y el servidor permiten los mismos temas (${STYLES.join(", ")}; por defecto ${DEFAULT_STYLE}).`);
+} else {
+  console.error(`\n✗ Los temas no coinciden: web ${STYLES.join(", ")} (por defecto ${DEFAULT_STYLE}), servidor ${backendStyles.join(", ") || "no encontrados"} (por defecto ${backendDefault ?? "no encontrado"}).`);
+  process.exitCode = 1;
 }
 if (failures.size) {
   const count = [...failures.values()].reduce((sum, entry) => sum + entry.count, 0);

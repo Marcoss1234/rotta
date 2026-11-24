@@ -388,7 +388,7 @@ function HelpDialog({ scorer, onClose }) {
       }}
       className="m-auto flex max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-sm flex-col rounded-2xl border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
     >
-      <div className="flex items-center gap-2 bg-gradient-to-r from-red-600 via-tnt to-ember px-4 py-3 text-snow">
+      <div className="flex items-center gap-2 bg-gradient-to-r from-red-600 via-live-club to-live-accent px-4 py-3 text-snow">
         <Info aria-hidden="true" className="h-6 w-6 shrink-0" />
         <h2 id="live-help-title" className="font-display text-xl font-extrabold leading-tight">
           Cómo funciona
@@ -761,7 +761,7 @@ export default function LiveMatchPage({ onAccessLost }) {
                 type="button"
                 disabled={busy}
                 onClick={() => send(() => startLive(liveId))}
-                className="mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 via-tnt to-ember font-display text-lg font-extrabold text-snow shadow-[0_8px_24px_rgba(255,56,0,0.35)] disabled:opacity-70"
+                className="mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 via-live-club to-live-accent font-display text-lg font-extrabold text-snow shadow-[0_8px_24px_rgba(255,56,0,0.35)] disabled:opacity-70"
               >
                 <Play aria-hidden="true" className="h-5 w-5 fill-white" />
                 {busy ? "Empezando…" : "Empezar partido"}

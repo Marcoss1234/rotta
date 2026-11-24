@@ -209,7 +209,12 @@ export const resolveStyle = (style) => (THEMES[style] ? style : DEFAULT_STYLE);
  * - Si como texto cambia demasiado (un dorado sobre blanco), el texto va en el color normal (clubLabel).
  * - Sin color (blanco, negro, gris): lo seleccionado va en el color del texto.
  * - Si se parece mucho al color de Rotta, Rotta le cede el sitio.
- * - El segundo color solo es adorno (franjas): si no se distingue del fondo o del principal, se usa el principal.
+ * - El segundo color (accent) se sigue usando en las pantallas de hoy (alias `ember`). Donde da información
+ *   (textos, la ficha «tú» de la pista, la marca de grabación, la barra de la nota) va ajustado:
+ *   accentText a 4,5:1 y accentUi a 3:1. En los banners del directo, con texto blanco encima, los dos colores
+ *   del degradado se oscurecen hasta que el blanco se lea (liveClub y liveAccent).
+ * - `stripe` es solo adorno (franjas del menú y del escudo): nunca lleva texto ni marca nada, no necesita contraste.
+ *   Si no se distingue del fondo o del principal, se usa el principal.
  */
 export function buildRottaTheme(style, mode, brand, accent = brand) {
   const theme = THEMES[resolveStyle(style)];
@@ -228,6 +233,9 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
   const rotta = yields ? brand : base.rotta;
   const rottaText = yields ? clubText : readableOnAll(base.rottaText, grounds, 4.5);
   const stripe = colorDistance(accent, base.bg) < 8 || colorDistance(accent, brand) < 6 ? brand : accent;
+  const accentText = readableOnAll(accent, grounds, 4.5);
+  const accentUi = readableOnAll(accent, grounds, 3);
+  const whiteText = (color) => readableOnAll(color, ["#FFFFFF"], 4.5);
 
   const warnings = [
     yields && "similar-rotta",
@@ -256,6 +264,12 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
     rottaText,
     focus: rottaText,
     stripe,
+    accent,
+    onAccent: textOn(accent),
+    accentText,
+    accentUi,
+    liveClub: whiteText(brand),
+    liveAccent: whiteText(accent),
     warnings,
   };
 }
@@ -292,5 +306,16 @@ export function themeContrastChecks(theme) {
     ["Texto del botón de peligro", "#FFFFFF", theme.danger, 4.5],
     ["Texto rojo sobre tarjeta", theme.dangerText, theme.surface, 4.5],
     ["Texto dorado sobre tarjeta", theme.goldText, theme.surface, 4.5],
+    // Segundo color del club: solo donde da información (el adorno, `stripe`, no lo necesita).
+    ["Segundo color como texto sobre tarjeta", theme.accentText, theme.surface, 4.5],
+    ["Segundo color como texto sobre fondo", theme.accentText, theme.bg, 4.5],
+    ["Segundo color como texto sobre relleno", theme.accentText, theme.raised, 4.5],
+    ["Texto sobre el segundo color", theme.onAccent, theme.accent, 4.5],
+    ["Marca en el segundo color sobre tarjeta", theme.accentUi, theme.surface, 3],
+    ["Barra de la nota (club) sobre relleno", theme.clubUi, theme.raised, 3],
+    ["Barra de la nota (segundo color) sobre relleno", theme.accentUi, theme.raised, 3],
+    ["Banner del directo: blanco sobre rojo", "#FFFFFF", "#DC2626", 4.5],
+    ["Banner del directo: blanco sobre el club", "#FFFFFF", theme.liveClub, 4.5],
+    ["Banner del directo: blanco sobre el segundo color", "#FFFFFF", theme.liveAccent, 4.5],
   ];
 }

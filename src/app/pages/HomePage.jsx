@@ -123,7 +123,7 @@ function LiveNow() {
         <Link
           key={item.id}
           to={`/app/directo/${item.id}`}
-          className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 via-tnt to-ember p-3 shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow"
+          className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-red-600 via-live-club to-live-accent p-3 shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow"
         >
           <span className="flex shrink-0 items-center gap-1.5 rounded-full bg-black/25 px-2 py-1 text-[10px] font-extrabold">
             <span aria-hidden="true" className="pulse-dot h-2 w-2 rounded-full bg-white" />
@@ -586,7 +586,7 @@ function LiveMatchButton({ match, onError }) {
       onClick={enter}
       disabled={busy}
       className={`relative flex min-h-14 w-full items-center gap-3 overflow-hidden rounded-xl px-4 text-left text-white disabled:opacity-70 ${
-        playing || !live || live.status === "pending" ? "bg-gradient-to-r from-red-600 via-tnt to-ember shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow" : "bg-panel ring-1 ring-white/15"
+        playing || !live || live.status === "pending" ? "bg-gradient-to-r from-red-600 via-live-club to-live-accent shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow" : "bg-panel ring-1 ring-white/15"
       }`}
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/25">

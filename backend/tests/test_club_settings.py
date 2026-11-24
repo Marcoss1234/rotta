@@ -1,5 +1,10 @@
 import asyncio
+import re
+from pathlib import Path
+from typing import get_args
 
+import pytest
+from club_settings import DEFAULT_STYLE, ThemeStyle
 from test_auth import client_for, db  # noqa: F401
 
 
@@ -73,3 +78,17 @@ def test_solo_el_administrador_cambia_el_tema(db):  # noqa: F811
     assert client_for().put("/api/club/theme", json=body).status_code == 401
     assert client_for("token-ana").put("/api/club/theme", json=body).status_code == 403
     assert client_for().get("/api/club/theme").json()["style"] == "tinta"
+
+
+THEMES_JS = Path(__file__).resolve().parents[2] / "src" / "app" / "themes.js"
+
+
+@pytest.mark.skipif(not THEMES_JS.exists(), reason="Sin la web al lado (por ejemplo, dentro de la imagen del servidor)")
+def test_la_web_y_el_servidor_tienen_los_mismos_temas():
+    """Si se añade o quita un tema en un lado y no en el otro, este test lo dice."""
+    source = THEMES_JS.read_text(encoding="utf-8")
+    block = source.split("export const THEMES = {", 1)[1].split("\n};", 1)[0]
+    web_styles = re.findall(r"^  ([a-z]+): \{", block, flags=re.MULTILINE)
+    web_default = re.search(r'^export const DEFAULT_STYLE = "([^"]+)"', source, flags=re.MULTILINE).group(1)
+    assert sorted(web_styles) == sorted(get_args(ThemeStyle))
+    assert web_default == DEFAULT_STYLE
