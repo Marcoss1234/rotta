@@ -22,9 +22,14 @@ Rotta es la versión general de la app del C.V. TNT Almería, para venderla a ot
 - Varios clubs, fase 2 (24-11-2026): equipos, horario de serie, partidos compartidos, sets del directo y grupos del ranking (con su «Jugadora del mes») son de cada club. Todo en `backend/teams.py`: `ClubStructure`, guardada en `club_settings {"id": "club"}.structure`; sin ella vale `DEFAULT_STRUCTURE` (los equipos de siempre, así tests y demo siguen igual). `get_db` la carga en una `ContextVar` y el código usa `teams()`, `team_name()`, `match_teams()`, `groups()`, `default_schedule()`, `team_config()`. `TeamId`, `GroupId` y `ChannelId` son `str` con validador: en parámetros de query van como `Annotated[TeamId, Query()]` (con `= Query(...)` FastAPI se salta el validador). Web: `GET /api/club/structure` (pública) y `src/app/teams.js` la carga al arrancar (`isBeachTeam`, `defaultTeamId`, `shareMatches`...). Cambiarla: `python tools/estructura-club.py <club> archivo.json` (ejemplo: `tools/estructura-ejemplo.json`). Demo con otros equipos: `DEMO_ESTRUCTURA=tools/estructura-ejemplo.json npm run demo`. Tests en `backend/tests/test_structure.py`.
   Pendiente pequeño: el muñeco de serie (sin personaje elegido) sale de chica si el equipo es `"femenino"` (5 sitios en la web).
 
+- Varios clubs, fase 3 (24-11-2026): nombre y escudo de cada club. `backend/club_settings.py`: `GET/PUT /api/club/identity` (`club_settings.identity.name`) y `GET/PUT/DELETE /api/club/crest` (imagen en `club_files {"id": "crest"}`, PNG/JPG/WebP hasta 200 KB, sin SVG; dirección con `?v=` que cambia con cada escudo). Públicas para leer, solo administradores para cambiar. `tools/crear-club.py` ya le pone el nombre al crear el club. Web: `src/app/clubIdentity.js` (se guarda en el móvil y se pone al día al arrancar) y `components/ClubCrest.jsx` (escudo entero; sin escudo, el logo de Rotta recortado). Sin nombre ni escudo salen los de Rotta. Lo cambia el administrador en Perfil > Apariencia (`components/ClubIdentitySettings.jsx`). Tests en `backend/tests/test_club_identity.py`.
+  Pendiente: el icono y el nombre de la app instalada en el móvil (manifest de la PWA) siguen siendo los de Rotta; la moneda sigue llamándose «Club Coins».
+
+- Al día con el TNT (24-11-2026, hasta su commit 34d56fa): ranking semanal con la nota de esa semana y pestaña «Mejor del mes». Comprobado además texto a texto de la web, ruta a ruta de la API y línea a línea de entrenos, partidos, directo, ayuda y coins: lo único que no se pasa es la web pública del TNT (`src/components/tnt/`).
+
 ## Siguiente
-Fase 3 (nombre y escudo de cada club en la app) y fase 4 (pantalla para dar de alta clubs y editar sus equipos; hoy se hace con `tools/crear-club.py` y `tools/estructura-club.py`).
+Fase 4 (pantalla para dar de alta clubs y editar sus equipos; hoy se hace con `tools/crear-club.py` y `tools/estructura-club.py`).
 
 ## Probar
-- Tests: `cd backend && python -m pytest -q` (608 pasan). Web: `npm run build`.
+- Tests: `cd backend && python -m pytest -q` (616 pasan). Web: `npm run build`.
 - Coste: MongoDB Atlas gratis aguanta unos 15-18 clubs (límite de colecciones) y 512 MB; las fotos del chat son lo que más ocupa.

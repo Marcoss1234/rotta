@@ -138,7 +138,7 @@ export const createEvent = (event) => request("/events", { method: "POST", body:
 export const updateEvent = (id, event) => request(`/events/${encodeURIComponent(id)}`, { method: "PUT", body: event });
 export const deleteEvent = (id) => request(`/events/${encodeURIComponent(id)}`, { method: "DELETE" });
 export const listRankingGroups = () => request("/ranking/groups");
-export const getRanking = (groupId) => request(`/ranking?group_id=${encodeURIComponent(groupId)}`);
+export const getRanking = (groupId, period = "week") => request(`/ranking?group_id=${encodeURIComponent(groupId)}&period=${period}`);
 export const getPlayerRatings = (playerId, groupId) =>
   request(`/ranking/players/${encodeURIComponent(playerId)}?group_id=${encodeURIComponent(groupId)}`);
 export const getRatingSheet = (groupId, week) =>

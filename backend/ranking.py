@@ -15,10 +15,10 @@ from players import Position, require_approved
 from teams import GroupId, groups
 
 CLUB_TIME = ZoneInfo("Europe/Madrid")
-# El ranking es la media de las últimas semanas publicadas, para que una sola semana no lo decida todo.
-WINDOW_WEEKS = 4
+# El ranking principal es el de la semana: solo la nota de la última semana publicada, sin media.
+# El del mes es la media de las semanas publicadas de ese mes; hacen falta MIN_WEEKS si el mes ya lleva tantas.
 MIN_WEEKS = 2
-# Quien tiene menos semanas de las necesarias sale igual en la tabla, pero con esta penalización en la media
+# En el mes, quien tiene menos semanas de las necesarias sale igual en la tabla, pero con esta penalización en la media
 # (de 0 a 100) y la marca de «1 semana»: así aparece, pero una sola semana buena no le sube arriba del todo.
 FEW_WEEKS_PENALTY = 10
 HISTORY_WEEKS = 12
@@ -310,17 +310,42 @@ async def list_groups(user=Depends(require_approved)):
 
 
 @router.get("/ranking")
-async def get_ranking(group_id: Annotated[GroupId, Query()], user=Depends(require_approved), db=Depends(get_db)):
-    """Solo el overall: el detalle por habilidad y los comentarios no salen aquí."""
+async def get_ranking(
+    group_id: Annotated[GroupId, Query()],
+    period: Literal["week", "month"] = Query("week"),
+    user=Depends(require_approved),
+    db=Depends(get_db),
+):
+    """Solo la nota final: el detalle por habilidad y los comentarios no salen aquí.
+    Semana: la nota de la última semana publicada, sin media. Mes: la media de las semanas publicadas de ese mes."""
     _require_view(user, group_id)
     players, pictures = await _roster(db, group_id)
     by_id = {player["id"]: player for player in players}
     mine = next((player["id"] for player in players if player.get("user_id") == user["id"]), None)
     published = await _published_weeks(db, group_id)
     if not published:
-        return {"group_id": group_id, "week": None, "has_previous": False, "entries": [], "pending": [], "my_player_id": mine}
+        return {
+            "group_id": group_id,
+            "period": period,
+            "week": None,
+            "month": None,
+            "month_label": None,
+            "weeks": 0,
+            "has_previous": False,
+            "entries": [],
+            "pending": [],
+            "my_player_id": mine,
+        }
 
-    latest, window, previous_window = published[0], published[:WINDOW_WEEKS], published[1 : WINDOW_WEEKS + 1]
+    latest = published[0]
+    month = _month_of(latest)
+    if period == "week":
+        # Las flechas comparan con el puesto de la semana anterior.
+        window, previous_window = [latest], published[1:2]
+    else:
+        # Las flechas comparan con cómo iba el mes antes de esta semana.
+        window = [week for week in published if _month_of(week) == month]
+        previous_window = window[1:]
     ratings = await db.ratings.find(
         {"group_id": group_id, "week": {"$in": list({*window, *previous_window})}}
     ).to_list(5000)
@@ -357,7 +382,11 @@ async def get_ranking(group_id: Annotated[GroupId, Query()], user=Depends(requir
     waiting = sorted((person(player_id) for player_id in pending), key=lambda entry: entry["name"].casefold())
     return {
         "group_id": group_id,
+        "period": period,
         "week": latest,
+        "month": month,
+        "month_label": _month_label(month),
+        "weeks": len(window),
         "has_previous": bool(previous_window),
         "entries": entries,
         "pending": waiting,
@@ -553,7 +582,7 @@ async def get_player_profile(player_id: str, user=Depends(require_approved), db=
     ranking = None
     group_id = next((group for group, data in groups().items() if player["team_id"] in data["teams"]), None)
     if group_id and _can_view(user, group_id):
-        board = await get_ranking(group_id=group_id, user=user, db=db)
+        board = await get_ranking(group_id=group_id, period="week", user=user, db=db)
         entry = next((item for item in board["entries"] if item["player_id"] == player_id), None)
         if entry:
             ranking = {

@@ -1,5 +1,5 @@
 import asyncio
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pytest
 
@@ -321,14 +321,39 @@ def test_cambiar_la_ficha_no_cambia_el_pasado(admin):
     assert (entry["position"], entry["overall"]) == ("Colocador", 86.7)
 
 
-def test_la_media_usa_solo_las_cuatro_ultimas_publicadas(admin):
+def table_month(client, group="masculino"):
+    response = client.get(f"/api/ranking?group_id={group}&period=month")
+    assert response.status_code == 200, response.text
+    return response.json()
+
+
+@pytest.fixture
+def november(monkeypatch):
+    """Lunes 23 de noviembre: las semanas 0 a 3 son de noviembre y la 4 (26 de octubre), del mes anterior."""
+    monkeypatch.setattr(ranking, "_current_monday", lambda: date(2026, 11, 23))
+
+
+def test_la_semana_es_solo_la_nota_de_la_ultima_publicada(admin):
+    lola, nora = add_player(admin, "Lola"), add_player(admin, "Nora")
+    rate_ok(admin, lola, {"saque": 10}, offset=1)
+    rate_ok(admin, nora, {"saque": 5}, offset=1)
+    publish_ok(admin, offset=1)
+    rate_ok(admin, lola, {"saque": 6})
+    rate_ok(admin, nora, {"saque": 8})
+    publish_ok(admin)
+    # Sin media: Lola venía de un 100, pero esta semana manda el 80 de Nora.
+    result = table(admin)
+    assert result["period"] == "week"
+    assert [(entry["name"], entry["overall"], entry["provisional"]) for entry in result["entries"]] == [("Nora", 80, False), ("Lola", 60, False)]
+
+
+def test_en_la_semana_solo_salen_los_puntuados_esa_semana(admin):
     lola = add_player(admin, "Lola")
-    rate_ok(admin, lola, {"saque": 1}, offset=4)
-    publish_ok(admin, offset=4)
-    for offset in range(4):
-        rate_ok(admin, lola, {"saque": 8}, offset=offset)
-        publish_ok(admin, offset=offset)
-    assert table(admin)["entries"][0]["overall"] == 80
+    rate_ok(admin, lola, {"saque": 8}, offset=1)
+    publish_ok(admin, offset=1)
+    rate_ok(admin, add_player(admin, "Nora"), {"saque": 5})
+    publish_ok(admin)
+    assert [entry["name"] for entry in table(admin)["entries"]] == ["Nora"]
 
 
 def test_las_semanas_sin_publicar_no_cuentan(admin):
@@ -339,24 +364,35 @@ def test_las_semanas_sin_publicar_no_cuentan(admin):
     assert table(admin)["entries"][0]["overall"] == 80
 
 
-def test_la_primera_semana_basta_con_una_nota_y_luego_hacen_falta_dos(admin):
+def test_el_mes_es_la_media_de_sus_semanas(admin, november):
     lola = add_player(admin, "Lola")
-    nora = add_player(admin, "Nora")
+    rate_ok(admin, lola, {"saque": 1}, offset=4)  # Octubre: no cuenta para noviembre.
+    publish_ok(admin, offset=4)
+    for offset, score in ((2, 6), (1, 8), (0, 10)):
+        rate_ok(admin, lola, {"saque": score}, offset=offset)
+        publish_ok(admin, offset=offset)
+    result = table_month(admin)
+    assert (result["period"], result["month_label"], result["weeks"]) == ("month", "noviembre 2026", 3)
+    assert result["entries"][0]["overall"] == 80
+
+
+def test_en_el_mes_una_sola_semana_cuenta_con_diez_menos(admin, november):
+    lola, nora = add_player(admin, "Lola"), add_player(admin, "Nora")
     rate_ok(admin, lola, {"saque": 9}, offset=1)
     rate_ok(admin, nora, {"saque": 7}, offset=1)
     publish_ok(admin, offset=1)
-    first = table(admin)["entries"]
+    first = table_month(admin)["entries"]
     assert [(entry["name"], entry["overall"], entry["provisional"]) for entry in first] == [("Lola", 90, False), ("Nora", 70, False)]
 
     rate_ok(admin, nora, {"saque": 7})
     publish_ok(admin)
-    result = table(admin)
-    # Lola solo tiene 1 de las 2 semanas: sale igual, con 10 puntos menos y la marca de provisional.
+    result = table_month(admin)
+    # Lola solo tiene 1 de las 2 semanas del mes: sale igual, con 10 puntos menos y la marca de provisional.
     assert [(entry["name"], entry["overall"], entry["provisional"]) for entry in result["entries"]] == [("Lola", 80, True), ("Nora", 70, False)]
     assert result["pending"] == []
 
 
-def test_una_sola_semana_no_gana_a_quien_tiene_mas(admin):
+def test_en_el_mes_una_sola_semana_no_gana_a_quien_tiene_mas(admin, november):
     lola = add_player(admin, "Lola")
     nora = add_player(admin, "Nora")
     rate_ok(admin, nora, {"saque": 8}, offset=1)
@@ -364,19 +400,9 @@ def test_una_sola_semana_no_gana_a_quien_tiene_mas(admin):
     rate_ok(admin, nora, {"saque": 8})
     rate_ok(admin, lola, {"saque": 8.5})
     publish_ok(admin)
-    # Lola saca mejor nota esta semana (85), pero con una sola semana se queda en 75: Nora (80) va primera.
-    assert [entry["name"] for entry in table(admin)["entries"]] == ["Nora", "Lola"]
-
-
-def test_quien_falta_una_semana_conserva_su_media(admin):
-    lola = add_player(admin, "Lola")
-    for offset in (2, 1):
-        rate_ok(admin, lola, {"saque": 8}, offset=offset)
-        publish_ok(admin, offset=offset)
-    rate_ok(admin, add_player(admin, "Nora"), {"saque": 5})
-    publish_ok(admin)
-    entry = next(item for item in table(admin)["entries"] if item["name"] == "Lola")
-    assert (entry["overall"], entry["week_overall"]) == (80, None)
+    # En la semana Lola va primera (85), pero en el mes, con una sola semana, se queda en 75 y Nora (80) va delante.
+    assert [entry["name"] for entry in table(admin)["entries"]] == ["Lola", "Nora"]
+    assert [entry["name"] for entry in table_month(admin)["entries"]] == ["Nora", "Lola"]
 
 
 def test_flechas_de_subida_y_bajada(admin):
@@ -391,6 +417,16 @@ def test_flechas_de_subida_y_bajada(admin):
     result = table(admin)
     assert result["has_previous"] is True
     assert [(entry["name"], entry["movement"]) for entry in result["entries"]] == [("Nora", 1), ("Lola", -1)]
+
+
+def test_el_mes_empieza_de_cero(admin, november):
+    lola = add_player(admin, "Lola")
+    rate_ok(admin, lola, {"saque": 10}, offset=4)
+    publish_ok(admin, offset=4)
+    rate_ok(admin, lola, {"saque": 6}, offset=3)
+    publish_ok(admin, offset=3)
+    result = table_month(admin)
+    assert (result["weeks"], result["has_previous"], result["entries"][0]["overall"]) == (1, False, 60)
 
 
 def test_misma_media_mismo_puesto(admin):

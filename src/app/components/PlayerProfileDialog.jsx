@@ -94,12 +94,11 @@ export default function PlayerProfileDialog({ player, onClose, onDelete = null, 
                   </span>
                   <span className="ml-auto text-right">
                     <OverallNumber overall={ranking.overall} className="text-3xl" />
-                    <span className="block text-[11px] text-zinc-400">media</span>
+                    <span className="block text-[11px] text-zinc-400">semana</span>
                   </span>
                 </div>
                 <div className="mt-2 flex items-center gap-2 text-xs text-zinc-300">
                   <MovementPill value={ranking.movement} hasPrevious />
-                  {ranking.week_overall !== null && ranking.week_overall !== undefined && <span>Esta semana: {Math.round(ranking.week_overall)}</span>}
                   {ranking.week && <span className="ml-auto text-zinc-500">{weekLabel(ranking.week)}</span>}
                 </div>
               </section>

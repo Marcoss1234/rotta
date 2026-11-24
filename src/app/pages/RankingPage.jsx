@@ -19,11 +19,11 @@ const MEDALS = [
   { order: "order-3", pedestal: "h-20 from-[#FDBA74] via-[#F97316] to-[#7C2D12]", ring: "ring-[#FB923C]", avatar: "h-16 w-16 text-lg" },
 ];
 
-// Quien tiene una sola semana puntuada: sale en la tabla, pero con 10 puntos menos (lo explica al tocarla).
+// En el ranking del mes, quien tiene una sola semana puntuada sale, pero con 10 puntos menos (lo explica al tocarla).
 function FewWeeksTag() {
   return (
     <span
-      title="Solo tiene 1 semana puntuada: cuenta con 10 puntos menos hasta que tenga 2"
+      title="Este mes solo tiene 1 semana puntuada: cuenta con 10 puntos menos hasta que tenga 2"
       className="rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-200 ring-1 ring-amber-300/40"
     >
       1 semana · −10
@@ -69,7 +69,7 @@ function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onO
   );
 }
 
-function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay }) {
+function RankRow({ entry, place, mine, hasPrevious, showMovement, showLastWeek, onOpen, delay }) {
   const content = (
     <>
       <span className="w-8 shrink-0 text-center font-display text-2xl font-extrabold tabular-nums text-zinc-500">
@@ -81,7 +81,7 @@ function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay 
         <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
           <PositionTag position={entry.position} />
           {entry.provisional && <FewWeeksTag />}
-          {entry.week_overall !== null && <span className="text-xs text-zinc-400">Última: {formatOverall(entry.week_overall)}</span>}
+          {showLastWeek && entry.week_overall !== null && <span className="text-xs text-zinc-400">Última semana: {formatOverall(entry.week_overall)}</span>}
         </span>
         <AnimatedBar percent={entry.overall} className="mt-2 h-1" />
       </span>
@@ -94,6 +94,31 @@ function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay 
     <motion.li initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay, duration: 0.3 }}>
       <button type="button" onClick={onOpen} aria-label={`Ver las notas de ${entry.name}`} className={`flex min-h-[4.5rem] w-full items-center gap-3 rounded-2xl px-3 py-2.5 ${look}`}>{content}</button>
     </motion.li>
+  );
+}
+
+const PERIODS = [
+  { id: "week", label: "Semana" },
+  { id: "month", label: "Mejor del mes" },
+];
+
+function PeriodPicker({ value, onChange }) {
+  return (
+    <div role="group" aria-label="Ranking de la semana o del mes" className="grid grid-cols-2 gap-1 rounded-full bg-panel p-1 ring-1 ring-inset ring-white/10">
+      {PERIODS.map((item) => (
+        <button
+          key={item.id}
+          type="button"
+          aria-pressed={value === item.id}
+          onClick={() => onChange(item.id)}
+          className={`min-h-10 rounded-full px-2 text-sm font-bold transition-colors ${
+            value === item.id ? "bg-tnt text-onbrand" : "text-zinc-300 hover:text-white"
+          }`}
+        >
+          {item.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -190,6 +215,7 @@ export default function RankingPage({ user, onAccessLost }) {
   const [ranking, setRanking] = useState(null);
   const [myHistory, setMyHistory] = useState(null);
   const [position, setPosition] = useState("");
+  const period = searchParams.get("vista") === "mes" ? "month" : "week";
   const [viewing, setViewing] = useState(null);
   const [error, setError] = useState("");
 
@@ -213,8 +239,6 @@ export default function RankingPage({ user, onAccessLost }) {
   useEffect(() => {
     if (!groupId) return undefined;
     let cancelled = false;
-    setRanking(null);
-    setMyHistory(null);
     setHonors(null);
     // Los premios son un extra: si fallan, el ranking se ve igual.
     getRankingHonors(groupId)
@@ -222,9 +246,19 @@ export default function RankingPage({ user, onAccessLost }) {
         if (!cancelled) setHonors(data);
       })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [groupId]);
+
+  useEffect(() => {
+    if (!groupId) return undefined;
+    let cancelled = false;
+    setRanking(null);
+    setMyHistory(null);
     setPosition("");
     setError("");
-    getRanking(groupId)
+    getRanking(groupId, period)
       .then(async (data) => {
         const history = data.my_player_id && data.week ? await getPlayerRatings(data.my_player_id, groupId) : null;
         if (cancelled) return;
@@ -237,7 +271,7 @@ export default function RankingPage({ user, onAccessLost }) {
     return () => {
       cancelled = true;
     };
-  }, [groupId, handleError]);
+  }, [groupId, period, handleError]);
 
   const positions = ranking ? [...new Set(ranking.entries.map((entry) => entry.position))].sort() : [];
   const visible = ranking ? ranking.entries.filter((entry) => !position || entry.position === position) : [];
@@ -248,12 +282,21 @@ export default function RankingPage({ user, onAccessLost }) {
     mine: entry.player_id === ranking.my_player_id,
     hasPrevious: ranking.has_previous,
     showMovement: !position,
+    showLastWeek: period === "month",
     onOpen: () => setViewing(entry),
   });
 
+  const changeParam = (key, value) => {
+    const next = new URLSearchParams(searchParams);
+    if (value) next.set(key, value);
+    else next.delete(key);
+    setSearchParams(next, { replace: true });
+  };
+  const periodLabel = ranking?.week ? (period === "month" ? `Mes de ${ranking.month_label}` : weekLabel(ranking.week)) : "";
+
   return (
     <div className="space-y-6">
-      <RankingHero stacked={Boolean(group?.can_rate)} title="Ranking" subtitle={group ? `${group.name}${ranking?.week ? ` · ${weekLabel(ranking.week)}` : ""}` : undefined}>
+      <RankingHero stacked={Boolean(group?.can_rate)} title="Ranking" subtitle={group ? `${group.name}${periodLabel ? ` · ${periodLabel}` : ""}` : undefined}>
         <div className="flex shrink-0 gap-2">
           <Link to={group ? `/app/ranking/recompensas?grupo=${group.id}` : "/app/ranking/recompensas"} className="flex min-h-11 items-center gap-1.5 rounded-full bg-amber-400 px-4 text-sm font-bold text-amber-950 hover:bg-amber-300">
             <Crown aria-hidden="true" className="h-4 w-4 fill-amber-950/20" />
@@ -268,7 +311,8 @@ export default function RankingPage({ user, onAccessLost }) {
         </div>
       </RankingHero>
 
-      {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} />}
+      {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => changeParam("grupo", id)} />}
+      {groups?.length > 0 && <PeriodPicker value={period} onChange={(id) => changeParam("vista", id === "month" ? "mes" : "")} />}
 
       {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && (!groups || (groupId && !ranking)) && <p role="status" className="text-zinc-300">Cargando…</p>}
@@ -308,12 +352,16 @@ export default function RankingPage({ user, onAccessLost }) {
             )}
           </div>
 
-          <p className="text-center text-xs text-zinc-500">Media de las últimas 4 semanas publicadas</p>
+          <p className="text-center text-xs text-zinc-500">
+            {period === "month"
+              ? `Media de ${ranking.weeks === 1 ? "la semana publicada" : `las ${ranking.weeks} semanas publicadas`} de ${ranking.month_label}`
+              : "Nota de la última semana publicada"}
+          </p>
 
           {ranking.pending.length > 0 && !position && (
             <section aria-labelledby="pending-title" className="rounded-2xl border border-dashed border-white/15 p-4">
               <h2 id="pending-title" className="font-display font-extrabold">Aún sin puesto</h2>
-              <p className="mt-1 text-sm text-zinc-400">Hacen falta al menos 2 semanas puntuadas de las últimas 4.</p>
+              <p className="mt-1 text-sm text-zinc-400">Hacen falta al menos 2 semanas puntuadas este mes.</p>
               <p className="mt-2 text-sm text-zinc-200">{ranking.pending.map((person) => person.name).join(", ")}</p>
             </section>
           )}
