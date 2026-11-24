@@ -31,7 +31,7 @@ import NotificationsCard from "@/app/components/NotificationsCard.jsx";
 import ScheduleDialog from "@/app/components/ScheduleDialog.jsx";
 import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
 import { localToday, matchDayLabel, matchKindLabel, placeInfo } from "@/app/matches.js";
-import { nextTraining } from "@/app/nextTraining.js";
+import { nextTraining, trainingAfter } from "@/app/nextTraining.js";
 import { roleLabel } from "@/app/roles.js";
 import { TEAM_SCHEDULES, isTeamId, sessionsToSchedules, shareMatches } from "@/app/teams.js";
 import { TRAINING_VENUE_ADDRESS, TRAINING_VENUE_URL } from "../../../data/groups.js";
@@ -196,6 +196,53 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
   );
 }
 
+// El entreno de después, debajo del próximo: se contesta aquí mismo o los dos de golpe con «Voy a los dos».
+function FollowingTraining({ following, mine, followingMine, busy, onAnswer, onAnswerBoth }) {
+  const bothGoing = mine === "going" && followingMine === "going";
+  return (
+    <div className="space-y-2 rounded-xl bg-void/60 p-3" data-testid="following-training">
+      <div className="flex items-center justify-between gap-2">
+        <p className="min-w-0 text-sm">
+          <span className="block text-xs font-bold uppercase tracking-wide text-zinc-400">Y el siguiente</span>
+          <span className="block truncate font-semibold text-white">{following.label}</span>
+        </p>
+        <div className="flex shrink-0 gap-1.5">
+          {[["going", "Voy"], ["not_going", "No voy"]].map(([status, label]) => (
+            <button
+              key={status}
+              type="button"
+              aria-disabled={busy}
+              aria-pressed={followingMine === status}
+              aria-label={`${label} el ${following.shortDay}`}
+              onClick={() => !busy && onAnswer(status)}
+              className={`min-h-10 rounded-lg px-3 text-sm font-bold aria-disabled:opacity-60 ${
+                followingMine === status
+                  ? status === "going"
+                    ? "bg-emerald-600 text-snow"
+                    : "bg-red-600 text-snow"
+                  : "border border-white/20 text-white hover:bg-white/5"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      {!bothGoing && (
+        <button
+          type="button"
+          aria-disabled={busy}
+          onClick={() => !busy && onAnswerBoth()}
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-400/50 bg-emerald-500/15 text-sm font-extrabold text-emerald-100 hover:bg-emerald-500/25 aria-disabled:opacity-60"
+        >
+          <CircleCheck aria-hidden="true" className="h-4 w-4" />
+          Voy a los dos
+        </button>
+      )}
+    </div>
+  );
+}
+
 const ATTENDANCE_GROUPS = [
   { key: "going", title: "Van", icon: CircleCheck, tint: "text-emerald-400", empty: "Nadie todavía" },
   { key: "not_going", title: "No van", icon: CircleX, tint: "text-zinc-200", empty: "Nadie" },
@@ -322,7 +369,22 @@ function HelpButton({ attendance, onAsk }) {
   );
 }
 
-function TrainingCard({ teamId, training, attendance, currentUserId, answerBusy, answerError, onAnswer, onEditSchedule, coinBurst = null, onAskHelp }) {
+function TrainingCard({
+  teamId,
+  training,
+  attendance,
+  following = null,
+  followingAttendance = null,
+  currentUserId,
+  answerBusy,
+  answerError,
+  onAnswer,
+  onAnswerFollowing,
+  onAnswerBoth,
+  onEditSchedule,
+  coinBurst = null,
+  onAskHelp,
+}) {
   if (!training) return null;
   const helpButton = <HelpButton attendance={attendance} onAsk={onAskHelp} />;
   const hasVenue = teamId !== "playa";
@@ -363,6 +425,16 @@ function TrainingCard({ teamId, training, attendance, currentUserId, answerBusy,
       )}
       {attendance?.can_respond && (
         <AnswerButtons question={trainingQuestion(training)} mine={attendance.mine} busy={answerBusy} error={answerError} onAnswer={onAnswer} burst={coinBurst} hint={attendance.mine === "going" ? "Vas: +10 coins conseguidos" : attendance.mine === "not_going" ? "Contestado: no pierdes coins" : "Voy: +10 coins · Si no contestas: −10 coins"} />
+      )}
+      {attendance?.can_respond && following && followingAttendance?.can_respond && (
+        <FollowingTraining
+          following={following}
+          mine={attendance.mine}
+          followingMine={followingAttendance.mine}
+          busy={answerBusy}
+          onAnswer={onAnswerFollowing}
+          onAnswerBoth={onAnswerBoth}
+        />
       )}
       {attendance && <WhoIsGoing lists={attendance} currentUserId={currentUserId} />}
     </EventCard>
@@ -643,12 +715,22 @@ function useTrainingAttendance(teamId, onAccessLost, sessions) {
   );
   const trainingDate = training?.date ?? null;
   const [attendance, setAttendance] = useState(null);
+  // El entreno de después, para contestar a los dos de una vez.
+  const following = useMemo(
+    () => trainingAfter(sessions ? sessionsToSchedules(sessions) : TEAM_SCHEDULES[teamId] ?? [], training),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [teamId, sessionsKey, trainingDate],
+  );
+  const followingDate = following?.date ?? null;
+  const [followingAttendance, setFollowingAttendance] = useState(null);
 
   const load = useCallback(async () => (trainingDate ? getAttendance(teamId, trainingDate) : null), [teamId, trainingDate]);
+  const loadFollowing = useCallback(async () => (followingDate ? getAttendance(teamId, followingDate) : null), [teamId, followingDate]);
 
   useEffect(() => {
     let cancelled = false;
     setAttendance(null);
+    setFollowingAttendance(null);
     load()
       .then((data) => {
         if (!cancelled) setAttendance(data);
@@ -656,12 +738,18 @@ function useTrainingAttendance(teamId, onAccessLost, sessions) {
       .catch((error) => {
         if (!cancelled && (error.status === 401 || error.status === 403)) onAccessLost();
       });
+    // Es un extra: si falla, se contesta como siempre, uno a uno.
+    loadFollowing()
+      .then((data) => {
+        if (!cancelled) setFollowingAttendance(data);
+      })
+      .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [load, onAccessLost]);
+  }, [load, loadFollowing, onAccessLost]);
 
-  return { training, trainingDate, attendance, setAttendance, load };
+  return { training, trainingDate, attendance, setAttendance, load, following, followingDate, followingAttendance, setFollowingAttendance, loadFollowing };
 }
 
 const MATCH_LENGTH_MS = 2 * 60 * 60 * 1000;
@@ -710,7 +798,8 @@ export default function HomePage({ user, onAccessLost }) {
   const [teamId, setTeamId] = useTeamChoice(user, searchParams.get("equipo"));
   const [schedules, setSchedules] = useSchedules(onAccessLost);
   const [editingSchedule, setEditingSchedule] = useState(false);
-  const { training, trainingDate, attendance, setAttendance, load } = useTrainingAttendance(teamId, onAccessLost, schedules?.[teamId]?.sessions);
+  const { training, trainingDate, attendance, setAttendance, load, following, followingDate, followingAttendance, setFollowingAttendance, loadFollowing } =
+    useTrainingAttendance(teamId, onAccessLost, schedules?.[teamId]?.sessions);
   const [answerBusy, setAnswerBusy] = useState(false);
   const [answerError, setAnswerError] = useState("");
   const [matches, setMatches] = useState(null);
@@ -766,6 +855,39 @@ export default function HomePage({ user, onAccessLost }) {
   const matchToday = (matches ?? []).some((item) => matchDayLabel(item.date) === "Hoy");
   // Aunque se abra en Entrenamientos, la pestaña dice cuántos partidos hay por delante.
   const matchBadge = matchToday ? "Hoy" : matches?.length ? String(matches.length) : null;
+
+  // Contestar al entreno de después, o a los dos a la vez («Voy a los dos»).
+  const answerDays = async (answers) => {
+    setAnswerBusy(true);
+    setAnswerError("");
+    try {
+      let earned = 0;
+      for (const [date, status] of answers) {
+        const result = await answerAttendance(teamId, date, status);
+        earned += result?.coins ?? 0;
+      }
+      if (earned) {
+        setCoinBurst({ amount: earned, status: "going", key: Date.now() });
+        setCoins((current) => current && { ...current, balance: current.balance + earned });
+      }
+      const [main, next] = await Promise.all([load(), loadFollowing()]);
+      setAttendance(main);
+      setFollowingAttendance(next);
+    } catch (error) {
+      if (error.status === 401) onAccessLost();
+      else setAnswerError(error.message);
+    } finally {
+      setAnswerBusy(false);
+    }
+  };
+  const answerFollowing = (status) => answerDays([[followingDate, status]]);
+  const answerBoth = () =>
+    answerDays(
+      [
+        [trainingDate, "going"],
+        [followingDate, "going"],
+      ].filter(([date], index) => (index === 0 ? attendance?.mine : followingAttendance?.mine) !== "going" && date),
+    );
 
   const answerTraining = async (status) => {
     setAnswerBusy(true);
@@ -868,6 +990,10 @@ export default function HomePage({ user, onAccessLost }) {
               answerBusy={answerBusy}
               answerError={answerError}
               onAnswer={answerTraining}
+              following={following}
+              followingAttendance={followingAttendance}
+              onAnswerFollowing={answerFollowing}
+              onAnswerBoth={answerBoth}
               coinBurst={coinBurst}
               onAskHelp={() => setAskingHelp(true)}
               onEditSchedule={schedules?.[teamId]?.can_edit ? () => setEditingSchedule(true) : null}

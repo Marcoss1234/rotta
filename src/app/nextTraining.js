@@ -66,3 +66,25 @@ export function nextTraining(schedules, now = new Date()) {
     detail: first.time,
   };
 }
+
+
+/**
+ * El entreno que viene después de `training` (para contestar a los dos a la vez).
+ * Solo si los dos tienen hora y el siguiente cae en los próximos 7 días.
+ */
+export function trainingAfter(schedules, training, now = new Date()) {
+  if (!training?.known || !training.date || !training.end) return null;
+  const [year, month, day] = training.date.split("-").map(Number);
+  const [endHour, endMinute] = training.end.split(":").map(Number);
+  const afterEnd = new Date(year, month - 1, day, endHour, endMinute + 1);
+  const next = nextTraining(schedules, afterEnd);
+  if (!next?.known || next.date === training.date) return null;
+  const [nextYear, nextMonth, nextDay] = next.date.split("-").map(Number);
+  const when = new Date(nextYear, nextMonth - 1, nextDay);
+  if (when - new Date(now.getFullYear(), now.getMonth(), now.getDate()) > 7 * DAY_MS) return null;
+  return {
+    ...next,
+    label: `${WEEKDAY_NAMES[when.getDay()]} ${nextDay} · ${next.start}`,
+    shortDay: WEEKDAY_NAMES[when.getDay()].toLowerCase(),
+  };
+}
