@@ -35,6 +35,7 @@ import { nextTraining, trainingAfter } from "@/app/nextTraining.js";
 import { roleLabel } from "@/app/roles.js";
 import { TEAM_SCHEDULES, defaultTeamId, isBeachTeam, isTeamId, sessionsToSchedules, shareMatches } from "@/app/teams.js";
 import { TRAINING_VENUE_ADDRESS, TRAINING_VENUE_URL } from "../../../data/groups.js";
+import { Notice } from "@/app/ui/index.js";
 
 const STORAGE_KEY = "tnt-equipo-visto";
 
@@ -217,7 +218,7 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
           );
         })}
       </div>
-      {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline className="mt-2">{error}</Notice>}
     </div>
   );
 }
@@ -726,7 +727,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
 
   if (!matches) {
     return error
-      ? <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>
+      ? <Notice tone="error" inline>{error}</Notice>
       : <p role="status" className="text-zinc-300">Cargando…</p>;
   }
 
@@ -741,7 +742,7 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
           </button>
         )}
       </div>
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
       {matches.length === 0 ? (
         <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">No hay partidos programados para este equipo.</p>
       ) : (

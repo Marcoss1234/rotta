@@ -5,6 +5,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 import BackupCard from "@/app/components/BackupCard.jsx";
 import UserDialog from "@/app/components/UserDialog.jsx";
 import { ROLES, roleLabel } from "@/app/roles.js";
+import { Notice } from "@/app/ui/index.js";
 
 const ALL = "todos";
 const NO_TEAM = "sin-equipo";
@@ -121,7 +122,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
     return (
       <div className="space-y-4">
         <h1 className="font-display text-3xl font-extrabold">Usuarios</h1>
-        {error ? <p role="alert" className="font-semibold text-red-300">{error}</p> : <p role="status" className="text-zinc-300">Cargando…</p>}
+        {error ? <Notice tone="error" inline>{error}</Notice> : <p role="status" className="text-zinc-300">Cargando…</p>}
       </div>
     );
   }
@@ -133,7 +134,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
         <p className="text-sm text-zinc-400">{memberCount === 1 ? "1 miembro" : `${memberCount} miembros`}</p>
       </header>
 
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
 
       {pending.length > 0 && (
         <section aria-labelledby="pending-title" className="overflow-hidden rounded-3xl bg-panel ring-2 ring-tnt" data-testid="users-pending">

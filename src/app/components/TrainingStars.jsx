@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Check, Star } from "lucide-react";
 import { getTrainingStars, saveTrainingStars } from "@/app/api.js";
 import Avatar from "@/app/components/Avatar.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 
@@ -139,7 +140,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
           })}
         </ul>
       )}
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
       {(changed || saved) && data.going.length > 0 && (
         <button
           type="button"

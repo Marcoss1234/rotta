@@ -11,6 +11,7 @@ import PlayerProfileDialog from "@/app/components/PlayerProfileDialog.jsx";
 import { GroupPicker, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { isStaff, POSITIONS } from "@/app/roles.js";
 import { isBeachTeam } from "@/app/teams.js";
+import { Notice } from "@/app/ui/index.js";
 
 function PlayerCardContent({ player }) {
   const preferred = player.preferred_positions.filter((position) => position !== player.position);
@@ -213,7 +214,7 @@ export default function RosterPage({ user, onAccessLost }) {
 
       {players && <SquadSummary players={players} />}
 
-      {error && <p role="alert" className="sticky top-2 z-30 rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <div className="sticky top-2 z-30 rounded-card bg-card"><Notice tone="error">{error}</Notice></div>}
       {!error && (!teams || !players) && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {players && (

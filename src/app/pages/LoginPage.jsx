@@ -3,6 +3,7 @@ import { getAuthConfig, loginWithGoogle, loginWithPassword, registerAccount } fr
 import PasswordField, { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
 import ClubCrest from "@/app/components/ClubCrest.jsx";
 import { useClubIdentity } from "@/app/clubIdentity.js";
+import { Notice } from "@/app/ui/index.js";
 
 const GOOGLE_SCRIPT = "https://accounts.google.com/gsi/client";
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
@@ -125,7 +126,7 @@ function PasswordAccess({ onSignedIn }) {
         disabled={busy}
       />
 
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
 
       <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt font-bold text-onbrand disabled:opacity-60">
         {busy ? "Un momento…" : registering ? "Crear cuenta" : "Entrar"}
@@ -179,7 +180,7 @@ function DemoAccess({ onSignedIn }) {
           </li>
         ))}
       </ul>
-      {error && <p role="alert" className="text-center text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline className="justify-center text-center">{error}</Notice>}
     </section>
   );
 }
@@ -256,7 +257,7 @@ export default function LoginPage({ onSignedIn }) {
             <>
               <div ref={buttonRef} className="flex min-h-11 w-full justify-center" data-testid="google-button" />
               {busy && <p role="status" className="text-center text-sm text-zinc-300">Entrando…</p>}
-              {error && <p role="alert" className="text-center text-sm font-semibold text-red-300">{error}</p>}
+              {error && <Notice tone="error" inline className="justify-center text-center">{error}</Notice>}
               <div className="flex items-center gap-3 text-sm text-zinc-400" aria-hidden="true">
                 <span className="h-px flex-1 bg-white/15" />
                 o con usuario y contraseña

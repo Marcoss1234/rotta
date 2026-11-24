@@ -1057,6 +1057,8 @@
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 251 191 36;
   --radius-card: 14px;
   --radius-control: 12px;
   --num-width: 78%;
@@ -1134,6 +1136,8 @@
   --c-gold: 217 154 0;
   --c-gold-text: 138 97 0;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 146 64 14;
 }
 
 :root[data-rotta="lima"][data-theme="light"][data-onbrand="light"] .text-onbrand,
@@ -1266,6 +1270,8 @@
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 251 191 36;
 }
 
 :root[data-rotta="lima"][data-theme="dark"][data-onbrand="dark"] .text-onbrand {
@@ -1398,6 +1404,8 @@
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 251 191 36;
   --radius-card: 26px;
   --radius-control: 999px;
   --num-width: 100%;
@@ -1475,6 +1483,8 @@
   --c-gold: 217 154 0;
   --c-gold-text: 138 97 0;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 146 64 14;
 }
 
 :root[data-rotta="naranja"][data-theme="light"][data-onbrand="light"] .text-onbrand,
@@ -1607,6 +1617,8 @@
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 251 191 36;
 }
 
 :root[data-rotta="naranja"][data-theme="dark"][data-onbrand="dark"] .text-onbrand {
@@ -1739,6 +1751,8 @@
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 251 191 36;
   --radius-card: 18px;
   --radius-control: 999px;
   --num-width: 90%;
@@ -1816,6 +1830,8 @@
   --c-gold: 217 154 0;
   --c-gold-text: 138 97 0;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 146 64 14;
 }
 
 :root[data-rotta="tinta"][data-theme="light"][data-onbrand="light"] .text-onbrand,
@@ -1948,6 +1964,8 @@
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
   --c-calendar: 212 42 46;
+  --c-warning: 217 119 6;
+  --c-warning-text: 251 191 36;
 }
 
 :root[data-rotta="tinta"][data-theme="dark"][data-onbrand="dark"] .text-onbrand {

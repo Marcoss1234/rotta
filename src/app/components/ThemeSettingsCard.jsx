@@ -5,6 +5,7 @@ import { STYLES, THEMES } from "@/app/themes.js";
 import { saveClubTheme, sameClubTheme, useThemeControls } from "@/app/useTheme.js";
 import ClubIdentitySettings from "@/app/components/ClubIdentitySettings.jsx";
 import ThemePreview from "@/app/components/ThemePreview.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 const MODES = [
   { id: "club", label: "Del club", icon: Palette },
@@ -217,12 +218,14 @@ function ClubColors() {
       </section>
 
       {warnings.length > 0 && (
-        <ul className="space-y-1 rounded-xl bg-amber-400/10 p-3 text-xs text-amber-200">
-          {warnings.map((warning) => <li key={warning}>{warning}</li>)}
-        </ul>
+        <Notice tone="warning" as="div" size="sm" announce={false}>
+          <ul className="space-y-1">
+            {warnings.map((warning) => <li key={warning}>{warning}</li>)}
+          </ul>
+        </Notice>
       )}
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
-      {message && <p role="status" className="text-sm font-semibold text-emerald-300">{message}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
+      {message && <Notice tone="success" inline>{message}</Notice>}
       {changed && (
         <div className="grid grid-cols-2 gap-2">
           <button type="button" onClick={() => previewClub(saved)} className="min-h-11 rounded-full text-sm font-bold text-zinc-200 ring-1 ring-white/15 hover:bg-white/5">

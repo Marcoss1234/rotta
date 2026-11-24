@@ -1,20 +1,31 @@
-import { CircleAlert, CircleCheck, Info } from "lucide-react";
+import { CircleAlert, CircleCheck, Info, TriangleAlert } from "lucide-react";
 import { cx } from "./cx.js";
 
+// Los cuatro tonos, de más a menos urgente. Solo los errores se anuncian en voz alta con alert; el resto, con status.
 const TONES = {
-  error: { className: "bg-danger/10 text-danger-text ring-1 ring-inset ring-danger/30", icon: CircleAlert, role: "alert" },
-  success: { className: "bg-voy/10 text-voy-text ring-1 ring-inset ring-voy/30", icon: CircleCheck, role: "status" },
-  info: { className: "bg-raised text-ink", icon: Info, role: "status" },
+  error: { box: "bg-danger/10 text-danger-text ring-1 ring-inset ring-danger/30", inline: "text-danger-text", icon: CircleAlert, role: "alert" },
+  warning: { box: "bg-warning/10 text-warning-text ring-1 ring-inset ring-warning/40", inline: "text-warning-text", icon: TriangleAlert, role: "status" },
+  success: { box: "bg-voy/10 text-voy-text ring-1 ring-inset ring-voy/30", inline: "text-voy-text", icon: CircleCheck, role: "status" },
+  info: { box: "bg-raised text-ink", inline: "text-ink-muted", icon: Info, role: "status" },
 };
 
-/** Un aviso: error (se anuncia en voz alta), éxito o información. */
-export function Notice({ tone = "info", className, children }) {
-  const { className: toneClass, icon: Icon, role } = TONES[tone];
+/**
+ * Un aviso: error, advertencia, éxito o información.
+ * - inline: sin recuadro (debajo de un campo, dentro de una fila o de un formulario corto).
+ * - announce: false si es un aviso fijo que no aparece por algo que acaba de pasar (no se anuncia en voz alta).
+ * - size: "sm" (12 px) donde no cabe más; "md" (14 px) por defecto.
+ * - as: la etiqueta HTML ("div" si dentro va una lista).
+ */
+export function Notice({ tone = "info", inline = false, announce = true, size = "md", as: Tag = "p", className, children }) {
+  const { box, inline: inlineClass, icon: Icon, role } = TONES[tone];
   return (
-    <p role={role} className={cx("flex items-start gap-2 rounded-card p-3 text-sm font-semibold", toneClass, className)}>
-      <Icon aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
+    <Tag
+      role={announce ? role : undefined}
+      className={cx("flex items-start font-semibold", size === "sm" ? "gap-1.5 text-xs" : "gap-2 text-sm", inline ? inlineClass : cx("rounded-card p-3", box), className)}
+    >
+      <Icon aria-hidden="true" className={cx("shrink-0", size === "sm" ? "mt-px h-3.5 w-3.5" : "mt-0.5 h-4 w-4")} />
       <span className="min-w-0">{children}</span>
-    </p>
+    </Tag>
   );
 }
 

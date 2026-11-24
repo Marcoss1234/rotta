@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { setUpPassword } from "@/app/api.js";
 import PasswordField, { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
 // Los mismos que rechaza el servidor: harían creer que la cuenta es del club.
@@ -65,7 +66,7 @@ export default function PasswordSetupForm({ onDone }) {
         <p id="setup-username-hint" className="mt-1 text-xs text-zinc-400">Por ejemplo, marcos.nino</p>
       </div>
       <PasswordField id="setup-password" label="Contraseña" value={password} onChange={setPassword} autoComplete="new-password" hint="Al menos 8 caracteres." disabled={busy} />
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
       <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt px-6 font-bold text-onbrand disabled:opacity-60 md:w-auto">
         {busy ? "Guardando…" : "Crear usuario y contraseña"}
       </button>

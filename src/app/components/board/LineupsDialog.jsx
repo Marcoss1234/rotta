@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Pencil, Trash2, X } from "lucide-react";
+import { Notice } from "@/app/ui/index.js";
 
 // Una pista pequeña con un punto por jugador, para reconocer cada alineación de un vistazo.
 function MiniCourt({ tokens }) {
@@ -82,7 +83,7 @@ function RenameForm({ lineup, onRename, onDone }) {
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
       </div>
-      {error && <p role="alert" className="mt-1.5 text-xs font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline size="sm" className="mt-1.5">{error}</Notice>}
     </form>
   );
 }
@@ -123,7 +124,7 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
         </div>
 
         <div className="min-h-0 overflow-y-auto p-3">
-          {error && <p role="alert" className="mb-2 rounded-lg border border-red-300/50 p-2 text-sm font-semibold text-red-200">{error}</p>}
+          {error && <Notice tone="error" className="mb-2">{error}</Notice>}
           {lineups === null && !error && <p role="status" className="p-2 text-sm text-zinc-300">Cargando…</p>}
           {lineups?.length === 0 && (
             <p className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-zinc-300">

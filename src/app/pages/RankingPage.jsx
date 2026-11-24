@@ -9,6 +9,7 @@ import PlayerRatingHistory from "@/app/components/PlayerRatingHistory.jsx";
 import { lookOf } from "@/app/components/PlayerProfileDialog.jsx";
 import { AnimatedBar, CardTitle, GroupPicker, MovementPill, OverallNumber, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { formatOverall, weekLabel } from "@/app/ranking.js";
+import { Notice } from "@/app/ui/index.js";
 
 const AvatarStage = lazy(() => import("@/app/character/AvatarStage.jsx"));
 
@@ -314,7 +315,7 @@ export default function RankingPage({ user, onAccessLost }) {
       {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => changeParam("grupo", id)} />}
       {groups?.length > 0 && <PeriodPicker value={period} onChange={(id) => changeParam("vista", id === "month" ? "mes" : "")} />}
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       {!error && (!groups || (groupId && !ranking)) && <p role="status" className="text-zinc-300">Cargando…</p>}
       {groups?.length === 0 && <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">Tu equipo todavía no tiene ranking.</p>}
 

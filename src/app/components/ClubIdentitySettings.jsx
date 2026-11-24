@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { ImagePlus, Trash2 } from "lucide-react";
 import ClubCrest from "@/app/components/ClubCrest.jsx";
 import { deleteClubCrest, prepareCrest, saveClubName, uploadClubCrest, useClubIdentity } from "@/app/clubIdentity.js";
+import { Notice } from "@/app/ui/index.js";
 
 // Solo administradores: el nombre y el escudo del club. Salen en la entrada, el menú y el título de la app.
 export default function ClubIdentitySettings() {
@@ -88,8 +89,8 @@ export default function ClubIdentitySettings() {
         </button>
       </form>
 
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
-      {message && <p role="status" className="text-sm font-semibold text-emerald-300">{message}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
+      {message && <Notice tone="success" inline>{message}</Notice>}
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { listPendingUsers, listTeams, reviewAccess } from "@/app/api.js";
 import Avatar from "@/app/components/Avatar.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { accountLabel } from "@/app/roles.js";
+import { Notice } from "@/app/ui/index.js";
 
 const fieldClass = "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white focus:border-white focus:outline-none";
 const labelClass = "mb-1.5 block text-xs font-semibold text-zinc-300";
@@ -38,9 +39,9 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
         </div>
       </div>
       {person.has_password && (
-        <p className="rounded-lg border border-amber-300/50 p-2.5 text-xs text-amber-100">
+        <Notice tone="warning" announce={false} size="sm">
           El nombre lo ha escrito esa persona, sin correo verificado: confirma que es quien dice.
-        </p>
+        </Notice>
       )}
       <div className="grid grid-cols-2 gap-2">
         <div>
@@ -58,7 +59,7 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
           </select>
         </div>
       </div>
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
       <div className="grid grid-cols-2 gap-2">
         <button type="button" disabled={busy} onClick={() => decide({ status: "rejected" })} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white/5 disabled:opacity-50">
           Rechazar
@@ -95,7 +96,7 @@ export default function AccessRequestsPage({ onAccessLost }) {
         </Link>
       </RankingHero>
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       {!error && !people && <p role="status" className="text-zinc-300">Cargando…</p>}
       {people?.length === 0 && <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">No hay nadie esperando acceso.</p>}
       {people?.length > 0 && (

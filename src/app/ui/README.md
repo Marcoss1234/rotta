@@ -18,7 +18,7 @@ Para verlos todos: `npm run demo` y abrir `/componentes` (solo existe en desarro
 | `Field` | Etiqueta, ayuda y error de un campo | `id`, `label`, `optional`, `hint`, `error` |
 | `Input`, `Textarea`, `Select` | Campos | los de HTML + `invalid`, `hint`, `error` (para enlazarlos) |
 | `Dialog` | Ventana o panel lateral | `title`, `description`, `onClose`, `busy`, `placement`: `center` o `side`, `footer` |
-| `Notice` | Avisos | `tone`: `error` (se anuncia), `success`, `info` |
+| `Notice` | Avisos | `tone`: `error` (se anuncia con alert), `warning`, `success`, `info` · `inline` (sin recuadro) · `size`: `sm` (12 px) o `md` · `announce={false}` (aviso fijo, no se anuncia) · `as` (`div` si lleva una lista) |
 | `EmptyState` | Lista vacía | `action` |
 | `Badge` | Etiqueta pequeña | `tone`: `neutral`, `club`, `rotta`, `voy`, `danger` |
 

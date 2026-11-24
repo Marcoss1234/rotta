@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DatabaseBackup, Download } from "lucide-react";
 import { downloadBackup } from "@/app/api.js";
+import { Notice } from "@/app/ui/index.js";
 
 const LAST_KEY = "tnt-ultima-copia";
 
@@ -73,7 +74,7 @@ export default function BackupCard() {
           </p>
         </div>
       </div>
-      {error && <p role="alert" className="mt-3 rounded-lg border border-red-300/50 p-2 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error" className="mt-3">{error}</Notice>}
       <button
         type="button"
         onClick={download}

@@ -8,6 +8,7 @@ import RosterTabs from "@/app/components/board/RosterTabs.jsx";
 import { GroupPicker, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { boardKindLabel, emptyBoard, loadClubPlayers } from "@/app/boards.js";
 import { isBeachTeam } from "@/app/teams.js";
+import { Notice } from "@/app/ui/index.js";
 
 // "Hoy", "Ayer", "Hace 3 días" o la fecha.
 function updatedLabel(iso) {
@@ -211,7 +212,7 @@ export default function BoardsPage({ user, onAccessLost }) {
 
       <RosterTabs active="pizarra" teamId={teamId} />
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       {!error && !data && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {data?.boards.length === 0 && (

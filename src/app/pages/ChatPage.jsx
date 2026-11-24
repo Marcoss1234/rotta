@@ -5,6 +5,7 @@ import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { listChatChannels } from "@/app/api.js";
 import ChatConversation from "@/app/components/ChatConversation.jsx";
 import usePolling from "@/app/usePolling.js";
+import { Notice } from "@/app/ui/index.js";
 
 const CHANNELS_POLL_MS = 15000;
 
@@ -105,7 +106,7 @@ export default function ChatPage({ onAccessLost }) {
         <RankingHero title="Chat" subtitle={totalUnread > 0 ? (totalUnread === 1 ? "1 mensaje sin leer" : `${totalUnread} mensajes sin leer`) : "Todo leído"} />
       </div>
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       {!error && !channels && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {channels && (

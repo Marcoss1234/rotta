@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Camera, CameraOff, ShieldCheck, UserRound, Users } from "lucide-react";
 import { logout, saveConsent } from "@/app/api.js";
+import { Notice } from "@/app/ui/index.js";
 
 // Al entrar por primera vez (o si cambia la política): aceptar la privacidad, decir si es mayor de 14
 // y, si no, quién da el permiso; y aparte, si se pueden ver sus fotos.
@@ -107,7 +108,7 @@ export default function ConsentPage({ user, initial = null, onSaved, onSignedOut
           </label>
         )}
 
-        {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+        {error && <Notice tone="error" inline>{error}</Notice>}
 
         <div className="space-y-2">
           <button type="submit" disabled={!ready || busy} className="min-h-12 w-full rounded-full bg-tnt font-bold text-onbrand disabled:opacity-40">

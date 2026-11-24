@@ -62,6 +62,9 @@ export default {
         "danger-text": themed("danger-text"),
         gold: themed("gold"),
         "gold-text": themed("gold-text"),
+        // Advertencias (ui/Notice tone="warning"): ámbar, distinto del dorado de los coins.
+        warning: themed("warning"),
+        "warning-text": themed("warning-text"),
         // Rojo de hoja de calendario (DateBadge): igual en todos los temas.
         calendar: themed("calendar"),
         background: "hsl(var(--background))",

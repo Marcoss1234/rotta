@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { WEEKDAY_SHORT, WEEKDAY_NAMES } from "@/app/teams.js";
+import { Notice } from "@/app/ui/index.js";
 
 const timeClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none disabled:opacity-40";
@@ -138,7 +139,7 @@ export default function ScheduleDialog({ teamName, sessions, onSave, onClose }) 
           </button>
         )}
 
-        {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
+        {error && <Notice tone="error">{error}</Notice>}
 
         <div className="flex justify-end gap-2">
           <button type="button" onClick={onClose} disabled={busy} className={secondaryClass}>Cancelar</button>

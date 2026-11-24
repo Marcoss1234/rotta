@@ -6,6 +6,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 import RatingDialog from "@/app/components/RatingDialog.jsx";
 import { AnimatedBar, GroupPicker, OverallNumber, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { currentMonday, shiftWeek, weekLabel } from "@/app/ranking.js";
+import { Notice } from "@/app/ui/index.js";
 
 export default function RatingSheetPage({ onAccessLost }) {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -110,7 +111,7 @@ export default function RatingSheetPage({ onAccessLost }) {
         </button>
       </div>
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       {!error && !sheet && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {sheet && (

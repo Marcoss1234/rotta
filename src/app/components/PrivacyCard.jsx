@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Camera, CameraOff, FileText, ShieldCheck, Trash2 } from "lucide-react";
 import { deleteAccount } from "@/app/api.js";
 import ConsentPage from "@/app/pages/ConsentPage.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 // En el perfil: los permisos que se dieron (y cambiarlos), la política y borrar la cuenta.
 export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
@@ -74,7 +75,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
                 className="min-h-11 w-full rounded-full border border-white/15 bg-void px-3 font-bold tracking-widest text-white focus:border-red-400 focus:outline-none"
               />
             </label>
-            {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+            {error && <Notice tone="error" inline>{error}</Notice>}
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"

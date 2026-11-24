@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { accountLabel, ROLES, roleLabel } from "@/app/roles.js";
+import { Notice } from "@/app/ui/index.js";
 
 const selectClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white focus:border-white focus:outline-none";
@@ -65,7 +66,7 @@ function TemporaryPassword({ user, onCreate }) {
           </p>
         </div>
       )}
-      {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error" inline className="mt-2">{error}</Notice>}
     </div>
   );
 }
@@ -151,9 +152,9 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
       <p className="break-words text-sm text-zinc-400">{accountLabel(user)}</p>
       <p className="mt-1 text-sm font-semibold text-zinc-200">{statusText}</p>
       {isPending && user.has_password && (
-        <p className="mt-3 rounded-lg border border-amber-300/50 p-3 text-sm text-amber-100">
+        <Notice tone="warning" announce={false} className="mt-3">
           Esta cuenta se ha creado con usuario y contraseña, sin un correo verificado. El nombre lo ha escrito esa persona: confirma que es quien dice antes de aprobarla.
-        </p>
+        </Notice>
       )}
 
       <div className="mt-4 space-y-4">
@@ -230,7 +231,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
         {rosterNote && <p data-testid="roster-note" className="text-sm text-zinc-300">{rosterNote}</p>}
       </div>
 
-      {error && <p role="alert" className="mt-4 rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error" className="mt-4">{error}</Notice>}
 
       {isApproved ? (
         <div className="mt-4 grid grid-cols-2 gap-2">

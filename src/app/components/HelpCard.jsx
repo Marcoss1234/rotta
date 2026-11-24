@@ -3,6 +3,7 @@ import { LifeBuoy } from "lucide-react";
 import { joinHelp, leaveHelp } from "@/app/api.js";
 import CoinBurst from "@/app/components/CoinBurst.jsx";
 import GoingCourt from "@/app/components/GoingCourt.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 const WEEKDAYS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 const MONTHS = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
@@ -67,7 +68,7 @@ export default function HelpCard({ help, mine, onChange, onAccessLost }) {
         </span>
       )}
       {help.joined && !help.past && <p className="text-center text-xs font-semibold text-sky-200">¡Apuntado! Sales en su lista de ese día.</p>}
-      {error && <p role="alert" className="text-xs font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error" inline size="sm">{error}</Notice>}
     </div>
   );
 }

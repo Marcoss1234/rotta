@@ -50,6 +50,6 @@ export const STYLES = Object.keys(THEMES);
 // El botón «Voy» (success) es #15803D: con texto blanco da 5:1 (el #16A34A de antes daba 3,3:1).
 // El rojo de calendario (la cabecera de DateBadge) es #D42A2E: con texto blanco da 5:1 (el #E5383B daba 4,2:1).
 export const THEME_MEANINGS = {
-  dark: { success: "#15803D", successText: "#4ADE80", danger: "#DC2626", dangerText: "#FB7185", gold: "#F5C542", goldText: "#F5C542", info: "#38BDF8", calendar: "#D42A2E" },
-  light: { success: "#15803D", successText: "#166534", danger: "#DC2626", dangerText: "#B91C1C", gold: "#D99A00", goldText: "#8A6100", info: "#0369A1", calendar: "#D42A2E" },
+  dark: { success: "#15803D", successText: "#4ADE80", danger: "#DC2626", dangerText: "#FB7185", gold: "#F5C542", goldText: "#F5C542", warning: "#D97706", warningText: "#FBBF24", info: "#38BDF8", calendar: "#D42A2E" },
+  light: { success: "#15803D", successText: "#166534", danger: "#DC2626", dangerText: "#B91C1C", gold: "#D99A00", goldText: "#8A6100", warning: "#D97706", warningText: "#92400E", info: "#0369A1", calendar: "#D42A2E" },
 };

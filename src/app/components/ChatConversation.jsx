@@ -15,6 +15,7 @@ import HelpCard from "@/app/components/HelpCard.jsx";
 import { roleLabel } from "@/app/roles.js";
 import usePolling from "@/app/usePolling.js";
 import useVisibleViewport from "@/app/useVisibleViewport.js";
+import { Notice } from "@/app/ui/index.js";
 
 const MESSAGES_POLL_MS = 3000;
 const TYPING_PING_MS = 3000;
@@ -426,7 +427,7 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
         </ol>
       </div>
 
-      {error && <p role="alert" className="mx-3 mb-2 rounded-lg border border-red-300/50 p-2 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error" className="mx-3 mb-2">{error}</Notice>}
 
       {photo && (
         <div className="flex shrink-0 items-center gap-3 border-t border-white/10 bg-panel px-3 pt-2">

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { Notice } from "@/app/ui/index.js";
 
 // Pide un nombre corto, ya rellenado con una propuesta para no tener que escribir si no quieres.
 export default function NameDialog({ title, label, initialName, confirmLabel, busy = false, error = "", onConfirm, onCancel }) {
@@ -40,7 +41,7 @@ export default function NameDialog({ title, label, initialName, confirmLabel, bu
           onChange={(event) => setName(event.target.value)}
           className="mt-1 min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none"
         />
-        {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-300">{error}</p>}
+        {error && <Notice tone="error" inline className="mt-2">{error}</Notice>}
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button type="button" disabled={busy} onClick={onCancel} className="min-h-11 rounded-lg border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">Cancelar</button>
           <button type="submit" disabled={busy || !name.trim()} className="min-h-11 rounded-lg bg-tnt text-sm font-bold text-onbrand disabled:opacity-50">

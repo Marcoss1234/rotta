@@ -3,6 +3,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 import { overallTone } from "@/app/components/RankingVisuals.jsx";
 import { POSITIONS } from "@/app/roles.js";
 import { formatOverall, formatScore, overallOf, weightPercent } from "@/app/ranking.js";
+import { Notice } from "@/app/ui/index.js";
 
 const fieldClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none";
@@ -151,7 +152,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
           <p id="rating-comment-hint" className="mt-1 text-xs text-zinc-400">Solo lo verán este jugador y sus entrenadores.</p>
         </div>
 
-        {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
+        {error && <Notice tone="error">{error}</Notice>}
 
         <div className="grid grid-cols-2 gap-2">
           <button type="button" disabled={busy} onClick={onClose} className={secondaryClass}>Cancelar</button>

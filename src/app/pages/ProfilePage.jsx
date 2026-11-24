@@ -15,6 +15,7 @@ import PasswordChangeForm from "@/app/components/PasswordChangeForm.jsx";
 import PasswordSetupForm from "@/app/components/PasswordSetupForm.jsx";
 import { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
 import { accountLabel, POSITIONS, roleLabel } from "@/app/roles.js";
+import { Notice } from "@/app/ui/index.js";
 
 const PREFERRED = POSITIONS.filter((position) => position !== "Sin definir");
 const MAX_PREFERRED = 3;
@@ -199,7 +200,7 @@ function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCan
       </div>
       <p className="text-sm text-zinc-400">Es el mismo que sale en la pizarra cuando el entrenador prepara una jugada.</p>
       <CharacterEditor look={draft} onChange={onChange} onTabChange={onTabChange} owned={owned} />
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       <div className="sticky bottom-0 z-30 grid grid-cols-2 gap-2 bg-panel pt-2">
         <button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-full border border-white/30 font-semibold hover:bg-white/5 disabled:opacity-50">
           Cancelar
@@ -415,7 +416,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
     return (
       <div className="space-y-4">
         <h1 className="font-display text-3xl font-extrabold">Perfil</h1>
-        {error ? <p role="alert" className="font-semibold text-red-300">{error}</p> : <p role="status" className="text-zinc-300">Cargando…</p>}
+        {error ? <Notice tone="error" inline>{error}</Notice> : <p role="status" className="text-zinc-300">Cargando…</p>}
       </div>
     );
   }
@@ -517,8 +518,8 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
           <HandPicker value={form.hand} onChange={set("hand")} />
         </Card>
 
-        {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
-        {saved && !dirty && <p role="status" className="text-sm font-semibold text-green-300">Cambios guardados.</p>}
+        {error && <Notice tone="error">{error}</Notice>}
+        {saved && !dirty && <Notice tone="success" inline>Cambios guardados.</Notice>}
 
         {(dirty || saving) && (
           <div className="sticky bottom-0 z-30 md:bottom-4">
@@ -577,7 +578,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
             </div>
           </details>
         )}
-        {passwordChanged && <p role="status" className="text-sm font-semibold text-green-300">Contraseña guardada. Ya puedes entrar con tu usuario.</p>}
+        {passwordChanged && <Notice tone="success" inline>Contraseña guardada. Ya puedes entrar con tu usuario.</Notice>}
         <button
           type="button"
           onClick={signOut}

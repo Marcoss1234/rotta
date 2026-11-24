@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Bell, X } from "lucide-react";
 import { getNotificationStatus, updateNotificationPreferences } from "@/app/api.js";
 import { currentPushSubscription, disablePush, enablePush, pushAvailability } from "@/app/notifications.js";
+import { Notice } from "@/app/ui/index.js";
 
 const DISMISSED_KEY = "tnt-avisos-oculto";
 const KINDS = [
@@ -121,7 +122,7 @@ export default function NotificationsCard({ variant = "card" }) {
         <button type="button" disabled={busy} onClick={activate} className="mt-3 min-h-11 w-full rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-60">
           {busy ? "Activando…" : "Activar notificaciones"}
         </button>
-        {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-300">{error}</p>}
+        {error && <Notice tone="error" inline className="mt-2">{error}</Notice>}
       </aside>
     );
   }
@@ -147,7 +148,7 @@ export default function NotificationsCard({ variant = "card" }) {
           )}
         </>
       )}
-      {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline>{error}</Notice>}
     </section>
   );
 }

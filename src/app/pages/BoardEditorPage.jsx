@@ -29,6 +29,7 @@ import { buildPlay, inLine, lineMarks, lineRuleOf, planPositions, planPreview, r
 import { COURT_HEIGHT, COURT_WIDTH, BOARD_KINDS, applyLineup, blendElements, boardKindLabel, canRotate, lineupTokens, loadClubPlayers, newBall, newLine, newProp, nextLineupName, rivalToken, rotateElements, rotationZones, roundCoord, tokenFromPlayer } from "@/app/boards.js";
 import { recordBoardVideo, videoFileName, videoType } from "@/app/boardVideo.js";
 import { isBeachTeam } from "@/app/teams.js";
+import { Notice } from "@/app/ui/index.js";
 
 const SAVE_DELAY_MS = 900;
 const ROTATE_MS = 650;
@@ -832,7 +833,7 @@ export default function BoardEditorPage({ onAccessLost }) {
   if (error && !board) {
     return (
       <div className="space-y-3">
-        <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>
+        <Notice tone="error">{error}</Notice>
         <button type="button" onClick={() => leave()} className="min-h-11 rounded-lg border border-white/30 px-4 text-sm font-semibold">Volver a la pizarra</button>
       </div>
     );

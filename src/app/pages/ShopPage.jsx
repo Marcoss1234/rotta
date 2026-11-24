@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { buyShopItem, getProfile, getShop, saveCharacter } from "@/app/api.js";
 import { lookFromSeed, normalizeLook } from "@/app/character/looks.js";
 import CoinBurst from "@/app/components/CoinBurst.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 const AvatarStage = lazy(() => import("@/app/character/AvatarStage.jsx"));
 // Los efectos se enseñan con tu personaje haciendo el gesto en la pista 3D, como en la pizarra.
@@ -270,9 +271,7 @@ export default function ShopPage({ onAccessLost }) {
       </ul>
 
       {(message || error) && (
-        <p role={error ? "alert" : "status"} className={`rounded-xl p-3 text-sm font-semibold ${error ? "bg-red-500/10 text-red-200" : "bg-emerald-500/10 text-emerald-200"}`}>
-          {error || message}
-        </p>
+        <Notice tone={error ? "error" : "success"}>{error || message}</Notice>
       )}
 
       {/* Lo que puedes hacer con lo elegido. */}

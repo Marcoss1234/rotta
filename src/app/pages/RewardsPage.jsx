@@ -6,6 +6,7 @@ import { lookFromSeed, normalizeLook } from "@/app/character/looks.js";
 import Avatar from "@/app/components/Avatar.jsx";
 import HonorsBanner from "@/app/components/HonorsBanner.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { Notice } from "@/app/ui/index.js";
 
 const AvatarStage = lazy(() => import("@/app/character/AvatarStage.jsx"));
 
@@ -192,7 +193,7 @@ export default function RewardsPage({ user, onAccessLost }) {
 
       <RankingHero title="Premios" subtitle="Lo que te llevas por quedar en el podio" />
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
 
       {profile && <CrownShowcase profile={profile} prizes={prizes} monthTitle={honors?.month_title} />}
 

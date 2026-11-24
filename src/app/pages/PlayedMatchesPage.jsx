@@ -7,6 +7,7 @@ import MatchDialog from "@/app/components/MatchDialog.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { placeInfo, setsWon, matchKindLabel } from "@/app/matches.js";
 import { defaultTeamId, isTeamId } from "@/app/teams.js";
+import { Notice } from "@/app/ui/index.js";
 
 const KIND_TABS = [
   { value: "amistoso", label: "Amistosos" },
@@ -74,7 +75,7 @@ function MvpPicker({ match, onChange }) {
           ))}
         </select>
       </label>
-      {error && <p role="alert" className="mt-1 text-xs font-semibold text-red-300">{error}</p>}
+      {error && <Notice tone="error" inline size="sm" className="mt-1">{error}</Notice>}
     </div>
   );
 }
@@ -204,7 +205,7 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
         </Link>
       </RankingHero>
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <Notice tone="error">{error}</Notice>}
       {!error && !played && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {played && (

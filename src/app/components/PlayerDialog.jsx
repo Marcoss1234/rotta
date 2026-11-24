@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { POSITIONS } from "@/app/roles.js";
+import { Notice } from "@/app/ui/index.js";
 
 const fieldClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white placeholder-zinc-400 focus:border-white focus:outline-none";
@@ -106,7 +107,7 @@ export default function PlayerDialog({ player, teams, defaultTeamId, onSave, onD
           </div>
         </fieldset>
 
-        {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
+        {error && <Notice tone="error">{error}</Notice>}
 
         <div className="grid grid-cols-2 gap-2">
           <button type="button" disabled={busy} onClick={onClose} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
