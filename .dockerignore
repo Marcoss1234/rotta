@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.env
+.env.*
+!.env.example
+backend/.env
+node_modules
+dist
+data/mongo
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+backend/tests
+demo
+tools/captura-gestos/videos
