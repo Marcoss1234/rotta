@@ -4,25 +4,28 @@ import RotationMark from "@/app/components/RotationMark.jsx";
 import { formatOverall } from "@/app/ranking.js";
 
 // Cabecera de cada pantalla: título claro a la izquierda y, si hace falta, sus botones a la derecha.
+// La marca de las seis zonas es de Rotta: va en el color de Rotta (no en el del club). Colores del tema.
 export function RankingHero({ title, subtitle, stacked = false, children }) {
   return (
     <header className={`flex gap-x-3 gap-y-3 pt-1 ${stacked ? "flex-col" : "flex-wrap items-end justify-between"}`}>
       <div className="min-w-0">
-        <RotationMark className="mb-2 h-6 w-6 text-tnt" />
-        <h1 className="font-display text-[2.6rem] font-extrabold leading-[0.95] tracking-tight max-[359px]:text-[2.1rem] md:text-5xl">{title}</h1>
-        {subtitle && <p className="mt-2 text-sm text-zinc-400">{subtitle}</p>}
+        <RotationMark className="mb-2 h-6 w-6 text-rotta-text" />
+        <h1 className="font-display text-[2.6rem] font-extrabold leading-[0.95] tracking-tight text-ink max-[359px]:text-[2.1rem] md:text-5xl">{title}</h1>
+        {subtitle && <p className="mt-2 text-sm text-ink-muted">{subtitle}</p>}
       </div>
       {children && <div className={stacked ? "flex min-h-11 items-center" : "shrink-0"}>{children}</div>}
     </header>
   );
 }
 
-// Título de una tarjeta: el icono en un círculo del color del club y el texto al lado.
+// Título de una tarjeta: el icono en un círculo con el tono suave del club (el color del club, de acento en el
+// icono) y el texto al lado. El icono sobre su círculo tiene 3:1 en todos los temas (lo comprueba
+// npm run comprobar-temas: «Seleccionado: icono sobre su fondo»).
 export function CardTitle({ icon: Icon, id, children, as: Tag = "h2" }) {
   return (
-    <Tag id={id} className="flex items-center gap-2.5 font-display text-xl font-bold">
+    <Tag id={id} className="flex items-center gap-2.5 font-display text-xl font-bold text-ink">
       {Icon && (
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand">
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-club-soft text-club-ui">
           <Icon aria-hidden="true" className="h-4 w-4" />
         </span>
       )}
