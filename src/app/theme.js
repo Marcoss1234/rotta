@@ -317,6 +317,11 @@ export function themeContrastChecks(theme) {
     ["Botón Voy sin elegir (al pasar el ratón)", theme.successText, mix(theme.surface, theme.success, 0.2), 4.5],
     ["Texto del botón de peligro", "#FFFFFF", theme.danger, 4.5],
     ["Texto rojo sobre tarjeta", theme.dangerText, theme.surface, 4.5],
+    // Avisos (ui/Notice) y «Borrar» discreto: el texto sobre su propio tono al 10 %, en tarjeta y en el fondo.
+    ["Texto rojo sobre fondo", theme.dangerText, theme.bg, 4.5],
+    ["Aviso de error en tarjeta", theme.dangerText, mix(theme.surface, theme.danger, 0.1), 4.5],
+    ["Aviso de error en el fondo", theme.dangerText, mix(theme.bg, theme.danger, 0.1), 4.5],
+    ["Aviso de éxito en el fondo", theme.successText, mix(theme.bg, theme.success, 0.1), 4.5],
     ["Texto dorado sobre tarjeta", theme.goldText, theme.surface, 4.5],
     // Segundo color del club: solo donde da información (el adorno, `stripe`, no lo necesita).
     ["Segundo color como texto sobre tarjeta", theme.accentText, theme.surface, 4.5],

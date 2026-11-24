@@ -49,6 +49,7 @@
   --c-on-rotta-dark: 15 17 21;
   --c-accent-ui-dark: 34 211 238;
   --radius-card: 18px;
+  --shadow-card: 0 0 #0000;
   --radius-control: 999px;
   --num-width: 90%;
   --num-weight: 600;
@@ -81,6 +82,7 @@
 :root[data-theme="light"] {
   /* En claro, "blanco" es el color del texto (los valores, de cada tema en src/theme-palette.css). */
   color-scheme: light;
+  --shadow-card: 0 1px 2px rgb(15 23 42 / 0.06), 0 6px 18px -8px rgb(15 23 42 / 0.12);
 }
 
 :root[data-theme="dark"] {
@@ -97,6 +99,7 @@
 /* La pista, la pizarra y el partido en directo van siempre en oscuro, también con la app en claro.
    Los fondos y grises oscuros del tema están en src/theme-palette.css; aquí, lo que depende del club. */
 :root[data-theme="light"] .force-dark {
+  --shadow-card: 0 0 #0000;
   color-scheme: dark;
   color: rgb(var(--c-white));
 }

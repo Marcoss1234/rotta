@@ -6,6 +6,8 @@ import { ThemeProvider } from "@/app/useTheme.js";
 const PrivateApp = lazy(() => import("@/app/PrivateApp.jsx"));
 // Prueba de temas: se ve sin entrar en la app.
 const ThemeLabPage = lazy(() => import("@/app/pages/ThemeLabPage.jsx"));
+// Catálogo de los componentes de src/app/ui: solo en el ordenador (npm run dev) y en la demo, no en la app publicada.
+const UiCatalogPage = import.meta.env.DEV ? lazy(() => import("@/app/ui/UiCatalogPage.jsx")) : null;
 // La política de privacidad se ve sin iniciar sesión.
 const PrivacyPage = lazy(() => import("@/app/pages/PrivacyPage.jsx"));
 
@@ -40,6 +42,16 @@ export default function App() {
                 </Suspense>
               }
             />
+            {UiCatalogPage && (
+              <Route
+                path="/componentes"
+                element={
+                  <Suspense fallback={<div className="min-h-screen bg-canvas" />}>
+                    <UiCatalogPage />
+                  </Suspense>
+                }
+              />
+            )}
             <Route path="*" element={<Navigate to="/app" replace />} />
           </Routes>
         </BrowserRouter>

@@ -4,6 +4,7 @@ import { createEvent, deleteEvent, getCalendar, updateEvent } from "@/app/api.js
 import EventDialog from "@/app/components/EventDialog.jsx";
 import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { Badge, Button, Card, EmptyState, IconButton, Notice, cx } from "@/app/ui/index.js";
 import { localToday, placeInfo } from "@/app/matches.js";
 import { MATCH_TEAM_PHRASE } from "@/app/teams.js";
 
@@ -38,7 +39,8 @@ function monthCells(month) {
 }
 
 const isMatch = (item) => item.type === "match";
-const pillClass = (item) => (isMatch(item) ? "bg-tnt/30 text-orange-100" : "bg-sky-400/25 text-sky-100");
+// Partidos en el color del club; eventos en neutro. Los dos con su texto legible en todos los temas.
+const pillClass = (item) => (isMatch(item) ? "bg-club text-on-club" : "bg-raised text-ink ring-1 ring-inset ring-line");
 
 function DayCell({ iso, items, selected, onSelect }) {
   const today = iso === localToday();
@@ -50,11 +52,13 @@ function DayCell({ iso, items, selected, onSelect }) {
       aria-pressed={selected}
       aria-label={`${dayTitle(iso)}${items.length ? `: ${items.map((item) => (isMatch(item) ? "partido" : item.title)).join(", ")}` : ", nada"}`}
       onClick={() => onSelect(iso)}
-      className={`flex min-h-[5.25rem] min-w-0 flex-col gap-0.5 rounded-xl p-0.5 text-left transition-colors md:min-h-28 md:p-1.5 ${
-        selected ? "bg-tnt/15 ring-2 ring-tnt" : items.length ? "bg-panel ring-1 ring-white/15 hover:ring-white/40" : "bg-panel/50 ring-1 ring-white/5 hover:ring-white/20"
-      }`}
+      className={cx(
+        "flex min-h-[5.25rem] min-w-0 flex-col gap-0.5 rounded-field p-0.5 text-left transition md:min-h-28 md:p-1.5",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
+        selected ? "bg-club-soft ring-2 ring-club-ui" : items.length ? "bg-panel ring-1 ring-line hover:ring-control" : "ring-1 ring-line/60 hover:ring-line",
+      )}
     >
-      <span className={`flex h-6 w-6 items-center justify-center rounded-full font-display text-sm font-extrabold ${today ? "bg-tnt text-onbrand" : items.length ? "text-white" : "text-zinc-500"}`}>
+      <span className={cx("flex h-6 w-6 items-center justify-center rounded-full font-display text-sm font-extrabold", today ? "bg-club text-on-club" : items.length ? "text-ink" : "text-ink-muted")}>
         {day}
       </span>
       {items.slice(0, PILLS_PER_DAY).map((item) => (
@@ -62,32 +66,29 @@ function DayCell({ iso, items, selected, onSelect }) {
           {isMatch(item) ? "Partido" : item.title}
         </span>
       ))}
-      {extra > 0 && <span className="px-1 text-[10px] font-bold leading-tight text-zinc-300 md:text-xs">+{extra}</span>}
+      {extra > 0 && <span className="px-1 text-[10px] font-bold leading-tight text-ink-muted md:text-xs">+{extra}</span>}
     </button>
   );
 }
 
 function AgendaRow({ item, canManage, onEdit }) {
   return (
-    <li className={`space-y-2.5 rounded-2xl border border-l-4 border-white/5 bg-panel p-3 ${isMatch(item) ? "border-l-tnt" : "border-l-sky-400"}`} data-testid="calendar-item">
+    <Card as="li" padding="sm" className="space-y-2.5" data-testid="calendar-item">
       <div className="flex items-center gap-3">
         <DateBadge iso={item.date} />
         <div className="min-w-0 flex-1">
-          <p className="break-words font-display text-lg font-extrabold leading-tight">
+          <Badge tone={isMatch(item) ? "club" : "neutral"}>{isMatch(item) ? "Partido" : "Evento"}</Badge>
+          <p className="mt-1 break-words font-display text-lg font-extrabold leading-tight text-ink">
             {isMatch(item) ? `Partido ${MATCH_TEAM_PHRASE[item.team_id]}` : item.title}
           </p>
-          {isMatch(item) && <p className="mt-0.5 break-words text-sm font-semibold text-zinc-300">contra <span className="text-white">{item.opponent}</span></p>}
+          {isMatch(item) && <p className="mt-0.5 break-words text-sm font-semibold text-ink-muted">contra <span className="text-ink">{item.opponent}</span></p>}
         </div>
-        {item.time && <p className="shrink-0 font-display text-2xl font-extrabold leading-none">{item.time}</p>}
-        {!isMatch(item) && canManage && (
-          <button type="button" onClick={() => onEdit(item)} aria-label={`Editar ${item.title}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5 hover:text-white">
-            <Pencil aria-hidden="true" className="h-4 w-4" />
-          </button>
-        )}
+        {item.time && <p className="font-score shrink-0 text-2xl leading-none text-ink">{item.time}</p>}
+        {!isMatch(item) && canManage && <IconButton icon={Pencil} label={`Editar ${item.title}`} onClick={() => onEdit(item)} />}
       </div>
       {!isMatch(item) && item.location && <EventPlace place={placeInfo(item.location).label} url={placeInfo(item.location).url} />}
       {!isMatch(item) && item.notes && <MatchNotes notes={item.notes} />}
-    </li>
+    </Card>
   );
 }
 
@@ -143,31 +144,23 @@ export default function EventsPage({ onAccessLost }) {
   const today = localToday();
   const defaultDate = selected ?? (today.startsWith(month) ? today : `${month}-01`);
   const canManage = Boolean(calendar?.can_manage);
-  const arrowClass = "flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/5";
 
   return (
     <div className="space-y-6">
       <RankingHero title="Eventos" subtitle="Calendario del club" stacked>
         {canManage && (
-          <button type="button" onClick={() => setEditing({ event: null })} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-extrabold text-void hover:bg-zinc-200">
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            Añadir
-          </button>
+          <Button icon={Plus} onClick={() => setEditing({ event: null })}>Añadir</Button>
         )}
       </RankingHero>
 
       <section aria-label="Calendario" className="space-y-2">
-        <div className="flex items-center justify-between gap-2 rounded-xl bg-panel p-1">
-          <button type="button" aria-label="Mes anterior" onClick={() => goToMonth(shiftMonth(month, -1))} className={arrowClass}>
-            <ChevronLeft aria-hidden="true" className="h-5 w-5" />
-          </button>
-          <h2 className="font-display text-xl font-extrabold" aria-live="polite">{monthTitle(month)}</h2>
-          <button type="button" aria-label="Mes siguiente" onClick={() => goToMonth(shiftMonth(month, 1))} className={arrowClass}>
-            <ChevronRight aria-hidden="true" className="h-5 w-5" />
-          </button>
-        </div>
+        <Card as="div" padding="none" className="flex items-center justify-between gap-2 p-1">
+          <IconButton icon={ChevronLeft} label="Mes anterior" onClick={() => goToMonth(shiftMonth(month, -1))} />
+          <h2 className="font-display text-xl font-extrabold text-ink" aria-live="polite">{monthTitle(month)}</h2>
+          <IconButton icon={ChevronRight} label="Mes siguiente" onClick={() => goToMonth(shiftMonth(month, 1))} />
+        </Card>
         <div aria-hidden="true" className="grid grid-cols-7 gap-1">
-          {WEEKDAYS.map((day) => <span key={day} className="text-center text-xs font-bold text-zinc-400">{day}</span>)}
+          {WEEKDAYS.map((day) => <span key={day} className="text-center text-xs font-bold text-ink-muted">{day}</span>)}
         </div>
         <div className="grid grid-cols-7 gap-1" data-testid="calendar-grid">
           {monthCells(month).map((iso, index) => (
@@ -178,21 +171,17 @@ export default function EventsPage({ onAccessLost }) {
         </div>
       </section>
 
-      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
-      {!error && !calendar && <p role="status" className="text-zinc-300">Cargando…</p>}
+      {error && <Notice tone="error">{error}</Notice>}
+      {!error && !calendar && <p role="status" className="text-ink-muted">Cargando…</p>}
 
       {calendar && (
         <section aria-labelledby="agenda-title" className="space-y-2">
-          <div className="flex min-h-11 items-center justify-between gap-3 border-b border-white/15 pb-1">
-            <h2 id="agenda-title" className="min-w-0 font-display text-lg font-extrabold">{selected ? dayTitle(selected) : "Todo el mes"}</h2>
-            {selected && (
-              <button type="button" onClick={() => setSelected(null)} className="min-h-11 shrink-0 rounded-full px-2 text-sm font-semibold text-zinc-300 hover:text-white">
-                Ver el mes
-              </button>
-            )}
+          <div className="flex min-h-11 items-center justify-between gap-3 border-b border-line pb-1">
+            <h2 id="agenda-title" className="min-w-0 font-display text-lg font-extrabold text-ink">{selected ? dayTitle(selected) : "Todo el mes"}</h2>
+            {selected && <Button variant="quiet" size="sm" onClick={() => setSelected(null)}>Ver el mes</Button>}
           </div>
           {listed.length === 0 ? (
-            <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">{selected ? "No hay nada este día." : "No hay nada este mes."}</p>
+            <EmptyState>{selected ? "No hay nada este día." : "No hay nada este mes."}</EmptyState>
           ) : (
             <ul className="space-y-2">
               {listed.map((item) => <AgendaRow key={item.id} item={item} canManage={canManage} onEdit={(event) => setEditing({ event })} />)}

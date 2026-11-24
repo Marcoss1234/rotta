@@ -17,6 +17,8 @@ export default {
         // Del tema: Lima más recto, Naranja más redondo, Tinta entre medias.
         card: "var(--radius-card)",
         control: "var(--radius-control)",
+        // Campos de texto: las esquinas del tema, pero nunca de pastilla.
+        field: "min(var(--radius-control), 0.875rem)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
@@ -62,7 +64,9 @@ export default {
         "gold-text": themed("gold-text"),
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        card: { DEFAULT: "hsl(var(--card))", foreground: "hsl(var(--card-foreground))" },
+        // Fondo de tarjeta del tema para los componentes de src/app/ui (a diferencia de bg-panel, no le afectan
+        // las reglas antiguas de index.css para tarjetas dentro de tarjetas).
+        card: { DEFAULT: themed("panel"), foreground: themed("white") },
         popover: { DEFAULT: "hsl(var(--popover))", foreground: "hsl(var(--popover-foreground))" },
         primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },
         secondary: { DEFAULT: "hsl(var(--secondary))", foreground: "hsl(var(--secondary-foreground))" },
@@ -73,6 +77,10 @@ export default {
         border: themed("line"),
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+      },
+      boxShadow: {
+        // Sombra de las tarjetas: solo en claro (index.css); en oscuro separa el borde.
+        card: "var(--shadow-card)",
       },
       fontFamily: {
         // Rotta: títulos con carácter (Bricolage Grotesque) y texto limpio (Instrument Sans).

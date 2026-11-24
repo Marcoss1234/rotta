@@ -6,7 +6,7 @@
 // Uso:  npm run comprobar-temas
 //       node tools/comprobar-temas.mjs --avisos       también cuenta los avisos que verá el administrador
 //       node tools/comprobar-temas.mjs --sin-reglas   sin los ajustes automáticos (debe fallar: prueba que el script detecta fallos)
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { buildRottaTheme, contrast, PALETTES, themeContrastChecks } from "../src/app/theme.js";
 import { DEFAULT_STYLE, STYLES } from "../src/app/themes.js";
 
@@ -39,6 +39,21 @@ const backend = readFileSync(new URL("../backend/club_settings.py", import.meta.
 const backendStyles = [...(backend.match(/^ThemeStyle = Literal\[([^\]]*)\]/m)?.[1] ?? "").matchAll(/"([^"]+)"/g)].map((match) => match[1]);
 const backendDefault = backend.match(/^DEFAULT_STYLE = "([^"]+)"/m)?.[1];
 const sameStyles = backendStyles.length > 0 && [...backendStyles].sort().join() === [...STYLES].sort().join() && backendDefault === DEFAULT_STYLE;
+
+// Los componentes comunes (src/app/ui) solo pueden usar colores del tema: nada de hexadecimales ni de las
+// familias de Tailwind (zinc, white, emerald...) ni de los alias antiguos (tnt, ember, void).
+const UI_DIR = new URL("../src/app/ui/", import.meta.url);
+const FIXED = [
+  [/#[0-9a-fA-F]{3,8}\b/g, "color en hexadecimal"],
+  [/\b(?:bg|text|ring|border|from|via|to|fill|stroke|outline|divide|placeholder|shadow|decoration|accent|caret)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black|tnt|tntdeep|ember|void|onbrand|onember)\b/g, "color fijo de Tailwind o alias antiguo"],
+  [/\brgba?\(/g, "rgb() escrito a mano"],
+];
+const fixedColors = readdirSync(UI_DIR)
+  .filter((name) => /\.(jsx?|css)$/.test(name))
+  .flatMap((name) => {
+    const source = readFileSync(new URL(name, UI_DIR), "utf8");
+    return FIXED.flatMap(([pattern, what]) => [...source.matchAll(pattern)].map((match) => `${name}: ${what} «${match[0]}»`));
+  });
 
 // Sin reglas: el color del club tal cual en todas partes (lo que pasaría sin theme.js).
 const raw = (theme) => ({
@@ -94,6 +109,12 @@ if (sameStyles) {
 } else {
   console.error(`\n✗ Los temas no coinciden: web ${STYLES.join(", ")} (por defecto ${DEFAULT_STYLE}), servidor ${backendStyles.join(", ") || "no encontrados"} (por defecto ${backendDefault ?? "no encontrado"}).`);
   process.exitCode = 1;
+}
+if (fixedColors.length) {
+  console.error(`\n✗ Colores fijos en src/app/ui (tienen que ser del tema):\n  ${fixedColors.join("\n  ")}`);
+  process.exitCode = 1;
+} else {
+  console.log("✓ Los componentes de src/app/ui solo usan colores del tema.");
 }
 if (failures.size) {
   const count = [...failures.values()].reduce((sum, entry) => sum + entry.count, 0);
