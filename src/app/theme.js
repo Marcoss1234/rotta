@@ -1,5 +1,6 @@
 // Temas de Rotta: cada club elige su color (de una paleta o el suyo propio)
 // y cada persona elige claro, oscuro o automático. Todo sale de aquí como variables CSS.
+import { DEFAULT_STYLE, THEME_MEANINGS, THEMES } from "./themes.js";
 
 // Cada club tiene dos colores: el principal (botones, cabecera) y el de acento (detalles).
 export const PALETTES = [
@@ -149,4 +150,147 @@ export function resolveMode(choice, paletteMode) {
   if (choice === "light" || choice === "dark") return choice;
   if (choice === "club") return paletteMode;
   return window.matchMedia?.("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
+
+// ---------- Temas Lima, Naranja y Tinta (src/app/themes.js) ----------
+// Todavía no los usa la app: esto es la base. tools/comprobar-temas.mjs prueba todas las combinaciones.
+
+// Parecido entre dos colores tal y como los ve el ojo (OKLab): 0 = iguales; por debajo de 15, «casi iguales».
+const linear = (value) => {
+  const scaled = value / 255;
+  return scaled <= 0.04045 ? scaled / 12.92 : ((scaled + 0.055) / 1.055) ** 2.4;
+};
+function oklab(hex) {
+  const [r, g, b] = hexToRgb(hex).map(linear);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return [
+    0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  ];
+}
+export function colorDistance(a, b) {
+  const [x, y] = [oklab(a), oklab(b)];
+  return Math.hypot(x[0] - y[0], x[1] - y[1], x[2] - y[2]) * 100;
+}
+/** Cuánto color tiene (0 = blanco, negro o gris). */
+export function colorfulness(hex) {
+  const [, a, b] = oklab(hex);
+  return Math.hypot(a, b) * 100;
+}
+
+export const SIMILAR_COLORS = 15; // por debajo, dos colores se ven casi iguales
+const COLORLESS = 4; // por debajo, el color del club es blanco, negro o gris
+const TOO_CHANGED = 25; // si para leerse como texto cambia más que esto, ya no parece el color del club
+const VOY_GREEN = "#16A34A";
+
+/** Aclara u oscurece el color, a pasos pequeños, hasta llegar al mínimo sobre TODOS los fondos. */
+export function readableOnAll(color, backgrounds, minimum) {
+  const towards = luminance(backgrounds[0]) > 0.3 ? "#000000" : "#FFFFFF";
+  for (let step = 0; step <= 40; step += 1) {
+    const candidate = mix(color, towards, step * 0.025);
+    if (backgrounds.every((background) => contrast(candidate, background) >= minimum)) return candidate;
+  }
+  return towards;
+}
+
+/** Blanco, casi negro o negro: el que mejor se lea encima del color. */
+export const textOn = (fill) => ["#FFFFFF", "#0F1115", "#000000"].reduce((best, option) => (contrast(option, fill) > contrast(best, fill) ? option : best));
+
+export const resolveStyle = (style) => (THEMES[style] ? style : DEFAULT_STYLE);
+
+/**
+ * Todos los colores de un tema de Rotta con el color del club, ya ajustados para que se lean.
+ * Reglas:
+ * - El color del club se usa tal cual en rellenos (escudo, botones) con texto blanco u oscuro encima.
+ * - Como texto (clubText) se ajusta a 4,5:1; como raya, icono o borde (clubUi), a 3:1.
+ * - Si como texto cambia demasiado (un dorado sobre blanco), el texto va en el color normal (clubLabel).
+ * - Sin color (blanco, negro, gris): lo seleccionado va en el color del texto.
+ * - Si se parece mucho al color de Rotta, Rotta le cede el sitio.
+ * - El segundo color solo es adorno (franjas): si no se distingue del fondo o del principal, se usa el principal.
+ */
+export function buildRottaTheme(style, mode, brand, accent = brand) {
+  const theme = THEMES[resolveStyle(style)];
+  const base = theme[mode];
+  const meanings = THEME_MEANINGS[mode];
+  const grounds = [base.surface, base.bg, base.raised];
+  const colorless = colorfulness(brand) < COLORLESS;
+
+  const clubSoft = mix(base.surface, colorless ? base.text : brand, mode === "dark" ? 0.16 : 0.1);
+  const clubText = colorless ? base.text : readableOnAll(brand, grounds, 4.5);
+  const textChange = colorDistance(brand, clubText);
+  const clubLabel = textChange > TOO_CHANGED ? base.text : clubText;
+  const clubUi = colorless ? base.text : readableOnAll(brand, [...grounds, clubSoft], 3);
+
+  const yields = !colorless && colorDistance(brand, base.rotta) < SIMILAR_COLORS;
+  const rotta = yields ? brand : base.rotta;
+  const rottaText = yields ? clubText : readableOnAll(base.rottaText, grounds, 4.5);
+  const stripe = colorDistance(accent, base.bg) < 8 || colorDistance(accent, brand) < 6 ? brand : accent;
+
+  const warnings = [
+    yields && "similar-rotta",
+    colorDistance(brand, VOY_GREEN) < SIMILAR_COLORS && "similar-voy",
+    colorless && "colorless",
+    !colorless && textChange > TOO_CHANGED && "text-adjusted",
+    !colorless && contrast(brand, base.surface) < 3 && "low-contrast",
+  ].filter(Boolean);
+
+  return {
+    style: resolveStyle(style),
+    mode,
+    shape: theme.shape,
+    numbers: theme.numbers,
+    decoration: theme.decoration,
+    ...base,
+    ...meanings,
+    club: brand,
+    onClub: textOn(brand),
+    clubText,
+    clubLabel,
+    clubUi,
+    clubSoft,
+    rotta,
+    onRotta: textOn(rotta),
+    rottaText,
+    focus: rottaText,
+    stripe,
+    warnings,
+  };
+}
+
+/**
+ * Lo que tiene que cumplirse en cualquier tema (WCAG 2.2 AA): [qué es, color, fondo, mínimo].
+ * Texto 4,5:1; rayas, iconos, bordes de campos y foco 3:1.
+ */
+export function themeContrastChecks(theme) {
+  return [
+    ["Texto sobre fondo", theme.text, theme.bg, 4.5],
+    ["Texto sobre tarjeta", theme.text, theme.surface, 4.5],
+    ["Texto sobre relleno", theme.text, theme.raised, 4.5],
+    ["Texto secundario sobre tarjeta", theme.muted, theme.surface, 4.5],
+    ["Texto secundario sobre fondo", theme.muted, theme.bg, 4.5],
+    ["Texto secundario sobre relleno", theme.muted, theme.raised, 4.5],
+    ["Enlace de Rotta sobre tarjeta", theme.rottaText, theme.surface, 4.5],
+    ["Enlace de Rotta sobre fondo", theme.rottaText, theme.bg, 4.5],
+    ["Enlace de Rotta sobre relleno", theme.rottaText, theme.raised, 4.5],
+    ["Texto sobre insignia de Rotta", theme.onRotta, theme.rotta, 4.5],
+    ["Texto del botón del club", theme.onClub, theme.club, 4.5],
+    ["Texto en color del club sobre tarjeta", theme.clubLabel, theme.surface, 4.5],
+    ["Texto en color del club sobre fondo", theme.clubLabel, theme.bg, 4.5],
+    ["Seleccionado: texto sobre su fondo", theme.text, theme.clubSoft, 4.5],
+    ["Seleccionado: icono sobre su fondo", theme.clubUi, theme.clubSoft, 3],
+    ["Indicador del club sobre tarjeta", theme.clubUi, theme.surface, 3],
+    ["Indicador del club sobre fondo", theme.clubUi, theme.bg, 3],
+    ["Borde de campo sobre tarjeta", theme.control, theme.surface, 3],
+    ["Borde de campo sobre fondo", theme.control, theme.bg, 3],
+    ["Foco del teclado sobre fondo", theme.focus, theme.bg, 3],
+    ["Foco del teclado sobre tarjeta", theme.focus, theme.surface, 3],
+    ["Texto del botón Voy", "#FFFFFF", theme.success, 4.5],
+    ["Texto verde sobre tarjeta", theme.successText, theme.surface, 4.5],
+    ["Texto del botón de peligro", "#FFFFFF", theme.danger, 4.5],
+    ["Texto rojo sobre tarjeta", theme.dangerText, theme.surface, 4.5],
+    ["Texto dorado sobre tarjeta", theme.goldText, theme.surface, 4.5],
+  ];
 }

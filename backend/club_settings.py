@@ -5,7 +5,7 @@ Cada persona elige además claro u oscuro en su móvil; eso no se guarda aquí.
 Todo va en `club_settings`, documento `{"id": "club"}`; el escudo, en `club_files` (`{"id": "crest"}`).
 """
 from datetime import datetime, timezone
-from typing import Annotated, Literal
+from typing import Annotated, Literal, get_args
 from uuid import uuid4
 
 from bson import Binary
@@ -118,8 +118,11 @@ async def get_club_crest(db=Depends(get_db)):
 # ---------- Colores ----------
 
 HexColor = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
-# Rotta por defecto: morado y cian sobre negro.
-DEFAULTS = {"brand": "#7C3AED", "accent": "#22D3EE", "mode": "dark"}
+# Los temas de Rotta (los mismos que src/app/themes.js). Un club que no ha elegido usa Tinta.
+ThemeStyle = Literal["lima", "naranja", "tinta"]
+DEFAULT_STYLE = "tinta"
+# Rotta por defecto: morado y cian sobre negro, con el tema Tinta.
+DEFAULTS = {"brand": "#7C3AED", "accent": "#22D3EE", "mode": "dark", "style": DEFAULT_STYLE}
 
 
 class ClubTheme(BaseModel):
@@ -128,11 +131,17 @@ class ClubTheme(BaseModel):
     brand: str = HexColor
     accent: str = HexColor
     mode: Literal["light", "dark"]
+    # Opcional: una app que todavía no conoce los temas guarda sus colores sin cambiar el tema del club.
+    style: ThemeStyle | None = None
 
 
 async def club_theme(db):
     saved = await db.club_settings.find_one({"id": "club"}, {"_id": 0, "theme": 1})
-    return {**DEFAULTS, **(saved or {}).get("theme", {})}
+    theme = {**DEFAULTS, **(saved or {}).get("theme", {})}
+    # Un tema que ya no existe (o escrito a mano mal) no rompe la app: vuelve al de por defecto.
+    if theme["style"] not in get_args(ThemeStyle):
+        theme["style"] = DEFAULT_STYLE
+    return theme
 
 
 @router.get("/club/theme")
@@ -142,6 +151,8 @@ async def get_club_theme(db=Depends(get_db)):
 
 @router.put("/club/theme")
 async def save_club_theme(body: ClubTheme, user=Depends(require_admin), db=Depends(get_db)):
-    theme = {"brand": body.brand.upper(), "accent": body.accent.upper(), "mode": body.mode}
-    await db.club_settings.update_one({"id": "club"}, {"$set": {"theme": theme}}, upsert=True)
-    return theme
+    changes = {"theme.brand": body.brand.upper(), "theme.accent": body.accent.upper(), "theme.mode": body.mode}
+    if body.style is not None:
+        changes["theme.style"] = body.style
+    await db.club_settings.update_one({"id": "club"}, {"$set": changes}, upsert=True)
+    return await club_theme(db)
