@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { ArrowDown, ArrowUp, Equal } from "lucide-react";
 import RotationMark from "@/app/components/RotationMark.jsx";
+import { ChipGroup } from "@/app/ui/index.js";
 import { formatOverall } from "@/app/ranking.js";
 
 // Cabecera de cada pantalla: título claro a la izquierda y, si hace falta, sus botones a la derecha.
@@ -34,25 +35,18 @@ export function CardTitle({ icon: Icon, id, children, as: Tag = "h2" }) {
   );
 }
 
-// Elegir equipo: una sola fila que se desliza si no caben todos.
+// Elegir equipo: una sola fila que se desliza si no caben todos (ChipGroup de src/app/ui: el elegido con el tono
+// suave del club y su borde, el resto con contorno). Con un solo equipo no sale.
 export function GroupPicker({ groups, groupId, onChange }) {
   if (groups.length < 2) return null;
   return (
-    <div role="group" aria-label="Elegir equipo" className="no-scrollbar -mx-5 flex gap-1.5 overflow-x-auto px-5 md:mx-0 md:px-0">
-      {groups.map((group) => (
-        <button
-          key={group.id}
-          type="button"
-          aria-pressed={group.id === groupId}
-          onClick={() => onChange(group.id)}
-          className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition-colors ${
-            group.id === groupId ? "bg-tnt text-onbrand" : "bg-panel text-zinc-300 ring-1 ring-inset ring-white/10 hover:text-white"
-          }`}
-        >
-          {group.name.replace(/^Club (Senior )?/, "")}
-        </button>
-      ))}
-    </div>
+    <ChipGroup
+      label="Elegir equipo"
+      scroll
+      value={groupId}
+      onChange={onChange}
+      options={groups.map((group) => ({ value: group.id, label: group.name.replace(/^Club (Senior )?/, "") }))}
+    />
   );
 }
 
