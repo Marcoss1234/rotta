@@ -1,4 +1,5 @@
 import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
+import { isBeachTeam } from "@/app/teams.js";
 
 // Sitios en la pista para quien va, del centro hacia fuera y alternando los dos campos,
 // para que con poca gente ya se vea repartida. Seis por campo: tres delante y tres detrás.
@@ -86,7 +87,7 @@ export default function GoingCourt({ teamId, people, currentUserId }) {
         style={{ aspectRatio: "190 / 100" }}
         data-testid="mini-court"
       >
-        <CourtDrawing beach={teamId === "playa"} horizontal showZones={false} />
+        <CourtDrawing beach={isBeachTeam(teamId)} horizontal showZones={false} />
         {people.length === 0 && (
           <span className="absolute inset-x-0 bottom-[8%] text-center font-semibold text-white/85 [text-shadow:0_1px_3px_rgba(0,0,0,0.7)]" style={{ fontSize: "4.5cqw" }}>
             Aún no va nadie

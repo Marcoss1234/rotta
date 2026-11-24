@@ -10,7 +10,7 @@ from pymongo.errors import DuplicateKeyError
 from honors import crowns_by_user
 from auth import characters_by_user, current_user, heights_by_user, picture_of, pictures_by_user, reject_if_password_must_change
 from database import get_db
-from teams import TEAMS, TeamId
+from teams import TeamId, teams
 
 Position = Literal["Sin definir", "Líbero", "Colocador", "Receptor", "Central", "Opuesto"]
 Name = Annotated[str, StringConstraints(strip_whitespace=True, min_length=2, max_length=120)]
@@ -130,7 +130,7 @@ async def _check_number_free(db, team_id, number, ignore_id=None):
 
 @router.get("/teams")
 async def list_teams(_user=Depends(require_approved)):
-    return TEAMS
+    return teams()
 
 
 @router.get("/teams/{team_id}/family")
@@ -175,7 +175,7 @@ async def list_coaches(_user=Depends(require_approved), db=Depends(get_db)):
 
 @router.get("/players")
 async def list_players(
-    team_id: TeamId = Query(...),
+    team_id: Annotated[TeamId, Query()],
     user=Depends(require_approved),
     db=Depends(get_db),
 ):

@@ -211,7 +211,7 @@ def _played_match(match, user, report_ids=None, players=None):
 
 
 @router.get("/matches/played")
-async def list_played_matches(team_id: TeamId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def list_played_matches(team_id: Annotated[TeamId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     """Los partidos ya jugados del equipo, del más reciente al más antiguo."""
     query = {"team_id": {"$in": list(match_teams(team_id))}, "date": {"$lte": _today().isoformat()}}
     matches = await db.matches.find(query).sort([("date", DESCENDING), ("time", DESCENDING)]).to_list(MAX_PLAYED_LISTED)
@@ -231,7 +231,7 @@ async def list_played_matches(team_id: TeamId = Query(...), user=Depends(require
 
 
 @router.get("/matches")
-async def list_matches(team_id: TeamId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def list_matches(team_id: Annotated[TeamId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     """Los próximos partidos del equipo, incluidos los de hoy, del más cercano al más lejano."""
     matches = await db.matches.find({"team_id": {"$in": list(match_teams(team_id))}, "date": {"$gte": _today().isoformat()}}).to_list(50)
     matches.sort(key=lambda match: (match["date"], match["time"]))

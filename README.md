@@ -45,7 +45,7 @@ Una copia a mano desde el ordenador: `MONGO_URI=... BACKUP_PASSPHRASE=... tools/
 
 ### 1. Imprescindible antes de que entre un club
 - [x] Varios clubs, fase 1: cada club con su propia base de datos (`backend/clubs.py`). Alta de clubs: `python tools/crear-club.py tnt "C.V. TNT Almería"`. El club sale de la cabecera `X-Club`, de `?club=` o del subdominio (`ROOT_DOMAIN` / `VITE_ROOT_DOMAIN`); sin club, `DEFAULT_CLUB` o `DB_NAME`.
-- [ ] Varios clubs, fase 2: equipos, horarios y grupos del ranking configurables por club (ahora siguen escritos en el código: `backend/teams.py`, `src/app/teams.js`, `data/groups.js`).
+- [x] Varios clubs, fase 2: equipos, horarios y grupos del ranking de cada club (`backend/teams.py`). Verlos o cambiarlos: `python tools/estructura-club.py tnt` / `python tools/estructura-club.py tnt equipos.json` (ejemplo en `tools/estructura-ejemplo.json`).
 - [ ] Varios clubs, fase 3: nombre y escudo de cada club en toda la app.
 - [ ] Varios clubs, fase 4: pantalla para dar de alta clubs.
 - [ ] Política de privacidad y aviso legal.

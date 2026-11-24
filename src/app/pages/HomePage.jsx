@@ -33,7 +33,7 @@ import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
 import { localToday, matchDayLabel, matchKindLabel, placeInfo } from "@/app/matches.js";
 import { nextTraining, trainingAfter } from "@/app/nextTraining.js";
 import { roleLabel } from "@/app/roles.js";
-import { TEAM_SCHEDULES, isTeamId, sessionsToSchedules, shareMatches } from "@/app/teams.js";
+import { TEAM_SCHEDULES, defaultTeamId, isBeachTeam, isTeamId, sessionsToSchedules, shareMatches } from "@/app/teams.js";
 import { TRAINING_VENUE_ADDRESS, TRAINING_VENUE_URL } from "../../../data/groups.js";
 
 const STORAGE_KEY = "tnt-equipo-visto";
@@ -504,7 +504,7 @@ function TrainingCard({
 }) {
   if (!training) return null;
   const helpButton = <HelpButton attendance={attendance} onAsk={onAskHelp} />;
-  const hasVenue = teamId !== "playa";
+  const hasVenue = !isBeachTeam(teamId);
   // El entrenador del equipo (y los administradores) cambian aquí el horario.
   const editButton = onEditSchedule && (
     <button
@@ -787,7 +787,7 @@ function useTeamChoice(user, requested) {
     if (isTeamId(requested)) return requested;
     const stored = readStoredTeam();
     if (isTeamId(stored)) return stored;
-    return isTeamId(user.team_id) ? user.team_id : "masculino";
+    return isTeamId(user.team_id) ? user.team_id : defaultTeamId();
   });
   const choose = useCallback((id) => {
     setTeamId(id);

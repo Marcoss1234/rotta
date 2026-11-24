@@ -3,7 +3,7 @@ from uuid import uuid4
 
 from pymongo.errors import DuplicateKeyError
 
-from teams import TEAM_WEEKDAYS
+from teams import team_ids
 
 
 _index_ready = False
@@ -28,7 +28,7 @@ def plays_for_team(user):
 
 
 def _belongs_on_roster(user):
-    return user.get("status") == "approved" and plays_for_team(user) and user.get("team_id") in TEAM_WEEKDAYS
+    return user.get("status") == "approved" and plays_for_team(user) and user.get("team_id") in team_ids()
 
 
 async def sync_player_with_user(db, user):

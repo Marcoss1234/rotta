@@ -10,6 +10,7 @@ import ChangePasswordPage from "@/app/pages/ChangePasswordPage.jsx";
 import ChatPage from "@/app/pages/ChatPage.jsx";
 import ConsentPage from "@/app/pages/ConsentPage.jsx";
 import { consentIsCurrent } from "@/app/privacy.js";
+import { loadClubStructure } from "@/app/teams.js";
 import EventsPage from "@/app/pages/EventsPage.jsx";
 import HomePage from "@/app/pages/HomePage.jsx";
 import LoginPage from "@/app/pages/LoginPage.jsx";
@@ -42,7 +43,8 @@ export default function PrivateApp() {
 
   const refresh = useCallback(async () => {
     try {
-      const user = await getMe();
+      // Los equipos del club, a la vez que la sesión: así ninguna pantalla se pinta con los de serie.
+      const [user] = await Promise.all([getMe(), loadClubStructure()]);
       setSession({ state: "ready", user });
     } catch (error) {
       setSession({ state: error.status === 401 ? "anonymous" : "error", user: null });

@@ -3,6 +3,7 @@ import { buildPlay } from "@/app/boardPlanner.js";
 import { actionsAt, useBoardPlayback } from "@/app/boardRecording.js";
 import { ballStateAt } from "@/app/components/board/Board3D.jsx";
 import Viewer3D from "@/app/components/board/Viewer3D.jsx";
+import { defaultTeamId } from "@/app/teams.js";
 
 // Escaparate de los efectos de la tienda: tu personaje hace el gesto de verdad en la pista 3D
 // (rematar, recibir o colocar) con el efecto puesto, igual que se verá en la pizarra.
@@ -43,7 +44,7 @@ export default function ShopActionStage({ item, look, profile }) {
   const [action] = item.id.split(":");
   const scene = SCENES[action] ?? SCENES.remate;
   const name = profile.user.name.split(" ")[0];
-  const teamId = profile.user.team_id ?? "masculino";
+  const teamId = profile.user.team_id ?? defaultTeamId();
 
   const rosterById = useMemo(
     () => ({

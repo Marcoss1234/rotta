@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta, timezone
-from typing import Literal
+from typing import Annotated, Literal
 from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -145,7 +145,7 @@ async def _ensure_indexes(db):
 
 @router.get("/attendance")
 async def get_attendance(
-    team_id: TeamId = Query(...),
+    team_id: Annotated[TeamId, Query()],
     training_date: date = Query(..., alias="date"),
     user=Depends(require_approved),
     db=Depends(get_db),
@@ -196,7 +196,7 @@ async def answer_attendance(body: AttendanceAnswer, user=Depends(require_approve
 
 
 @router.get("/attendance/stars")
-async def get_stars(team_id: TeamId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def get_stars(team_id: Annotated[TeamId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     """Los destacados del último entreno y, para el entrenador, quién fue para poder elegirlos."""
     last = await _last_training(db, team_id)
     if not last:

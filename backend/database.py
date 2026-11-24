@@ -6,6 +6,7 @@ from fastapi import Request
 from motor.motor_asyncio import AsyncIOMotorClient
 
 from clubs import database_for
+from teams import use_club_structure
 
 load_dotenv(Path(__file__).parent / ".env")
 
@@ -24,8 +25,12 @@ def get_client():
 
 
 async def get_db(request: Request):
-    """La base de datos del club de esta petición (cada club tiene la suya; ver clubs.py)."""
-    return await database_for(request, get_client())
+    """La base de datos del club de esta petición (cada club tiene la suya; ver clubs.py).
+
+    De paso deja a mano la estructura del club (equipos, grupos del ranking...; ver teams.py)."""
+    db = await database_for(request, get_client())
+    await use_club_structure(db)
+    return db
 
 
 def close_db():

@@ -18,7 +18,7 @@ from honors import give_coins, give_honor
 from matches import _today, can_manage_matches
 from notifications import send_notifications, team_member_ids
 from players import require_approved
-from teams import TEAMS, TeamId, match_teams
+from teams import TeamId, match_teams, team_config, team_name
 
 MAX_EVENTS = 1500
 MVP_COINS = 15
@@ -27,7 +27,6 @@ WIN_COINS = 50
 MAX_LINEUP = 20
 TIMEOUTS_PER_SET = 2
 RECENT_FINISHED = 10
-TEAM_NAMES = {team["id"]: team["name"] for team in TEAMS}
 
 Side = Literal["us", "them"]
 Skill = Literal["saque", "recepcion", "colocacion", "ataque", "bloqueo", "defensa"]
@@ -326,7 +325,7 @@ async def _public(db, live, user):
     return {
         "id": live["id"],
         "team_id": live["team_id"],
-        "team_name": TEAM_NAMES.get(live["team_id"], ""),
+        "team_name": team_name(live["team_id"]),
         "opponent": live["opponent"],
         "match_id": live.get("match_id"),
         "best_of": live["best_of"],
@@ -351,7 +350,7 @@ def _summary(live):
     return {
         "id": live["id"],
         "team_id": live["team_id"],
-        "team_name": TEAM_NAMES.get(live["team_id"], ""),
+        "team_name": team_name(live["team_id"]),
         "opponent": live["opponent"],
         "status": status_of(live),
         "won": board["won"],
@@ -378,7 +377,7 @@ def _require_scorer(user, live):
 
 
 @router.get("")
-async def list_live(team_id: Optional[TeamId] = Query(default=None), user=Depends(require_approved), db=Depends(get_db)):
+async def list_live(team_id: Annotated[Optional[TeamId], Query()] = None, user=Depends(require_approved), db=Depends(get_db)):
     """Los partidos en directo ahora y los últimos terminados (de un equipo, o de todo el club)."""
     query = {"team_id": {"$in": list(match_teams(team_id))}} if team_id else {}
     found = await db.live_matches.find(query).sort("created_at", DESCENDING).to_list(60)
@@ -431,7 +430,7 @@ async def start_live(body: LiveCreate, user=Depends(require_approved), db=Depend
         "matches",
         {
             "title": "¡Partido en directo!",
-            "body": f"{TEAM_NAMES.get(body.team_id, 'Club')} contra {body.opponent}: sigue el marcador punto a punto",
+            "body": f"{team_name(body.team_id, 'Club')} contra {body.opponent}: sigue el marcador punto a punto",
             "url": f"/app/directo/{live['id']}",
             "tag": f"directo-{live['id']}",
         },
@@ -459,8 +458,8 @@ async def enter_match(match_id: str, user=Depends(require_approved), db=Depends(
         "team_id": match["team_id"],
         "opponent": match["opponent"],
         "match_id": match_id,
-        # Las Escuelas juegan a dos sets ganados; el resto, a tres.
-        "best_of": 3 if match["team_id"].startswith("escuela") else 5,
+        # A tres sets ganados o a dos (como las escuelas), según el equipo (teams.py).
+        "best_of": getattr(team_config(match["team_id"]), "best_of", 5),
         "first_serve": "us",
         "lineup": [],
         "events": [],
@@ -490,7 +489,7 @@ async def start_match(live_id: str, user=Depends(require_approved), db=Depends(g
         "matches",
         {
             "title": "🏐 ¡Empieza el partido!",
-            "body": f"{TEAM_NAMES.get(live['team_id'], 'Club')} contra {live['opponent']}. ¡Entra y síguelo en directo, punto a punto!",
+            "body": f"{team_name(live['team_id'], 'Club')} contra {live['opponent']}. ¡Entra y síguelo en directo, punto a punto!",
             "url": f"/app/directo/{live_id}",
             "tag": f"directo-{live_id}",
         },

@@ -19,7 +19,7 @@ from players import (
     _ensure_indexes as _ensure_player_indexes,
     require_approved,
 )
-from teams import TEAMS
+from teams import teams
 
 PreferredPosition = Literal["Líbero", "Colocador", "Receptor", "Central", "Opuesto"]
 DominantHand = Literal["derecha", "izquierda", "ambas"]
@@ -81,7 +81,7 @@ def _image_type(data):
 
 async def _profile_response(db, user):
     player = await db.players.find_one({"user_id": user["id"]})
-    names = {team["id"]: team["name"] for team in TEAMS}
+    names = {team["id"]: team["name"] for team in teams()}
     cutoff = (datetime.now(timezone.utc).date() - timedelta(days=STATS_DAYS)).isoformat()
     answers = {"user_id": user["id"], "date": {"$gte": cutoff}}
     return {

@@ -7,6 +7,7 @@ import BoardScene, { CourtFrame } from "@/app/components/board/BoardScene.jsx";
 import RosterTabs from "@/app/components/board/RosterTabs.jsx";
 import { GroupPicker, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { boardKindLabel, emptyBoard, loadClubPlayers } from "@/app/boards.js";
+import { isBeachTeam } from "@/app/teams.js";
 
 // "Hoy", "Ayer", "Hace 3 días" o la fecha.
 function updatedLabel(iso) {
@@ -252,7 +253,7 @@ export default function BoardsPage({ user, onAccessLost }) {
                     key={board.id}
                     board={board}
                     rosterById={rosterById}
-                    beach={teamId === "playa"}
+                    beach={isBeachTeam(teamId)}
                     canEdit={data.can_edit}
                     canDuplicate={data.can_create}
                     busy={busy}

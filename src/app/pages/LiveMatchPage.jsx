@@ -7,6 +7,7 @@ import { CourtDrawing } from "@/app/components/CourtBoard.jsx";
 import { initialsOf } from "@/app/components/GoingCourt.jsx";
 import MatchReport from "@/app/components/MatchReport.jsx";
 import usePolling from "@/app/usePolling.js";
+import { isBeachTeam } from "@/app/teams.js";
 
 const POLL_MS = 2000;
 const SKILLS = [
@@ -811,7 +812,7 @@ export default function LiveMatchPage({ onAccessLost }) {
               >
                 {/* Solo nuestro campo: la pista entera, el doble de alta, y se ve la mitad de abajo (la red arriba). */}
                 <div className="absolute inset-x-0 bottom-0" style={{ height: "200%" }}>
-                  <CourtDrawing beach={game.team_id === "playa"} showZones={false} stretch />
+                  <CourtDrawing beach={isBeachTeam(game.team_id)} showZones={false} stretch />
                 </div>
                 {game.lineup.slice(0, COURT_PLACES).map((player, index) => {
                   const spot = HALF_SPOTS[index];

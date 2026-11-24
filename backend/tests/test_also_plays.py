@@ -6,7 +6,7 @@ import attendance
 import chat
 import players
 import roster_sync
-from teams import TEAM_WEEKDAYS
+from teams import default_weekdays
 from test_auth import client_for, db  # noqa: F401
 
 
@@ -36,7 +36,7 @@ def roster_names(admin, team="masculino"):
 
 def training_day(team="masculino"):
     day = datetime.now(timezone.utc).date() + timedelta(days=1)
-    while day.weekday() not in TEAM_WEEKDAYS[team]:
+    while day.weekday() not in default_weekdays(team):
         day += timedelta(days=1)
     return day.isoformat()
 

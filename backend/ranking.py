@@ -12,6 +12,7 @@ from database import get_db
 from honors import crowns_by_user, give_honor
 from notifications import send_notifications, team_member_ids
 from players import Position, require_approved
+from teams import GroupId, groups
 
 CLUB_TIME = ZoneInfo("Europe/Madrid")
 # El ranking es la media de las últimas semanas publicadas, para que una sola semana no lo decida todo.
@@ -22,13 +23,7 @@ MIN_WEEKS = 2
 FEW_WEEKS_PENALTY = 10
 HISTORY_WEEKS = 12
 
-# Playa no entra hasta que se decida cómo funciona. Las dos Escuelas comparten ranking.
-GROUPS = {
-    "masculino": {"name": "Club Masculino", "teams": ("masculino",)},
-    "femenino": {"name": "Club Senior Femenino", "teams": ("femenino",)},
-    "escuela": {"name": "Club Escuela", "teams": ("escuela-lm", "escuela-mj")},
-}
-GroupId = Literal["masculino", "femenino", "escuela"]
+# Los grupos del ranking son de cada club: teams.groups().
 
 Skill = Literal["saque", "recepcion", "antebrazo", "colocacion", "ataque", "bloqueo"]
 SKILLS = [
@@ -111,7 +106,7 @@ def _rated_teams(user):
     """El administrador principal puede puntuar todos los equipos; los demás, los que entrenan."""
     coached = set(user.get("coached_team_ids", []))
     if user.get("role") == "admin" and user.get("email", "").casefold() in _admin_emails():
-        return {team for group in GROUPS.values() for team in group["teams"]}
+        return {team for group in groups().values() for team in group["teams"]}
     if user.get("role") == "entrenador":
         return coached | {user.get("team_id")}
     return coached if user.get("role") == "admin" else set()
@@ -123,7 +118,7 @@ def _can_view(user, group_id):
 
 
 def _can_rate(user, group_id):
-    return bool(_rated_teams(user) & set(GROUPS[group_id]["teams"]))
+    return bool(_rated_teams(user) & set(groups()[group_id]["teams"]))
 
 
 def _require_view(user, group_id):
@@ -149,7 +144,7 @@ async def _ensure_indexes(db):
 
 
 async def _roster(db, group_id):
-    players = await db.players.find({"team_id": {"$in": list(GROUPS[group_id]["teams"])}}).to_list(500)
+    players = await db.players.find({"team_id": {"$in": list(groups()[group_id]["teams"])}}).to_list(500)
     players.sort(key=lambda player: player["name"].casefold())
     pictures = await pictures_by_user(db, [player.get("user_id") for player in players])
     return players, pictures
@@ -165,7 +160,6 @@ async def _published_weeks(db, group_id):
 
 WEEK_PRIZES = {1: 100, 2: 60, 3: 40}
 MONTH_PRIZES = {1: 250, 2: 150, 3: 100}
-MONTH_TITLES = {"masculino": "Jugador del mes", "femenino": "Jugadora del mes", "escuela": "Estrella del mes"}
 MONTH_NAMES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 
 
@@ -260,7 +254,7 @@ async def award_week(db, group_id, week_key):
     label = _month_label(month)
 
     def title_of(place):
-        return f"{MONTH_TITLES[group_id]} · {label}" if place == 1 else f"Top {place} de {label}"
+        return f"{groups()[group_id]['month_title']} · {label}" if place == 1 else f"Top {place} de {label}"
 
     await _give_podium(db, group_id, "month", month, _podium(averages), by_id, MONTH_PRIZES, title_of, True)
 
@@ -310,13 +304,13 @@ def _standings(ratings, window, roster_ids):
 async def list_groups(user=Depends(require_approved)):
     return [
         {"id": group_id, "name": group["name"], "can_rate": _can_rate(user, group_id)}
-        for group_id, group in GROUPS.items()
+        for group_id, group in groups().items()
         if _can_view(user, group_id)
     ]
 
 
 @router.get("/ranking")
-async def get_ranking(group_id: GroupId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def get_ranking(group_id: Annotated[GroupId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     """Solo el overall: el detalle por habilidad y los comentarios no salen aquí."""
     _require_view(user, group_id)
     players, pictures = await _roster(db, group_id)
@@ -372,7 +366,7 @@ async def get_ranking(group_id: GroupId = Query(...), user=Depends(require_appro
 
 
 @router.get("/ranking/honors")
-async def get_honors(group_id: GroupId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def get_honors(group_id: Annotated[GroupId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     """El podio de la última semana y el mejor del mes, los que llevan corona ahora mismo."""
     _require_view(user, group_id)
     players, pictures = await _roster(db, group_id)
@@ -398,7 +392,7 @@ async def get_honors(group_id: GroupId = Query(...), user=Depends(require_approv
         "group_id": group_id,
         "week": of_kind("week"),
         "month": of_kind("month"),
-        "month_title": MONTH_TITLES[group_id],
+        "month_title": groups()[group_id]["month_title"],
         # Lo que se gana por cada puesto, para enseñarlo en el apartado de recompensas.
         "prizes": {
             "week": [{"place": place, "coins": coins} for place, coins in sorted(WEEK_PRIZES.items())],
@@ -410,13 +404,13 @@ async def get_honors(group_id: GroupId = Query(...), user=Depends(require_approv
 @router.get("/ranking/players/{player_id}")
 async def get_player_history(
     player_id: str,
-    group_id: GroupId = Query(...),
+    group_id: Annotated[GroupId, Query()],
     user=Depends(require_approved),
     db=Depends(get_db),
 ):
     """Las notas publicadas las ve todo el que ve el ranking; el comentario, solo el propio jugador y sus entrenadores."""
     _require_view(user, group_id)
-    player = await db.players.find_one({"id": player_id, "team_id": {"$in": list(GROUPS[group_id]["teams"])}})
+    player = await db.players.find_one({"id": player_id, "team_id": {"$in": list(groups()[group_id]["teams"])}})
     if not player:
         raise HTTPException(status_code=404, detail="Jugador no encontrado")
     with_comment = player.get("user_id") == user["id"] or user.get("role") == "admin" or _can_rate(user, group_id)
@@ -428,7 +422,7 @@ async def get_player_history(
 
 @router.get("/ranking/sheet")
 async def get_sheet(
-    group_id: GroupId = Query(...),
+    group_id: Annotated[GroupId, Query()],
     week: date = Query(...),
     user=Depends(require_approved),
     db=Depends(get_db),
@@ -464,7 +458,7 @@ async def save_rating(body: RatingSave, user=Depends(require_approved), db=Depen
     """Guarda las notas de un jugador. Sin ninguna nota, queda sin puntuar esa semana."""
     _require_rate(user, body.group_id)
     week_key = _check_week(body.week)
-    if not await db.players.find_one({"id": body.player_id, "team_id": {"$in": list(GROUPS[body.group_id]["teams"])}}):
+    if not await db.players.find_one({"id": body.player_id, "team_id": {"$in": list(groups()[body.group_id]["teams"])}}):
         raise HTTPException(status_code=404, detail="Ese jugador no está en este equipo")
     key = {"group_id": body.group_id, "week": week_key, "player_id": body.player_id}
     if not body.scores:
@@ -503,11 +497,11 @@ async def publish_week(body: WeekPublish, user=Depends(require_approved), db=Dep
         await award_week(db, body.group_id, week_key)
         await send_notifications(
             db,
-            await team_member_ids(db, GROUPS[body.group_id]["teams"], user["id"]),
+            await team_member_ids(db, groups()[body.group_id]["teams"], user["id"]),
             "ranking",
             {
                 "title": "Ranking actualizado",
-                "body": f"Ya están las notas de la semana en {GROUPS[body.group_id]['name']}",
+                "body": f"Ya están las notas de la semana en {groups()[body.group_id]['name']}",
                 "url": f"/app/ranking?grupo={body.group_id}",
                 "tag": f"ranking-{body.group_id}",
             },
@@ -557,14 +551,14 @@ async def get_player_profile(player_id: str, user=Depends(require_approved), db=
         "mvp": sum(1 for honor in honors if honor["kind"] == "mvp"),
     }
     ranking = None
-    group_id = next((group for group, data in GROUPS.items() if player["team_id"] in data["teams"]), None)
+    group_id = next((group for group, data in groups().items() if player["team_id"] in data["teams"]), None)
     if group_id and _can_view(user, group_id):
         board = await get_ranking(group_id=group_id, user=user, db=db)
         entry = next((item for item in board["entries"] if item["player_id"] == player_id), None)
         if entry:
             ranking = {
                 "group_id": group_id,
-                "group_name": GROUPS[group_id]["name"],
+                "group_name": groups()[group_id]["name"],
                 "rank": entry["rank"],
                 "of": len(board["entries"]),
                 "overall": entry["overall"],

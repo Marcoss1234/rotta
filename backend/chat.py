@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
-from typing import Annotated, Literal, Optional
+from typing import Annotated, Optional
 from uuid import uuid4
 
 from bson.binary import Binary
@@ -15,11 +15,10 @@ from database import get_db
 from help_requests import help_cards, remove_help
 from notifications import send_notifications
 from players import require_approved
-from teams import TEAMS, TeamId
+from teams import ChannelId, teams
 
 GENERAL = {"id": "general", "name": "General"}
 FAMILY = {"id": "familia", "name": "Familia"}
-ChannelId = Literal["general", "familia", TeamId]
 MessageText = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
 # La app reduce la foto antes de enviarla (unos cientos de KB); esto es el tope por si alguien llama directamente.
 MAX_IMAGE_BYTES = 2 * 1024 * 1024
@@ -49,13 +48,13 @@ class NewMessage(BaseModel):
 def _visible_channels(user):
     """Familia es de todos. Las familias solo tienen ese; el general y los de equipo son para quienes están en el club."""
     if user.get("role") == "admin":
-        return [GENERAL, *TEAMS, FAMILY]
+        return [GENERAL, *teams(), FAMILY]
     if user.get("role") == "familia":
         return [FAMILY]
     own = {user.get("team_id")}
     if user.get("role") == "entrenador":
         own.update(user.get("coached_team_ids", []))
-    return [GENERAL, *(team for team in TEAMS if team["id"] in own), FAMILY]
+    return [GENERAL, *(team for team in teams() if team["id"] in own), FAMILY]
 
 
 def _require_channel(user, channel_id):
@@ -193,7 +192,7 @@ async def _notify_new_message(db, channel_id, message):
         for member in members
         if member["id"] not in skip and any(channel["id"] == channel_id for channel in _visible_channels(member))
     ]
-    name = next(channel["name"] for channel in [GENERAL, FAMILY, *TEAMS] if channel["id"] == channel_id)
+    name = next(channel["name"] for channel in [GENERAL, FAMILY, *teams()] if channel["id"] == channel_id)
     await send_notifications(
         db,
         recipients,
@@ -212,7 +211,7 @@ async def _notify_new_message(db, channel_id, message):
 @router.get("/channels")
 async def list_channels(user=Depends(require_approved), db=Depends(get_db)):
     channels = _visible_channels(user)
-    reads = await db.chat_reads.find({"user_id": user["id"]}).to_list(len(TEAMS) + 2)
+    reads = await db.chat_reads.find({"user_id": user["id"]}).to_list(len(teams()) + 2)
     last_read = {read["channel"]: read["last_read_at"] for read in reads}
     return await asyncio.gather(
         *(_channel_summary(db, user, channel, last_read.get(channel["id"])) for channel in channels)

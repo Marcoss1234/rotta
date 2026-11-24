@@ -5,7 +5,7 @@ import pytest
 
 import attendance
 import honors
-from teams import TEAM_WEEKDAYS
+from teams import default_weekdays
 from test_auth import client_for, db  # noqa: F401
 
 
@@ -36,7 +36,7 @@ def member(admin, token, team="femenino", role="jugador"):
 
 def last_training(team="femenino"):
     day = LATE.date()
-    while day.weekday() not in TEAM_WEEKDAYS[team]:
+    while day.weekday() not in default_weekdays(team):
         day -= timedelta(days=1)
     return day.isoformat()
 
@@ -89,7 +89,7 @@ def test_ir_al_entreno_da_diez(admin):
 def test_no_hay_destacados_hasta_que_empieza_el_entreno(admin, monkeypatch):
     # Hoy toca entreno pero aún no ha empezado: se ve el entreno anterior.
     today = LATE.date()
-    while today.weekday() not in TEAM_WEEKDAYS["femenino"]:
+    while today.weekday() not in default_weekdays("femenino"):
         today -= timedelta(days=1)
     morning = LATE.replace(year=today.year, month=today.month, day=today.day, hour=9, minute=0)
     monkeypatch.setattr(attendance, "_club_now", lambda: morning)

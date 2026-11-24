@@ -1,0 +1,44 @@
+{
+  "teams": [
+    {
+      "id": "alevin-a",
+      "name": "Alevín A",
+      "match_phrase": "del Alevín",
+      "schedule": [{ "days": [0, 2], "start": "17:00", "end": "18:15" }]
+    },
+    {
+      "id": "alevin-b",
+      "name": "Alevín B",
+      "match_phrase": "del Alevín",
+      "schedule": [{ "days": [1, 3], "start": "17:00", "end": "18:15" }]
+    },
+    {
+      "id": "cadete",
+      "name": "Cadete Femenino",
+      "match_phrase": "del Cadete",
+      "schedule": [
+        { "days": [0, 2], "start": "18:15", "end": "19:45" },
+        { "days": [4], "start": "17:30", "end": "19:00" }
+      ]
+    },
+    {
+      "id": "senior",
+      "name": "Senior Masculino",
+      "match_phrase": "del Senior",
+      "schedule": [{ "days": [1, 3], "start": "20:30", "end": "22:00" }]
+    },
+    {
+      "id": "playa",
+      "name": "Vóley Playa",
+      "match_phrase": "de Playa",
+      "beach": true,
+      "schedule": [{ "days": [5] }]
+    }
+  ],
+  "shared_matches": [["alevin-a", "alevin-b"]],
+  "groups": [
+    { "id": "alevin", "name": "Alevín", "teams": ["alevin-a", "alevin-b"] },
+    { "id": "cadete", "name": "Cadete Femenino", "teams": ["cadete"] },
+    { "id": "senior", "name": "Senior Masculino", "teams": ["senior"] }
+  ]
+}

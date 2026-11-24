@@ -6,7 +6,7 @@ import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.js
 import MatchDialog from "@/app/components/MatchDialog.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { placeInfo, setsWon, matchKindLabel } from "@/app/matches.js";
-import { isTeamId } from "@/app/teams.js";
+import { defaultTeamId, isTeamId } from "@/app/teams.js";
 
 const KIND_TABS = [
   { value: "amistoso", label: "Amistosos" },
@@ -144,7 +144,7 @@ function KindTabs({ tabs, active, counts, onChange }) {
 export default function PlayedMatchesPage({ user, onAccessLost }) {
   const [searchParams] = useSearchParams();
   const requested = searchParams.get("equipo");
-  const teamId = isTeamId(requested) ? requested : isTeamId(user.team_id) ? user.team_id : "masculino";
+  const teamId = isTeamId(requested) ? requested : isTeamId(user.team_id) ? user.team_id : defaultTeamId();
   const [teamName, setTeamName] = useState("");
   const [played, setPlayed] = useState(null);
   const [selected, setSelected] = useState(searchParams.get("tipo"));

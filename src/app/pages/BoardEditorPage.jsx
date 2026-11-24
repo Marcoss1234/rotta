@@ -28,6 +28,7 @@ import ActionDialog from "@/app/components/board/ActionDialog.jsx";
 import { buildPlay, inLine, lineMarks, lineRuleOf, planPositions, planPreview, repeatInLines } from "@/app/boardPlanner.js";
 import { COURT_HEIGHT, COURT_WIDTH, BOARD_KINDS, applyLineup, blendElements, boardKindLabel, canRotate, lineupTokens, loadClubPlayers, newBall, newLine, newProp, nextLineupName, rivalToken, rotateElements, rotationZones, roundCoord, tokenFromPlayer } from "@/app/boards.js";
 import { recordBoardVideo, videoFileName, videoType } from "@/app/boardVideo.js";
+import { isBeachTeam } from "@/app/teams.js";
 
 const SAVE_DELAY_MS = 900;
 const ROTATE_MS = 650;
@@ -984,7 +985,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               heights={ballState.heights}
               flashes={ballState.flashes}
               actions={playback.active ? actionsAt(board.recording, playback.time) : null}
-              beach={board.team_id === "playa"}
+              beach={isBeachTeam(board.team_id)}
               teamId={board.team_id}
               onMove={editable && !playback.active && !recording && !presenting && countdown === null ? move3d : null}
             />
@@ -996,7 +997,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             elements={playback.shown}
             rosterById={rosterById}
             half={half}
-            beach={board.team_id === "playa"}
+            beach={isBeachTeam(board.team_id)}
             maxWidth={courtArea.width - 24}
             maxHeight={courtArea.height - 24}
             heights={ballState.heights}
@@ -1010,7 +1011,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         )}
 
         {!view3d && courtWidth > 0 && (
-          <CourtFrame half={half} beach={board.team_id === "playa"} className="shadow-[0_12px_40px_rgba(0,0,0,0.65)] ring-1 ring-white/10" style={{ width: courtWidth }}>
+          <CourtFrame half={half} beach={isBeachTeam(board.team_id)} className="shadow-[0_12px_40px_rgba(0,0,0,0.65)] ring-1 ring-white/10" style={{ width: courtWidth }}>
             <BoardCanvas
               elements={planner ? planPositions(planner.steps, playback.shown) : playback.shown}
               rosterById={rosterById}

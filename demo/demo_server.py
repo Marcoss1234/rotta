@@ -45,6 +45,7 @@ import ranking  # noqa: E402
 from database import get_db  # noqa: E402
 from roster_sync import ensure_user_index, sync_player_with_user  # noqa: E402
 from server import app  # noqa: E402
+from teams import use_club_structure  # noqa: E402
 
 
 
@@ -103,7 +104,15 @@ def fake_verify(credential):
 
 db = AsyncMongoMockClient()["demo"]
 auth.verify_google_token = fake_verify
-app.dependency_overrides[get_db] = lambda: db
+
+
+async def demo_db():
+    # Como get_db de verdad: la base y, con ella, los equipos del club (backend/teams.py).
+    await use_club_structure(db)
+    return db
+
+
+app.dependency_overrides[get_db] = demo_db
 
 # En la demo todo cuenta desde hace semanas: destacados, coins y sin multas por no contestar.
 attendance.STARS_FROM = TODAY - timedelta(days=60)
@@ -328,5 +337,10 @@ async def seed():
 
 
 asyncio.run(seed())
+# Para probar otros equipos: DEMO_ESTRUCTURA=tools/estructura-ejemplo.json npm run demo
+# (los datos de la demo son de los equipos de serie; con otra estructura salen los equipos vacíos).
+if os.environ.get("DEMO_ESTRUCTURA"):
+    structure = json.loads((ROOT / os.environ["DEMO_ESTRUCTURA"]).read_text(encoding="utf-8"))
+    asyncio.run(db.club_settings.update_one({"id": "club"}, {"$set": {"structure": structure}}, upsert=True))
 print("\n  Demo lista: abre http://localhost:5180/app y elige con quién entrar.\n")
 uvicorn.run(app, host="127.0.0.1", port=int(os.environ.get("DEMO_API_PORT", "8100")), log_level="warning")

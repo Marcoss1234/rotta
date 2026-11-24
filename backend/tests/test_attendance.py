@@ -5,14 +5,14 @@ from fastapi.testclient import TestClient
 
 import attendance
 from server import app
-from teams import TEAM_WEEKDAYS
+from teams import default_weekdays
 from test_auth import client_for, db  # noqa: F401
 
 
 def training_day(team="femenino", skip=0):
     day = datetime.now(timezone.utc).date() + timedelta(days=1)
     while True:
-        if day.weekday() in TEAM_WEEKDAYS[team]:
+        if day.weekday() in default_weekdays(team):
             if skip == 0:
                 return day.isoformat()
             skip -= 1
@@ -21,7 +21,7 @@ def training_day(team="femenino", skip=0):
 
 def rest_day(team="femenino"):
     day = datetime.now(timezone.utc).date() + timedelta(days=1)
-    while day.weekday() in TEAM_WEEKDAYS[team]:
+    while day.weekday() in default_weekdays(team):
         day += timedelta(days=1)
     return day.isoformat()
 

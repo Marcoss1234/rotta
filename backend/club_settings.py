@@ -10,8 +10,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from auth import require_admin
 from database import get_db
+from teams import structure
 
 router = APIRouter(prefix="/api")
+
+
+@router.get("/club/structure")
+async def get_club_structure(_db=Depends(get_db)):
+    """Los equipos del club, qué equipos juegan juntos y los grupos del ranking (ver teams.py).
+    Pública, como los colores: la app la carga al arrancar. get_db ya la ha dejado a mano."""
+    return structure().model_dump()
 
 HexColor = Field(pattern=r"^#[0-9A-Fa-f]{6}$")
 # Rotta por defecto: morado y cian sobre negro.

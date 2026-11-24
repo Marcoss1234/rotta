@@ -313,7 +313,7 @@ def _require_edit_board(user, board):
 
 
 @router.get("")
-async def list_boards(team_id: TeamId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def list_boards(team_id: Annotated[TeamId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     if not _can_view(user, team_id):
         raise HTTPException(status_code=403, detail="Esta pizarra es de otro equipo")
     can_edit = _can_edit(user, team_id)
@@ -401,7 +401,7 @@ def _public_lineup(lineup):
 
 
 @lineups_router.get("")
-async def list_lineups(team_id: TeamId = Query(...), user=Depends(require_approved), db=Depends(get_db)):
+async def list_lineups(team_id: Annotated[TeamId, Query()], user=Depends(require_approved), db=Depends(get_db)):
     _require_edit(user, team_id)
     lineups = await db.board_lineups.find({"team_id": team_id}).to_list(MAX_LINEUPS)
     lineups.sort(key=lambda lineup: lineup["created_at"], reverse=True)

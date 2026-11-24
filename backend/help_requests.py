@@ -18,7 +18,7 @@ from database import get_db
 from honors import set_coins
 from players import require_approved
 from schedules import team_schedule
-from teams import TEAMS, TeamId
+from teams import TeamId, team_name
 
 CLUB_TIME = ZoneInfo("Europe/Madrid")
 HELP_COINS = 3
@@ -26,7 +26,6 @@ HELP_COINS = 3
 FEW_PLAYERS = 5
 WEEKDAYS = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
 MONTHS = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
-TEAM_NAMES = {team["id"]: team["name"] for team in TEAMS}
 
 router = APIRouter(prefix="/api/attendance/help")
 _indexes_ready = False
@@ -93,7 +92,7 @@ async def help_cards(db, help_ids, user):
             "going": lists["going"],
             "id": request["id"],
             "team_id": request["team_id"],
-            "team_name": TEAM_NAMES.get(request["team_id"], ""),
+            "team_name": team_name(request["team_id"]),
             "date": request["date"],
             "start": request.get("start"),
             "past": request["date"] < today,
@@ -132,7 +131,7 @@ async def ask_for_help(body: HelpAsk, user=Depends(require_approved), db=Depends
     when = f"{_day_label(body.date)}{f' a las {start}' if start else ''}"
     people = "nadie" if going == 0 else ("1 persona" if going == 1 else f"{going} personas")
     text = (
-        f"🆘 ¡Necesitamos ayuda! No somos suficientes para el entreno de {TEAM_NAMES[body.team_id]} "
+        f"🆘 ¡Necesitamos ayuda! No somos suficientes para el entreno de {team_name(body.team_id)} "
         f"del {when}. De momento vamos {people}. ¿Te vienes? Dale a «Voy»."
     )
     request = {
@@ -193,7 +192,7 @@ async def join_help(request_id: str, user=Depends(require_approved), db=Depends(
     except DuplicateKeyError:
         await db.attendance.update_one(key, change)
     await db.help_requests.update_one({"id": request_id}, {"$addToSet": {"helpers": user["id"]}})
-    label = f"Ayudar a {TEAM_NAMES.get(request['team_id'], 'otro equipo')}"
+    label = f"Ayudar a {team_name(request['team_id'], 'otro equipo')}"
     coins = await set_coins(db, user["id"], HELP_COINS, "help", label, _coins_ref(request, user))
     return {**await _card(db, request_id, user), "coins_change": coins}
 

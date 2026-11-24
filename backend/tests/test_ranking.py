@@ -434,7 +434,7 @@ def test_jugador_de_otro_equipo_no_se_puntua(admin):
 
 def test_el_administrador_principal_puede_poner_notas_a_todos(admin, monkeypatch):
     set_coached(admin, [])
-    assert groups_rated(admin) == set(ranking.GROUPS)
+    assert groups_rated(admin) == set(ranking.groups())
     assert rate(admin, add_player(admin, "Nino", team="escuela-lm"), ALL_EIGHT, group="escuela").status_code == 200
     # Otro administrador que no es el principal sigue sin poder.
     other = member(admin, role="admin", team="masculino", coached=[])
