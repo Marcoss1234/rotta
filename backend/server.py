@@ -7,7 +7,6 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from attendance import router as attendance_router
@@ -21,6 +20,7 @@ from live import router as live_router
 from shop import router as shop_router
 from chat import router as chat_router
 from club_settings import router as club_settings_router
+from spa import SinglePageApp
 from database import close_db, get_db
 from events import router as events_router
 from matches import router as matches_router
@@ -135,7 +135,7 @@ if os.environ.get("ENABLE_PUBLIC_WRITE_ROUTES", "").lower() == "true":
 
 frontend_dist = Path(__file__).resolve().parents[1] / "frontend-dist"
 if frontend_dist.is_dir():
-    app.mount("/", StaticFiles(directory=frontend_dist, html=True), name="frontend")
+    app.mount("/", SinglePageApp(frontend_dist), name="frontend")
 
 origins = [
     origin.strip()
