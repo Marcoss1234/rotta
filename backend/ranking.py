@@ -103,9 +103,10 @@ def _check_week(week):
 
 
 def _rated_teams(user):
-    """El administrador principal puede puntuar todos los equipos; los demás, los que entrenan."""
+    """El administrador principal puede puntuar todos los equipos; los demás, los que entrenan.
+    Quien entra con usuario y contraseña no tiene correo (email None): no es el principal."""
     coached = set(user.get("coached_team_ids", []))
-    if user.get("role") == "admin" and user.get("email", "").casefold() in _admin_emails():
+    if user.get("role") == "admin" and (user.get("email") or "").casefold() in _admin_emails():
         return {team for group in groups().values() for team in group["teams"]}
     if user.get("role") == "entrenador":
         return coached | {user.get("team_id")}

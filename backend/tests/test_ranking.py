@@ -506,3 +506,10 @@ def test_el_admin_da_los_premios_de_una_semana_pasada_que_se_quedo_sin_ellos(adm
     assert ana.get("/api/coins").json()["balance"] == before + ranking.WEEK_PRIZES[1]
     current = admin.get("/api/ranking/honors?group_id=masculino").json()["week"]
     assert [item["player_id"] for item in current] == [others[2], others[1], others[0]]
+
+
+def test_un_administrador_sin_correo_no_rompe_el_ranking():
+    # Las cuentas de usuario y contraseña no tienen correo: antes esto daba un error 500 en /api/ranking/groups.
+    admin = {"role": "admin", "email": None, "coached_team_ids": ["femenino"]}
+    assert ranking._rated_teams(admin) == {"femenino"}
+    assert ranking._rated_teams({"role": "admin", "email": None}) == set()
