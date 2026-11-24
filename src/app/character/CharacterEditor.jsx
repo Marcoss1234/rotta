@@ -37,7 +37,7 @@ const isLocked = (option, owned) => Boolean(option.shop) && !owned.has(option.sh
 function Group({ title, children }) {
   return (
     <fieldset className="space-y-2">
-      <legend className="mb-2 text-xs font-bold uppercase tracking-wider text-zinc-400">{title}</legend>
+      <legend className="mb-2 text-xs font-bold text-zinc-400">{title}</legend>
       {children}
     </fieldset>
   );
@@ -157,7 +157,7 @@ export default function CharacterEditor({ look, onChange, onTabChange, owned = [
         <div role="status" className="flex items-center gap-3 rounded-xl bg-amber-300/10 p-3 ring-1 ring-amber-300/30">
           <Lock aria-hidden="true" className="h-5 w-5 shrink-0 text-amber-300" />
           <p className="min-w-0 flex-1 text-sm font-semibold text-amber-50">«{lockedPick.label}» es de la tienda: cómpralo con tus Club Coins.</p>
-          <Link to="/app/tienda" className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-amber-400 px-3 text-xs font-black text-void">
+          <Link to="/app/tienda" className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-amber-400 px-3 text-xs font-extrabold text-void">
             <ShoppingBag aria-hidden="true" className="h-4 w-4" />
             Tienda
           </Link>
@@ -171,7 +171,7 @@ export default function CharacterEditor({ look, onChange, onTabChange, owned = [
             role="tab"
             aria-selected={tab === item.id}
             onClick={() => setTab(item.id)}
-            className={`min-h-11 shrink-0 rounded-lg px-3.5 font-display text-sm font-black uppercase italic ${
+            className={`min-h-11 shrink-0 rounded-lg px-3.5 font-display text-sm font-extrabold ${
               tab === item.id ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
             }`}
           >

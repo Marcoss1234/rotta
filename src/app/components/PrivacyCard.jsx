@@ -26,8 +26,8 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
   };
 
   return (
-    <section aria-labelledby="privacy-title" className="space-y-3 rounded-xl bg-panel p-4">
-      <h2 id="privacy-title" className="flex items-center gap-2 font-display text-xl font-black uppercase italic">
+    <section aria-labelledby="privacy-title" className="space-y-3 rounded-3xl bg-panel p-4">
+      <h2 id="privacy-title" className="flex items-center gap-2 font-display text-xl font-extrabold">
         <ShieldCheck aria-hidden="true" className="h-5 w-5 text-tnt" />
         Privacidad
       </h2>
@@ -42,10 +42,10 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
         </li>
       </ul>
       <div className="grid gap-2 sm:grid-cols-2">
-        <button type="button" onClick={() => setEditing(true)} className="min-h-11 rounded-lg text-sm font-bold text-zinc-100 ring-1 ring-white/15 hover:bg-white/5">
+        <button type="button" onClick={() => setEditing(true)} className="min-h-11 rounded-full text-sm font-bold text-zinc-100 ring-1 ring-white/15 hover:bg-white/5">
           Cambiar permisos
         </button>
-        <a href="/app/privacidad" target="_blank" rel="noreferrer" className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-bold text-zinc-100 ring-1 ring-white/15 hover:bg-white/5">
+        <a href="/app/privacidad" target="_blank" rel="noreferrer" className="flex min-h-11 items-center justify-center gap-1.5 rounded-full text-sm font-bold text-zinc-100 ring-1 ring-white/15 hover:bg-white/5">
           <FileText aria-hidden="true" className="h-4 w-4" />
           Política de privacidad
         </a>
@@ -71,7 +71,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
                 onChange={(event) => setTyped(event.target.value)}
                 autoComplete="off"
                 autoCapitalize="characters"
-                className="min-h-11 w-full rounded-lg border border-white/15 bg-void px-3 font-bold tracking-widest text-white focus:border-red-400 focus:outline-none"
+                className="min-h-11 w-full rounded-full border border-white/15 bg-void px-3 font-bold tracking-widest text-white focus:border-red-400 focus:outline-none"
               />
             </label>
             {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
@@ -82,7 +82,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
                   setDeleting(false);
                   setTyped("");
                 }}
-                className="min-h-11 rounded-lg text-sm font-bold text-zinc-200 ring-1 ring-white/15"
+                className="min-h-11 rounded-full text-sm font-bold text-zinc-200 ring-1 ring-white/15"
               >
                 Cancelar
               </button>
@@ -90,7 +90,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
                 type="button"
                 disabled={typed.trim().toUpperCase() !== "BORRAR" || busy}
                 onClick={remove}
-                className="min-h-11 rounded-lg bg-red-600 text-sm font-bold text-snow disabled:opacity-40"
+                className="min-h-11 rounded-full bg-red-600 text-sm font-bold text-snow disabled:opacity-40"
               >
                 {busy ? "Borrando…" : "Borrar para siempre"}
               </button>

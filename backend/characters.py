@@ -33,7 +33,7 @@ Shirt = Literal["normal", "rayo", "fuego", "bomba", "oro", "telarana", "cuervo"]
 FxRemate = Literal["none", "fuego", "rayo", "galaxia", "oro"]
 FxRecepcion = Literal["none", "fuego", "rayo", "galaxia", "oro", "hielo"]
 FxColocacion = Literal["none", "fuego", "rayo", "galaxia", "oro", "estrellas"]
-Celebration = Literal["brazos", "puno"]
+Celebration = Literal["brazos", "puno", "baile", "avion", "giro"]
 
 router = APIRouter(prefix="/api")
 

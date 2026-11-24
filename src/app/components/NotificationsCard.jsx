@@ -113,12 +113,12 @@ export default function NotificationsCard({ variant = "card" }) {
         >
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
-        <p className="flex items-center gap-2 pr-8 font-display text-lg font-black uppercase italic leading-tight">
+        <p className="flex items-center gap-2 pr-8 font-display text-lg font-extrabold leading-tight">
           <Bell aria-hidden="true" className="h-5 w-5 shrink-0 fill-tnt text-tnt" />
           Activa los avisos
         </p>
         <p className="mt-1 text-sm text-zinc-200">Entérate de los mensajes, los partidos y el ranking aunque tengas la app cerrada.</p>
-        <button type="button" disabled={busy} onClick={activate} className="mt-3 min-h-11 w-full rounded-lg bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-60">
+        <button type="button" disabled={busy} onClick={activate} className="mt-3 min-h-11 w-full rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-60">
           {busy ? "Activando…" : "Activar notificaciones"}
         </button>
         {error && <p role="alert" className="mt-2 text-sm font-semibold text-red-300">{error}</p>}
@@ -127,7 +127,7 @@ export default function NotificationsCard({ variant = "card" }) {
   }
 
   return (
-    <section aria-labelledby="notifications-title" className="space-y-3 rounded-xl bg-panel p-4">
+    <section aria-labelledby="notifications-title" className="space-y-3 rounded-3xl bg-panel p-4">
       <h2 id="notifications-title" className="flex items-center gap-2 font-display text-lg font-bold">
         <Bell aria-hidden="true" className="h-5 w-5 text-tnt" />
         Notificaciones

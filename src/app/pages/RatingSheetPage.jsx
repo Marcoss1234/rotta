@@ -90,7 +90,7 @@ export default function RatingSheetPage({ onAccessLost }) {
   return (
     <div className="space-y-6">
       <RankingHero title="Notas" subtitle={isCurrent ? `Esta semana · ${weekLabel(week)}` : `Semana ${weekLabel(week)}`}>
-        <Link to={`/app/ranking${groupId ? `?grupo=${groupId}` : ""}`} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 text-sm font-extrabold text-void hover:bg-zinc-200">
+        <Link to={`/app/ranking${groupId ? `?grupo=${groupId}` : ""}`} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-extrabold text-void hover:bg-zinc-200">
           <Trophy aria-hidden="true" className="h-4 w-4" />
           Ranking
         </Link>
@@ -98,11 +98,11 @@ export default function RatingSheetPage({ onAccessLost }) {
 
       {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} />}
 
-      <div className="flex items-center justify-between gap-2 rounded-xl bg-panel p-2">
+      <div className="flex items-center justify-between gap-2 rounded-2xl bg-panel p-2">
         <button type="button" aria-label="Semana anterior" onClick={() => setWeek((current) => shiftWeek(current, -1))} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/5">
           <ChevronLeft aria-hidden="true" className="h-5 w-5" />
         </button>
-        <p className="text-center font-display text-sm font-extrabold uppercase tracking-wide" aria-live="polite">
+        <p className="text-center font-display text-sm font-extrabold" aria-live="polite">
           {isCurrent ? "Esta semana" : weekLabel(week)}
         </p>
         <button type="button" aria-label="Semana siguiente" disabled={isCurrent} onClick={() => setWeek((current) => shiftWeek(current, 1))} className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/5 disabled:opacity-30">
@@ -110,17 +110,17 @@ export default function RatingSheetPage({ onAccessLost }) {
         </button>
       </div>
 
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && !sheet && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {sheet && (
         <>
-          <div className="rounded-xl bg-panel p-4">
+          <div className="rounded-3xl bg-panel p-4">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <span className={`rounded px-2 py-0.5 text-[11px] font-black uppercase tracking-widest ${sheet.published ? "bg-emerald-300/20 text-emerald-200" : "bg-ember/20 text-ember"}`}>
+              <span className={`rounded px-2 py-0.5 text-[11px] font-extrabold ${sheet.published ? "bg-emerald-300/20 text-emerald-200" : "bg-ember/20 text-ember"}`}>
                 {sheet.published ? "Publicada" : "Borrador"}
               </span>
-              <span className="font-display text-lg font-black italic tabular-nums">{rated}<span className="text-zinc-500">/{sheet.rows.length}</span></span>
+              <span className="font-display text-lg font-extrabold tabular-nums">{rated}<span className="text-zinc-500">/{sheet.rows.length}</span></span>
             </div>
             <AnimatedBar percent={sheet.rows.length ? (rated / sheet.rows.length) * 100 : 0} className="h-2" />
             <p className="mt-2 text-xs text-zinc-400">
@@ -128,7 +128,7 @@ export default function RatingSheetPage({ onAccessLost }) {
             </p>
           </div>
 
-          {sheet.rows.length === 0 && <p className="rounded-xl bg-panel p-4 text-sm text-zinc-300">Este equipo aún no tiene jugadores.</p>}
+          {sheet.rows.length === 0 && <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">Este equipo aún no tiene jugadores.</p>}
 
           <ul className="space-y-2">
             {sheet.rows.map((row) => (
@@ -155,7 +155,7 @@ export default function RatingSheetPage({ onAccessLost }) {
           </ul>
 
           {!sheet.published && rated > 0 && (
-            <div className="rounded-xl bg-panel p-4">
+            <div className="rounded-3xl bg-panel p-4">
               {confirming ? (
                 <div className="space-y-3">
                   <p className="text-sm text-zinc-200">
@@ -164,16 +164,16 @@ export default function RatingSheetPage({ onAccessLost }) {
                       : "¿Publicar la semana? El ranking se actualizará para todo el equipo."}
                   </p>
                   <div className="grid grid-cols-2 gap-2">
-                    <button type="button" disabled={publishing} onClick={() => setConfirming(false)} className="min-h-11 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:opacity-50">
+                    <button type="button" disabled={publishing} onClick={() => setConfirming(false)} className="min-h-11 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:opacity-50">
                       Todavía no
                     </button>
-                    <button type="button" disabled={publishing} onClick={publish} className="min-h-11 rounded-lg bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-50">
+                    <button type="button" disabled={publishing} onClick={publish} className="min-h-11 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-50">
                       {publishing ? "Publicando…" : "Sí, publicar"}
                     </button>
                   </div>
                 </div>
               ) : (
-                <button type="button" onClick={() => setConfirming(true)} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-tnt to-ember px-4 font-display text-lg font-black uppercase italic text-onbrand">
+                <button type="button" onClick={() => setConfirming(true)} className="flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-tnt px-4 font-display text-lg font-extrabold text-onbrand">
                   <Zap aria-hidden="true" className="h-5 w-5 fill-white" />
                   Publicar semana
                 </button>

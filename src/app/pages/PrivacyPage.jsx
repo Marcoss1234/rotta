@@ -11,7 +11,7 @@ const UPDATED = "12 de noviembre de 2026";
 function Section({ title, children }) {
   return (
     <section className="space-y-2">
-      <h2 className="font-display text-xl font-black">{title}</h2>
+      <h2 className="font-display text-xl font-extrabold">{title}</h2>
       <div className="space-y-2 text-[15px] leading-relaxed text-zinc-300">{children}</div>
     </section>
   );
@@ -30,7 +30,7 @@ export default function PrivacyPage() {
           Volver a la app
         </a>
         <header className="space-y-1">
-          <h1 className="font-display text-4xl font-black leading-tight">Política de privacidad</h1>
+          <h1 className="font-display text-4xl font-extrabold leading-tight">Política de privacidad</h1>
           <p className="text-sm text-zinc-400">Rotta · Gestor de clubs · Actualizada el {UPDATED}</p>
         </header>
 

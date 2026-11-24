@@ -13,7 +13,7 @@ function Choice({ checked, onSelect, icon: Icon, title, text }) {
       role="radio"
       aria-checked={checked}
       onClick={onSelect}
-      className={`flex w-full items-start gap-3 rounded-xl p-3 text-left ring-2 transition-colors ${checked ? "bg-tnt/15 ring-tnt" : "bg-panel ring-white/10 hover:ring-white/25"}`}
+      className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors ${checked ? "bg-tnt/15 ring-tnt" : "bg-panel ring-white/10 hover:ring-white/25"}`}
     >
       <Icon aria-hidden="true" className={`mt-0.5 h-5 w-5 shrink-0 ${checked ? "text-tnt" : "text-zinc-400"}`} />
       <span>
@@ -58,7 +58,7 @@ export default function ConsentPage({ user, initial = null, onSaved, onSignedOut
       <form onSubmit={submit} className="mx-auto max-w-md space-y-6">
         <header className="space-y-2 text-center">
           <ShieldCheck aria-hidden="true" className="mx-auto h-10 w-10 text-tnt" />
-          <h1 className="font-display text-3xl font-black">{initial ? "Tus permisos" : `Antes de entrar, ${user.name.split(" ")[0]}`}</h1>
+          <h1 className="font-display text-3xl font-extrabold">{initial ? "Tus permisos" : `Antes de entrar, ${user.name.split(" ")[0]}`}</h1>
           <p className="text-sm text-zinc-400">
             La app guarda datos tuyos para organizar el club: tu ficha, si vas a entrenar, las notas, el chat… Lo tienes todo explicado en la{" "}
             <a href="/app/privacidad" target="_blank" rel="noreferrer" className="font-semibold text-ember underline">política de privacidad</a>.
@@ -101,7 +101,7 @@ export default function ConsentPage({ user, initial = null, onSaved, onSignedOut
         </fieldset>
 
         {!initial && (
-          <label className="flex items-start gap-3 rounded-xl bg-panel p-3 text-sm">
+          <label className="flex items-start gap-3 rounded-2xl bg-panel p-3 text-sm">
             <input type="checkbox" checked={read} onChange={(event) => setRead(event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-tnt" />
             <span>He leído la política de privacidad y acepto que el club use estos datos para organizarse. Puedo borrar mi cuenta cuando quiera.</span>
           </label>
@@ -110,15 +110,15 @@ export default function ConsentPage({ user, initial = null, onSaved, onSignedOut
         {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
 
         <div className="space-y-2">
-          <button type="submit" disabled={!ready || busy} className="min-h-12 w-full rounded-lg bg-tnt font-bold text-onbrand disabled:opacity-40">
+          <button type="submit" disabled={!ready || busy} className="min-h-12 w-full rounded-full bg-tnt font-bold text-onbrand disabled:opacity-40">
             {busy ? "Guardando…" : initial ? "Guardar permisos" : "Aceptar y entrar"}
           </button>
           {onCancel ? (
-            <button type="button" onClick={onCancel} className="min-h-11 w-full rounded-lg text-sm font-semibold text-zinc-300 hover:text-white">
+            <button type="button" onClick={onCancel} className="min-h-11 w-full rounded-full text-sm font-semibold text-zinc-300 hover:text-white">
               Cancelar
             </button>
           ) : (
-            <button type="button" onClick={leave} className="min-h-11 w-full rounded-lg text-sm font-semibold text-zinc-400 hover:text-white">
+            <button type="button" onClick={leave} className="min-h-11 w-full rounded-full text-sm font-semibold text-zinc-400 hover:text-white">
               No acepto · Salir
             </button>
           )}

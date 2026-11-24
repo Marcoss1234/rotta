@@ -31,7 +31,7 @@ export default function LineDialog({ onConfirm, onCancel }) {
       }}
       className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/70"
     >
-      <h2 id="line-dialog-title" className="font-display text-lg font-black uppercase italic">Nueva fila</h2>
+      <h2 id="line-dialog-title" className="font-display text-lg font-extrabold">Nueva fila</h2>
       {step === "rule" ? (
         <>
           <p className="mt-1 text-sm text-zinc-300">¿Cuándo se cambian los de la fila?</p>
@@ -45,7 +45,7 @@ export default function LineDialog({ onConfirm, onCancel }) {
                 onClick={() => setRule(item.value)}
                 className={`block w-full rounded-xl p-3 text-left ${rule === item.value ? "bg-tnt/20 ring-2 ring-tnt" : "bg-void ring-1 ring-white/15"}`}
               >
-                <span className="block text-sm font-black">{item.title}</span>
+                <span className="block text-sm font-extrabold">{item.title}</span>
                 <span className="mt-0.5 block text-xs text-zinc-300">{item.text}</span>
               </button>
             ))}
@@ -66,7 +66,7 @@ export default function LineDialog({ onConfirm, onCancel }) {
             role="radio"
             aria-checked={size === value}
             onClick={() => setSize(value)}
-            className={`min-h-11 rounded-lg text-base font-black ${size === value ? "bg-tnt text-onbrand" : "border border-white/15 bg-void text-zinc-200"}`}
+            className={`min-h-11 rounded-lg text-base font-extrabold ${size === value ? "bg-tnt text-onbrand" : "border border-white/15 bg-void text-zinc-200"}`}
           >
             {value}
           </button>

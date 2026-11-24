@@ -21,8 +21,8 @@ function MatchResult({ sets }) {
   return (
     <div className="rounded-xl bg-void/60 p-3" data-testid="match-result">
       <div className="flex items-center justify-between gap-3">
-        <p className={`font-display text-xl font-black uppercase italic ${won > lost ? "text-ember" : "text-zinc-300"}`}>{outcome}</p>
-        <p className="font-display text-4xl font-black italic leading-none">
+        <p className={`font-display text-xl font-extrabold ${won > lost ? "text-ember" : "text-zinc-300"}`}>{outcome}</p>
+        <p className="font-display text-4xl font-extrabold leading-none">
           <span className="sr-only">Sets ganados y perdidos: </span>
           {won}<span className="mx-1.5 text-zinc-500">-</span>{lost}
         </p>
@@ -30,7 +30,7 @@ function MatchResult({ sets }) {
       <ol className="mt-2.5 grid auto-cols-fr grid-flow-col gap-1.5">
         {sets.map((set, index) => (
           <li key={index} className={`rounded-lg py-1.5 text-center ${set.us > set.them ? "bg-green-500/20" : "bg-red-500/20"}`}>
-            <p className="text-[10px] font-semibold uppercase tracking-wide text-zinc-400">Set {index + 1}</p>
+            <p className="text-[10px] font-semibold text-zinc-400">Set {index + 1}</p>
             <p className={`text-sm font-extrabold tabular-nums ${set.us > set.them ? "text-green-400" : "text-red-400"}`}>{set.us}-{set.them}</p>
           </li>
         ))}
@@ -64,7 +64,7 @@ function MvpPicker({ match, onChange }) {
               setBusy(false);
             }
           }}
-          className="min-h-11 min-w-0 flex-1 rounded-lg border border-amber-300/40 bg-void px-2 text-sm font-bold text-white disabled:opacity-50"
+          className="min-h-11 min-w-0 flex-1 rounded-full border border-amber-300/40 bg-void px-2 text-sm font-bold text-white disabled:opacity-50"
         >
           <option value="">Sin MVP</option>
           {match.players.map((player) => (
@@ -81,12 +81,12 @@ function MvpPicker({ match, onChange }) {
 
 function PlayedMatchRow({ match, onEdit, onReload }) {
   return (
-    <li className="space-y-2.5 rounded-xl border border-white/5 bg-panel p-3" data-testid="played-match">
+    <li className="space-y-2.5 rounded-2xl ring-1 ring-white/10 bg-panel p-3" data-testid="played-match">
       <div className="flex items-center gap-3">
         <DateBadge iso={match.date} />
         <div className="min-w-0 flex-1">
           <p className="break-words text-base font-semibold text-zinc-300">contra <span className="text-white">{match.opponent}</span></p>
-          <p className="mt-0.5 text-xs font-bold uppercase tracking-wide text-ember">{matchKindLabel(match.kind)} · {match.time}</p>
+          <p className="mt-0.5 text-xs font-bold text-ember">{matchKindLabel(match.kind)} · {match.time}</p>
         </div>
         {match.can_edit && (
           <button type="button" onClick={() => onEdit(match)} aria-label={`Editar el partido contra ${match.opponent}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5 hover:text-white">
@@ -107,7 +107,7 @@ function PlayedMatchRow({ match, onEdit, onReload }) {
       {match.live_id && (
         <Link
           to={`/app/directo/${match.live_id}`}
-          className="flex min-h-11 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 px-3 font-display text-sm font-black uppercase italic text-void"
+          className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-amber-400 px-4 font-display text-sm font-bold text-amber-950"
         >
           <Trophy aria-hidden="true" className="h-4 w-4" />
           Ver informe
@@ -122,15 +122,15 @@ function PlayedMatchRow({ match, onEdit, onReload }) {
 
 function KindTabs({ tabs, active, counts, onChange }) {
   return (
-    <div className={`grid gap-1 rounded-2xl border border-white/10 bg-panel p-1 ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-3"}`} data-testid="played-kinds">
+    <div className={`grid gap-1 rounded-2xl ring-1 ring-white/10 bg-panel p-1 ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-3"}`} data-testid="played-kinds">
       {tabs.map(({ value, label }) => (
         <button
           key={value}
           type="button"
           aria-pressed={value === active}
           onClick={() => onChange(value)}
-          className={`flex min-h-14 flex-col items-center justify-center rounded-xl font-display font-black uppercase italic transition-colors ${
-            value === active ? "bg-gradient-to-r from-tnt to-ember text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
+          className={`flex min-h-14 flex-col items-center justify-center rounded-xl font-display font-extrabold transition-colors ${
+            value === active ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
           }`}
         >
           <span className="text-[13px] leading-tight">{label}</span>
@@ -198,20 +198,20 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
   return (
     <div className="space-y-6">
       <RankingHero title="Jugados" subtitle={teamName} stacked>
-        <Link to={`/app?equipo=${teamId}&pestana=partidos`} className="flex min-h-11 shrink-0 items-center gap-1 rounded-lg bg-white pl-2 pr-3 text-sm font-extrabold text-void hover:bg-zinc-200">
+        <Link to={`/app?equipo=${teamId}&pestana=partidos`} className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white pl-2 pr-3 text-sm font-extrabold text-void hover:bg-zinc-200">
           <ChevronLeft aria-hidden="true" className="h-4 w-4" />
           Partidos
         </Link>
       </RankingHero>
 
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && !played && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {played && (
         <>
           <KindTabs tabs={tabs} active={active} counts={counts} onChange={setSelected} />
           {shown.length === 0 ? (
-            <p className="rounded-xl bg-panel p-4 text-sm text-zinc-400">Todavía no hay partidos en {activeLabel}.</p>
+            <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">Todavía no hay partidos en {activeLabel}.</p>
           ) : (
             <ul className="space-y-2">
               {shown.map((match) => (

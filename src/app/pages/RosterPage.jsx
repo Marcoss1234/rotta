@@ -8,29 +8,20 @@ import CourtBoard from "@/app/components/CourtBoard.jsx";
 import RosterTabs from "@/app/components/board/RosterTabs.jsx";
 import PlayerDialog from "@/app/components/PlayerDialog.jsx";
 import PlayerProfileDialog from "@/app/components/PlayerProfileDialog.jsx";
-import { GroupPicker, RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { GroupPicker, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { isStaff, POSITIONS } from "@/app/roles.js";
-
-function RosterPositionTag({ position }) {
-  return (
-    <span className="inline-block -skew-x-12 bg-tnt px-1.5 py-px text-[10px] font-extrabold uppercase tracking-wider text-onbrand">
-      <span className="inline-block skew-x-12">{position}</span>
-    </span>
-  );
-}
 
 function PlayerCardContent({ player }) {
   const preferred = player.preferred_positions.filter((position) => position !== player.position);
   return (
     <>
-      <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-gradient-to-b from-tnt to-ember text-onbrand" />
-      <Avatar name={player.name} picture={player.picture} className="h-10 w-10 text-xs ring-1 ring-white/10" />
+      <Avatar name={player.name} picture={player.picture} className="h-12 w-12 text-sm" />
       <span className="min-w-0 flex-1 text-left">
-        <span className="block break-words font-display text-sm font-black uppercase italic leading-tight">{player.name}</span>
-        <span className="mt-0.5 flex flex-wrap items-center gap-1">
-          <RosterPositionTag position={player.position} />
+        <span className="block break-words font-display text-base font-bold leading-tight">{player.name}</span>
+        <span className="mt-1 flex flex-wrap items-center gap-1">
+          <PositionTag position={player.position} />
           {preferred.map((position) => (
-            <span key={position} className="rounded border border-white/15 px-1.5 text-[10px] font-semibold text-zinc-400">
+            <span key={position} className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-zinc-400 ring-1 ring-inset ring-white/15">
               <span className="sr-only">También prefiere </span>{position}
             </span>
           ))}
@@ -47,7 +38,7 @@ function PlayerCardContent({ player }) {
         )}
       </span>
       {player.number !== null && (
-        <span className="shrink-0 bg-gradient-to-br from-tnt to-ember bg-clip-text pr-1 font-display text-3xl font-black italic leading-none tabular-nums text-transparent text-onbrand">
+        <span className="shrink-0 pr-1 font-display text-4xl font-extrabold leading-none tabular-nums text-white/90">
           <span className="sr-only">Dorsal </span>{player.number}
         </span>
       )}
@@ -63,9 +54,9 @@ function SquadSummary({ players }) {
   return (
     <ul aria-label="Jugadores por posición" className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden">
       {counts.map(({ position, count }) => (
-        <li key={position} className="flex shrink-0 items-center gap-2 rounded-xl border border-white/5 bg-panel px-3 py-2">
-          <span className="font-display text-2xl font-black italic leading-none tabular-nums text-ember">{count}</span>
-          <span className="text-xs font-bold uppercase tracking-wide text-zinc-300">{position}</span>
+        <li key={position} className="flex shrink-0 items-center gap-2 rounded-full bg-panel py-1.5 pl-1.5 pr-4 ring-1 ring-inset ring-white/10">
+          <span className="flex h-8 min-w-8 items-center justify-center rounded-full bg-tnt px-2 font-display text-base font-bold tabular-nums text-onbrand">{count}</span>
+          <span className="text-sm font-semibold text-zinc-200">{position}</span>
         </li>
       ))}
     </ul>
@@ -73,7 +64,7 @@ function SquadSummary({ players }) {
 }
 
 const CARD_CLASS =
-  "relative flex min-h-16 w-full items-center gap-2.5 overflow-hidden rounded-lg border border-white/5 bg-gradient-to-r from-white/[0.05] to-panel py-2 pl-3.5 pr-3";
+  "relative flex min-h-[4.5rem] w-full items-center gap-3 overflow-hidden rounded-2xl bg-panel py-2.5 pl-3 pr-3 ring-1 ring-white/10";
 
 export default function RosterPage({ user, onAccessLost }) {
   const [teams, setTeams] = useState(null);
@@ -207,7 +198,7 @@ export default function RosterPage({ user, onAccessLost }) {
           <button
             type="button"
             onClick={() => setEditing({ player: null })}
-            className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 text-sm font-extrabold text-void hover:bg-zinc-200"
+            className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-bold text-void hover:bg-zinc-200"
           >
             <UserPlus aria-hidden="true" className="h-4 w-4" />
             Añadir
@@ -215,13 +206,13 @@ export default function RosterPage({ user, onAccessLost }) {
         )}
       </RankingHero>
 
-      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} columns="grid-cols-3 md:grid-cols-5" />}
+      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} />}
 
       {teams && <RosterTabs active="plantilla" teamId={teamId} />}
 
       {players && <SquadSummary players={players} />}
 
-      {error && <p role="alert" className="sticky top-2 z-30 rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <p role="alert" className="sticky top-2 z-30 rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && (!teams || !players) && <p role="status" className="text-zinc-300">Cargando…</p>}
 
       {players && (
@@ -230,9 +221,9 @@ export default function RosterPage({ user, onAccessLost }) {
 
       {players && (
         <section aria-labelledby="squad-title" className="space-y-3">
-          <h2 id="squad-title" className="font-display text-2xl font-black uppercase italic">Jugadores</h2>
+          <h2 id="squad-title" className="font-display text-2xl font-bold">Jugadores</h2>
           {players.length === 0 && (
-            <p className="rounded-xl bg-panel p-4 text-sm text-zinc-300">
+            <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">
               {canEdit ? "Este equipo aún no tiene jugadores. Añade el primero." : "Este equipo aún no tiene jugadores."}
             </p>
           )}
@@ -248,7 +239,7 @@ export default function RosterPage({ user, onAccessLost }) {
                   type="button"
                   onClick={() => setViewing(player)}
                   aria-label={`Ver la ficha de ${player.name}`}
-                  className={`${CARD_CLASS} hover:border-white/25`}
+                  className={`${CARD_CLASS} hover:ring-white/25`}
                 >
                   <PlayerCardContent player={player} />
                 </button>

@@ -27,7 +27,7 @@ export default function PlayerRatingHistory({ history }) {
         </div>
         <p className="shrink-0 text-right">
           <OverallNumber overall={latest.overall} className="block text-7xl" />
-          <span className="text-[11px] font-bold uppercase tracking-widest text-zinc-400">Overall</span>
+          <span className="text-[11px] font-bold text-zinc-400">Overall</span>
         </p>
       </div>
 
@@ -48,14 +48,14 @@ export default function PlayerRatingHistory({ history }) {
 
       {latest.comment && (
         <blockquote className="rounded-r-lg border-l-4 border-tnt bg-void p-3 text-sm text-zinc-200">
-          <span className="mb-1 block text-[11px] font-bold uppercase tracking-widest text-zinc-400">Comentario del entrenador</span>
+          <span className="mb-1 block text-[11px] font-bold text-zinc-400">Comentario del entrenador</span>
           <span className="whitespace-pre-wrap break-words">{latest.comment}</span>
         </blockquote>
       )}
 
       {recent.length >= 2 && (
         <div>
-          <h3 className="mb-1 text-[11px] font-bold uppercase tracking-widest text-zinc-400">Evolución</h3>
+          <h3 className="mb-1 text-[11px] font-bold text-zinc-400">Evolución</h3>
           <EvolutionChart weeks={recent} />
           <ul className="sr-only">
             {recent.map((week) => <li key={week.week}>{weekLabel(week.week)}: {formatOverall(week.overall)}</li>)}

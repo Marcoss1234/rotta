@@ -77,7 +77,7 @@ function ItemArt({ item }) {
       >
         <span aria-hidden="true" className="fx-card-glow absolute inset-3 rounded-full" style={{ boxShadow: `0 0 26px 8px ${item.hex}` }} />
         <Icon aria-hidden="true" className="fx-card-icon relative h-10 w-10 text-white drop-shadow-[0_0_8px_var(--fx)]" strokeWidth={2.2} />
-        <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-[9px] font-black uppercase tracking-wider text-white/90">{FX_ACTION[action]}</span>
+        <span className="absolute inset-x-0 bottom-0 bg-black/55 py-0.5 text-[9px] font-extrabold text-white/90">{FX_ACTION[action]}</span>
       </span>
     );
   }
@@ -85,7 +85,7 @@ function ItemArt({ item }) {
     return (
       <span className="relative flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl shadow-[0_6px_20px_rgba(0,0,0,0.5)] ring-2 ring-white/20" style={{ background: SHIRT_LOOKS[item.id] }}>
         <Shirt aria-hidden="true" className="h-11 w-11 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]" />
-        <span className="absolute bottom-1 font-display text-[11px] font-black italic text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Club</span>
+        <span className="absolute bottom-1 font-display text-[11px] font-extrabold text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">Club</span>
       </span>
     );
   }
@@ -176,13 +176,13 @@ export default function ShopPage({ onAccessLost }) {
   return (
     <div className="space-y-6 pb-24">
       {/* Escaparate: tu personaje probándose lo que eliges. */}
-      <section className="sticky top-0 z-20 overflow-hidden rounded-2xl bg-gradient-to-b from-amber-950 via-surface to-void ring-1 ring-amber-300/25 shadow-xl shadow-black/60">
+      <section className="sticky top-0 z-20 overflow-hidden rounded-3xl bg-gradient-to-b from-amber-950 via-surface to-void ring-1 ring-amber-300/25 shadow-xl shadow-black/60">
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-6 mx-auto h-48 w-48 rounded-full bg-amber-400/25 blur-3xl" />
         <div className="relative flex items-center justify-between gap-2 p-3">
           <button type="button" onClick={() => navigate(-1)} aria-label="Volver" className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-white/10">
             <ArrowLeft aria-hidden="true" className="h-5 w-5" />
           </button>
-          <h1 className="flex items-center gap-2 font-display text-2xl font-black uppercase italic">
+          <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold">
             <ShoppingBag aria-hidden="true" className="h-6 w-6 text-amber-300" />
             Tienda
           </h1>
@@ -207,7 +207,7 @@ export default function ShopPage({ onAccessLost }) {
             <p className="flex h-full items-center justify-center text-sm text-zinc-400">Tu móvil no puede mostrar el personaje en 3D.</p>
           )}
           {selected && (
-            <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-xs font-bold uppercase tracking-widest text-amber-200/90">
+            <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-xs font-bold text-amber-200/90">
               Probándote: {selected.name}
             </p>
           )}
@@ -248,16 +248,16 @@ export default function ShopPage({ onAccessLost }) {
                   chosen ? "bg-amber-400/15 ring-2 ring-amber-300" : "bg-panel ring-1 ring-white/10 hover:ring-white/25"
                 }`}
               >
-                {worn && <span className="absolute left-2 top-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase text-snow">Puesto</span>}
+                {worn && <span className="absolute left-2 top-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-snow">Puesto</span>}
                 <ItemArt item={item} />
                 <span className="text-sm font-bold leading-tight">{item.name}</span>
                 {item.owned ? (
-                  <span className="flex items-center gap-1 text-xs font-black text-emerald-300">
+                  <span className="flex items-center gap-1 text-xs font-extrabold text-emerald-300">
                     <Check aria-hidden="true" className="h-3.5 w-3.5" />
                     Tuyo
                   </span>
                 ) : (
-                  <span className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-black tabular-nums ${affordable ? "bg-amber-400/15 text-amber-200" : "bg-white/5 text-zinc-400"}`}>
+                  <span className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-extrabold tabular-nums ${affordable ? "bg-amber-400/15 text-amber-200" : "bg-white/5 text-zinc-400"}`}>
                     {!affordable && <Lock aria-hidden="true" className="h-3 w-3" />}
                     <Coins aria-hidden="true" className="h-3.5 w-3.5" />
                     {item.price.toLocaleString("es-ES")}
@@ -284,7 +284,7 @@ export default function ShopPage({ onAccessLost }) {
                 type="button"
                 disabled={busy || missing > 0}
                 onClick={buy}
-                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 font-display text-lg font-black uppercase italic text-void shadow-[0_10px_30px_rgba(245,158,11,0.45)] disabled:from-zinc-700 disabled:via-zinc-700 disabled:to-zinc-700 disabled:text-zinc-300 disabled:shadow-none"
+                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 font-display text-lg font-extrabold text-void shadow-[0_10px_30px_rgba(245,158,11,0.45)] disabled:from-zinc-700 disabled:via-zinc-700 disabled:to-zinc-700 disabled:text-zinc-300 disabled:shadow-none"
               >
                 {missing > 0 ? (
                   <>
@@ -299,7 +299,7 @@ export default function ShopPage({ onAccessLost }) {
                 )}
               </button>
             ) : isWorn(look, selected) ? (
-              <p className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500/20 font-display text-lg font-black uppercase italic text-emerald-200 ring-1 ring-emerald-400/40">
+              <p className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500/20 font-display text-lg font-extrabold text-emerald-200 ring-1 ring-emerald-400/40">
                 <Check aria-hidden="true" className="h-5 w-5" />
                 Lo llevas puesto
               </p>
@@ -308,7 +308,7 @@ export default function ShopPage({ onAccessLost }) {
                 type="button"
                 disabled={busy}
                 onClick={wear}
-                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-tnt to-ember font-display text-lg font-black uppercase italic text-onbrand shadow-[0_10px_30px_rgba(255,56,0,0.4)] disabled:opacity-60"
+                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-tnt font-display text-lg font-extrabold text-onbrand shadow-[0_10px_30px_rgba(255,56,0,0.4)] disabled:opacity-60"
               >
                 <Sparkles aria-hidden="true" className="h-5 w-5" />
                 {busy ? "Poniéndotelo…" : "Ponérmelo"}

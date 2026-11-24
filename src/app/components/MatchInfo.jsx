@@ -13,9 +13,9 @@ export function DateBadge({ iso }) {
   const month = date.toLocaleDateString("es-ES", { month: "short" }).replace(".", "");
   return (
     <div className="w-14 shrink-0 overflow-hidden rounded-xl bg-[#FAFAFA] text-center shadow-sm ring-1 ring-black/10" aria-hidden="true">
-      <p className="bg-red-600 py-0.5 text-[10px] font-bold uppercase tracking-wider text-snow">{weekday}</p>
-      <p className="font-display text-2xl font-black leading-8 text-[#18181B]">{date.getDate()}</p>
-      <p className="pb-1 text-[10px] font-semibold uppercase tracking-wider text-[#71717A]">{month}</p>
+      <p className="bg-red-600 py-0.5 text-[10px] font-bold text-snow">{weekday}</p>
+      <p className="font-display text-2xl font-extrabold leading-8 text-[#18181B]">{date.getDate()}</p>
+      <p className="pb-1 text-[10px] font-semibold text-[#71717A]">{month}</p>
     </div>
   );
 }
@@ -31,7 +31,7 @@ export function EventPlace({ place, url }) {
           href={url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-lg bg-white px-3 text-sm font-bold text-zinc-900 hover:bg-zinc-200"
+          className="flex min-h-10 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-bold text-zinc-900 hover:bg-zinc-200"
         >
           <Navigation aria-hidden="true" className="h-4 w-4" />
           Cómo llegar

@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 const fieldClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none";
 const labelClass = "mb-1.5 block text-sm font-semibold text-zinc-300";
-const primaryClass = "min-h-11 rounded-lg bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
+const primaryClass = "min-h-11 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryClass =
-  "min-h-11 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 const optional = <span className="font-normal text-zinc-400">(opcional)</span>;
 
 export default function EventDialog({ event, defaultDate, onSave, onDelete, onClose }) {
@@ -101,13 +101,13 @@ export default function EventDialog({ event, defaultDate, onSave, onDelete, onCl
               <p className="text-sm text-zinc-200">¿Borrar este evento?</p>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" disabled={busy} onClick={() => setConfirmingDelete(false)} className={secondaryClass}>No</button>
-                <button type="button" disabled={busy} onClick={() => run(onDelete)} className="min-h-11 rounded-lg border border-red-300 px-4 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
+                <button type="button" disabled={busy} onClick={() => run(onDelete)} className="min-h-11 rounded-full border border-red-300 px-4 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
                   Sí, borrar
                 </button>
               </div>
             </div>
           ) : (
-            <button type="button" disabled={busy} onClick={() => setConfirmingDelete(true)} className="min-h-11 w-full rounded-lg text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
+            <button type="button" disabled={busy} onClick={() => setConfirmingDelete(true)} className="min-h-11 w-full rounded-full text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
               Borrar evento
             </button>
           )}

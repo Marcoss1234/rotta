@@ -66,7 +66,7 @@ export default function PasswordSetupForm({ onDone }) {
       </div>
       <PasswordField id="setup-password" label="Contraseña" value={password} onChange={setPassword} autoComplete="new-password" hint="Al menos 8 caracteres." disabled={busy} />
       {error && <p role="alert" className="text-sm font-semibold text-red-300">{error}</p>}
-      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-lg bg-tnt px-6 font-bold text-onbrand disabled:opacity-60 md:w-auto">
+      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt px-6 font-bold text-onbrand disabled:opacity-60 md:w-auto">
         {busy ? "Guardando…" : "Crear usuario y contraseña"}
       </button>
     </form>

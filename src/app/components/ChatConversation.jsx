@@ -121,13 +121,13 @@ function Message({ message, grouped, onDelete, onOpenImage, onHelpChange, onAcce
       )}
       <div
         className={`${message.help ? "w-[85%] max-w-md" : "max-w-[85%] md:max-w-[75%]"} rounded-2xl px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.35)] ${
-          message.mine ? "rounded-br-md bg-gradient-to-br from-tnt to-tntdeep text-onbrand" : "rounded-bl-md border border-white/5 bg-zinc-800 text-zinc-50"
+          message.mine ? "rounded-br-md bg-tnt text-onbrand" : "rounded-bl-md bg-zinc-800 text-zinc-50"
         }`}
       >
         {!message.mine && !grouped && (
           <p className={`mb-0.5 break-words text-xs font-extrabold ${color}`}>
             {message.author}
-            {staffRole && <span className="font-semibold uppercase tracking-wide text-ember"> · {roleLabel(message.author_role)}</span>}
+            {staffRole && <span className="font-semibold text-ember"> · {roleLabel(message.author_role)}</span>}
           </p>
         )}
         {message.image && <MessageImage image={message.image} author={message.author} onOpen={onOpenImage} />}
@@ -363,9 +363,9 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
     <section
       aria-label={`Chat ${channel.label}`}
       style={viewport ? { "--chat-top": `${viewport.top}px`, "--chat-height": `${viewport.height}px` } : undefined}
-      className="fixed inset-x-0 top-[var(--chat-top,0px)] z-50 flex h-[var(--chat-height,100dvh)] min-w-0 flex-col overflow-hidden bg-void md:static md:h-auto md:min-h-0 md:flex-1 md:rounded-2xl md:border md:border-white/5"
+      className="fixed inset-x-0 top-[var(--chat-top,0px)] z-50 flex h-[var(--chat-height,100dvh)] min-w-0 flex-col overflow-hidden bg-void md:static md:h-auto md:min-h-0 md:flex-1 md:rounded-3xl md:ring-1 md:ring-white/10"
     >
-      <header className="grain relative flex min-h-16 shrink-0 items-center gap-2 bg-gradient-to-r from-tnt via-tnt to-tntdeep px-2 pt-[env(safe-area-inset-top)] md:px-4 md:pt-0 text-onbrand">
+      <header className="relative flex min-h-16 shrink-0 items-center gap-2 bg-tnt px-2 pt-[env(safe-area-inset-top)] md:px-4 md:pt-0 text-onbrand">
         <button
           type="button"
           onClick={onBack}
@@ -374,11 +374,11 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
         >
           <ArrowLeft aria-hidden="true" className="h-5 w-5" />
         </button>
-        <span aria-hidden="true" className="relative flex h-10 w-10 shrink-0 -skew-x-6 items-center justify-center rounded-lg bg-white">
-          <channel.Icon className="h-5 w-5 skew-x-6 text-tnt" />
+        <span aria-hidden="true" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white">
+          <channel.Icon className="h-5 w-5 text-tnt" />
         </span>
         <div className="relative min-w-0 flex-1 pl-1">
-          <h2 className="truncate font-display text-xl font-black uppercase italic leading-tight">{channel.label}</h2>
+          <h2 className="truncate font-display text-xl font-extrabold leading-tight">{channel.label}</h2>
           <p aria-live="polite" className="truncate text-xs font-semibold text-white/90 empty:hidden">{typingLabel(typing)}</p>
         </div>
       </header>
@@ -399,7 +399,7 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
               type="button"
               onClick={loadOlder}
               disabled={loadingOlder}
-              className="min-h-11 rounded-lg border border-white/20 px-4 text-sm font-semibold hover:bg-white/5 disabled:opacity-60"
+              className="min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold hover:bg-white/5 disabled:opacity-60"
             >
               {loadingOlder ? "Cargando…" : "Ver mensajes anteriores"}
             </button>
@@ -415,7 +415,7 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
                 {newDay && (
                   <li className="mt-4 flex items-center gap-3 first:mt-1">
                     <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
-                    <span className="font-display text-xs font-black uppercase italic tracking-widest text-ember">{dayLabel(message.created_at)}</span>
+                    <span className="font-display text-xs font-extrabold text-ember">{dayLabel(message.created_at)}</span>
                     <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
                   </li>
                 )}
@@ -471,7 +471,7 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
           disabled={sending || preparing || (!text.trim() && !photo)}
           onMouseDown={(event) => event.preventDefault()}
           aria-label="Enviar mensaje"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-tnt to-ember text-onbrand disabled:opacity-40"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand disabled:opacity-40"
         >
           <SendHorizontal aria-hidden="true" className="h-5 w-5" />
         </button>

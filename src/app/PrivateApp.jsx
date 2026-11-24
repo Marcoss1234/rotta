@@ -73,7 +73,7 @@ export default function PrivateApp() {
         <button
           type="button"
           onClick={refresh}
-          className="min-h-11 rounded-lg border border-white/20 px-5 font-semibold text-white hover:bg-white/5"
+          className="min-h-11 rounded-full border border-white/20 px-5 font-semibold text-white hover:bg-white/5"
         >
           Reintentar
         </button>

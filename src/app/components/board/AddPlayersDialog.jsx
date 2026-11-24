@@ -27,7 +27,7 @@ function PlayerRow({ player, placed, checked, onToggle }) {
         {placed ? (
           <span className="shrink-0 text-[11px] font-semibold text-zinc-400">En la pista</span>
         ) : (
-          player.number !== null && <span className="shrink-0 font-display text-lg font-black italic text-ember"><span className="sr-only">Dorsal </span>{player.number}</span>
+          player.number !== null && <span className="shrink-0 font-display text-lg font-extrabold text-ember"><span className="sr-only">Dorsal </span>{player.number}</span>
         )}
       </label>
     </li>
@@ -44,7 +44,7 @@ function TeamSection({ team, players, placedIds, selected, onToggle, onToggleMan
     <details open={defaultOpen} className="group rounded-xl bg-void/60">
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-3 [&::-webkit-details-marker]:hidden">
         <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-zinc-400 transition-transform group-open:rotate-180" />
-        <span className="min-w-0 flex-1 truncate font-display text-base font-black uppercase italic">{team.name.replace(/^Club /, "")}</span>
+        <span className="min-w-0 flex-1 truncate font-display text-base font-extrabold">{team.name.replace(/^Club /, "")}</span>
         {chosen > 0 && <span className="rounded-full bg-tnt px-2 py-0.5 text-xs font-bold text-onbrand">{chosen}</span>}
         <span className="text-xs font-semibold text-zinc-400">{players.length}</span>
       </summary>
@@ -57,7 +57,7 @@ function TeamSection({ team, players, placedIds, selected, onToggle, onToggleMan
         )}
         {groups.map((group) => (
           <section key={group.position} aria-label={group.position}>
-            <h4 className="px-2 pb-0.5 pt-1.5 text-[11px] font-bold uppercase tracking-widest text-zinc-400">{group.position}</h4>
+            <h4 className="px-2 pb-0.5 pt-1.5 text-[11px] font-bold text-zinc-400">{group.position}</h4>
             <ul>
               {group.players.map((player) => (
                 <PlayerRow key={player.id} player={player} placed={placedIds.has(player.id)} checked={selected.has(player.id)} onToggle={() => onToggle(player)} />
@@ -109,7 +109,7 @@ export default function AddPlayersDialog({ teams, players, boardTeamId, placedId
       }}
       className="m-auto flex max-h-[88dvh] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden rounded-2xl border border-white/15 bg-panel p-0 font-body text-white backdrop:bg-black/80"
     >
-      <h2 id="add-players-title" className="shrink-0 px-4 pb-2 pt-4 font-display text-2xl font-black uppercase italic">Añadir jugadores</h2>
+      <h2 id="add-players-title" className="shrink-0 px-4 pb-2 pt-4 font-display text-2xl font-extrabold">Añadir jugadores</h2>
       {/* flex-auto (no flex-1): en Safari del iPhone, con flex-1 la lista se encoge a nada. */}
       <div className="min-h-0 flex-auto space-y-1.5 overflow-y-auto overscroll-contain px-3 pb-2">
         {ordered.map((team) => (
@@ -131,7 +131,7 @@ export default function AddPlayersDialog({ teams, players, boardTeamId, placedId
           type="button"
           disabled={count === 0}
           onClick={() => onAdd(players.filter((player) => selected.has(player.id)))}
-          className="min-h-12 rounded-lg bg-gradient-to-r from-tnt to-ember font-display text-sm font-black uppercase italic disabled:opacity-40 text-onbrand"
+          className="min-h-12 rounded-lg bg-tnt font-display text-sm font-extrabold disabled:opacity-40 text-onbrand"
         >
           {count > 0 ? `Añadir (${count})` : "Añadir"}
         </button>

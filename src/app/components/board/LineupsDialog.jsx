@@ -113,7 +113,7 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
           <div aria-hidden="true" className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-tnt via-ember to-transparent text-onbrand" />
           <div className="flex items-start justify-between gap-2">
             <div>
-              <h2 id="lineups-title" className="font-display text-xl font-black uppercase italic">Alineaciones</h2>
+              <h2 id="lineups-title" className="font-display text-xl font-extrabold">Alineaciones</h2>
               <p className="text-xs text-zinc-400">Toca una para ponerla en la pista. Se puede deshacer.</p>
             </div>
             <button type="button" onClick={onClose} aria-label="Cerrar" className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10">
@@ -158,7 +158,7 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
                         <MiniCourt tokens={lineup.tokens} />
                         <span className="min-w-0 flex-1">
                           <span className="block break-words font-bold leading-tight group-hover:text-ember">{lineup.name}</span>
-                          <span className="mt-0.5 block text-[11px] font-semibold uppercase tracking-wide text-zinc-500">
+                          <span className="mt-0.5 block text-[11px] font-semibold text-zinc-500">
                             {lineup.tokens.length} {lineup.tokens.length === 1 ? "jugador" : "jugadores"} · {savedOn(lineup.created_at)}
                           </span>
                           <span className="mt-0.5 line-clamp-2 block text-xs text-zinc-300">{lineup.tokens.map((token) => token.name || token.label).join(", ")}</span>

@@ -1,45 +1,49 @@
 import { motion } from "framer-motion";
-import { ArrowDown, ArrowUp, Equal, Zap } from "lucide-react";
+import { ArrowDown, ArrowUp, Equal } from "lucide-react";
+import RotationMark from "@/app/components/RotationMark.jsx";
 import { formatOverall } from "@/app/ranking.js";
 
+// Cabecera de cada pantalla: título claro a la izquierda y, si hace falta, sus botones a la derecha.
 export function RankingHero({ title, subtitle, stacked = false, children }) {
   return (
-    <header className="grain relative overflow-hidden rounded-2xl bg-gradient-to-br from-tnt via-tnt to-tntdeep p-5 md:p-6 text-onbrand">
-      <Zap aria-hidden="true" className="absolute -right-6 -top-8 h-44 w-44 rotate-12 fill-white/10 text-white/10" />
-      {stacked ? (
-        <div className="relative">
-          <h1 className="font-display text-5xl font-black uppercase italic leading-none tracking-tight max-[359px]:text-4xl md:text-6xl">{title}</h1>
-          {/* Con títulos largos el botón va abajo para no pisarlos. */}
-          <div className="mt-2 flex min-h-11 items-center justify-between gap-3">
-            <p className="min-w-0 text-sm font-semibold text-white/85">{subtitle}</p>
-            {children}
-          </div>
-        </div>
-      ) : (
-        <div className="relative flex items-end justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="font-display text-5xl font-black uppercase italic leading-none tracking-tight max-[359px]:text-4xl md:text-6xl">{title}</h1>
-            {subtitle && <p className="mt-2 text-sm font-semibold text-white/85">{subtitle}</p>}
-          </div>
-          {children}
-        </div>
-      )}
+    <header className={`flex gap-x-3 gap-y-3 pt-1 ${stacked ? "flex-col" : "flex-wrap items-end justify-between"}`}>
+      <div className="min-w-0">
+        <RotationMark className="mb-2 h-6 w-6 text-tnt" />
+        <h1 className="font-display text-[2.6rem] font-extrabold leading-[0.95] tracking-tight max-[359px]:text-[2.1rem] md:text-5xl">{title}</h1>
+        {subtitle && <p className="mt-2 text-sm text-zinc-400">{subtitle}</p>}
+      </div>
+      {children && <div className={stacked ? "flex min-h-11 items-center" : "shrink-0"}>{children}</div>}
     </header>
   );
 }
 
-export function GroupPicker({ groups, groupId, onChange, columns = "grid-cols-3" }) {
+// Título de una tarjeta: el icono en un círculo del color del club y el texto al lado.
+export function CardTitle({ icon: Icon, id, children, as: Tag = "h2" }) {
+  return (
+    <Tag id={id} className="flex items-center gap-2.5 font-display text-xl font-bold">
+      {Icon && (
+        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand">
+          <Icon aria-hidden="true" className="h-4 w-4" />
+        </span>
+      )}
+      {children}
+    </Tag>
+  );
+}
+
+// Elegir equipo: una sola fila que se desliza si no caben todos.
+export function GroupPicker({ groups, groupId, onChange }) {
   if (groups.length < 2) return null;
   return (
-    <div role="group" aria-label="Elegir equipo" className={`grid gap-1 rounded-xl bg-panel p-1 ${columns}`}>
+    <div role="group" aria-label="Elegir equipo" className="no-scrollbar -mx-5 flex gap-1.5 overflow-x-auto px-5 md:mx-0 md:px-0">
       {groups.map((group) => (
         <button
           key={group.id}
           type="button"
           aria-pressed={group.id === groupId}
           onClick={() => onChange(group.id)}
-          className={`min-h-11 rounded-lg px-1 font-display text-sm font-extrabold uppercase tracking-wide transition-colors max-[359px]:text-xs max-[359px]:tracking-normal ${
-            group.id === groupId ? "bg-tnt text-onbrand shadow-sm" : "text-zinc-300 hover:text-white"
+          className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold transition-colors ${
+            group.id === groupId ? "bg-tnt text-onbrand" : "bg-panel text-zinc-300 ring-1 ring-inset ring-white/10 hover:text-white"
           }`}
         >
           {group.name.replace(/^Club (Senior )?/, "")}
@@ -59,7 +63,7 @@ const POSITION_STYLES = {
 
 export function PositionTag({ position }) {
   return (
-    <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${POSITION_STYLES[position] ?? "bg-white/10 text-zinc-300"}`}>
+    <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-bold ${POSITION_STYLES[position] ?? "bg-white/10 text-zinc-300"}`}>
       {position}
     </span>
   );
@@ -76,7 +80,7 @@ export function overallTone(overall) {
 
 export function OverallNumber({ overall, className = "text-3xl" }) {
   return (
-    <span className={`font-display font-black italic leading-none tabular-nums ${overallTone(overall)} ${className}`}>
+    <span className={`font-display font-extrabold leading-none tabular-nums ${overallTone(overall)} ${className}`}>
       <span className="sr-only">Overall </span>{formatOverall(overall)}
     </span>
   );
@@ -85,7 +89,7 @@ export function OverallNumber({ overall, className = "text-3xl" }) {
 export function MovementPill({ value, hasPrevious }) {
   if (!hasPrevious) return null;
   if (value === null) {
-    return <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-[11px] font-bold uppercase text-sky-300">Nuevo</span>;
+    return <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-[11px] font-bold text-sky-300">Nuevo</span>;
   }
   if (value === 0) {
     return (
@@ -110,7 +114,7 @@ export function AnimatedBar({ percent, className = "h-1.5" }) {
   return (
     <div aria-hidden="true" className={`overflow-hidden rounded-full bg-white/10 ${className}`}>
       <motion.div
-        className="h-full rounded-full bg-gradient-to-r from-tnt to-ember text-onbrand"
+        className="h-full rounded-full bg-tnt text-onbrand"
         initial={{ width: 0 }}
         animate={{ width: `${percent}%` }}
         transition={{ duration: 0.7, ease: "easeOut" }}

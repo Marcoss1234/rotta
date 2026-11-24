@@ -33,7 +33,7 @@ export default function AccessStatusPage({ user, onSignedOut, onRefresh }) {
             <button
               type="button"
               onClick={onRefresh}
-              className="min-h-11 rounded-lg bg-white font-semibold text-zinc-900 hover:bg-zinc-200"
+              className="min-h-11 rounded-full bg-white font-semibold text-zinc-900 hover:bg-zinc-200"
             >
               Comprobar de nuevo
             </button>
@@ -42,7 +42,7 @@ export default function AccessStatusPage({ user, onSignedOut, onRefresh }) {
             type="button"
             onClick={signOut}
             disabled={busy}
-            className="min-h-11 rounded-lg border border-white/20 font-semibold text-white hover:bg-white/5 disabled:opacity-60"
+            className="min-h-11 rounded-full border border-white/20 font-semibold text-white hover:bg-white/5 disabled:opacity-60"
           >
             Cerrar sesión
           </button>

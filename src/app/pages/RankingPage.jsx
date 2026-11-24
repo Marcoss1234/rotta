@@ -1,13 +1,13 @@
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Crown, PenLine } from "lucide-react";
+import { Crown, PenLine, UserRound } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getPlayerProfile, getPlayerRatings, getRanking, getRankingHonors, listRankingGroups } from "@/app/api.js";
 import HonorsBanner from "@/app/components/HonorsBanner.jsx";
 import Avatar from "@/app/components/Avatar.jsx";
 import PlayerRatingHistory from "@/app/components/PlayerRatingHistory.jsx";
 import { lookOf } from "@/app/components/PlayerProfileDialog.jsx";
-import { AnimatedBar, GroupPicker, MovementPill, OverallNumber, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { AnimatedBar, CardTitle, GroupPicker, MovementPill, OverallNumber, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { formatOverall, weekLabel } from "@/app/ranking.js";
 
 const AvatarStage = lazy(() => import("@/app/character/AvatarStage.jsx"));
@@ -48,10 +48,10 @@ function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onO
         {showMovement && <MovementPill value={entry.movement} hasPrevious={hasPrevious} />}
       </span>
       <span className={`flex w-full flex-col items-center justify-start rounded-t-xl bg-gradient-to-b pt-2 text-[#0B0C0F] ${medal.pedestal}`}>
-        <span className="font-display text-4xl font-black italic leading-none tabular-nums">
+        <span className="font-display text-4xl font-extrabold leading-none tabular-nums">
           <span className="sr-only">Overall </span>{formatOverall(entry.overall)}
         </span>
-        <span className="mt-1 font-display text-sm font-black uppercase italic">
+        <span className="mt-1 font-display text-sm font-extrabold">
           <span className="sr-only">Puesto </span>{place}º
         </span>
       </span>
@@ -72,7 +72,7 @@ function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onO
 function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay }) {
   const content = (
     <>
-      <span className="w-8 shrink-0 text-center font-display text-2xl font-black italic tabular-nums text-zinc-500">
+      <span className="w-8 shrink-0 text-center font-display text-2xl font-extrabold tabular-nums text-zinc-500">
         <span className="sr-only">Puesto </span>{place}
       </span>
       <Avatar name={entry.name} picture={entry.picture} />
@@ -89,10 +89,10 @@ function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay 
       <OverallNumber overall={entry.overall} className="w-12 shrink-0 text-right text-3xl" />
     </>
   );
-  const look = mine ? "border-tnt/60 bg-gradient-to-r from-tnt/25 to-panel" : "border-white/5 bg-panel";
+  const look = mine ? "bg-tnt/15 ring-2 ring-tnt" : "bg-panel ring-1 ring-white/10 hover:ring-white/25";
   return (
     <motion.li initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay, duration: 0.3 }}>
-      <button type="button" onClick={onOpen} aria-label={`Ver las notas de ${entry.name}`} className={`flex min-h-[4.5rem] w-full items-center gap-3 rounded-xl border px-3 py-2.5 hover:border-white/25 ${look}`}>{content}</button>
+      <button type="button" onClick={onOpen} aria-label={`Ver las notas de ${entry.name}`} className={`flex min-h-[4.5rem] w-full items-center gap-3 rounded-2xl px-3 py-2.5 ${look}`}>{content}</button>
     </motion.li>
   );
 }
@@ -105,8 +105,8 @@ function PositionFilter({ positions, value, onChange }) {
       type="button"
       aria-pressed={value === id}
       onClick={() => onChange(id)}
-      className={`min-h-11 shrink-0 rounded-full border px-4 text-sm font-bold ${
-        value === id ? "border-tnt bg-tnt text-onbrand" : "border-white/15 text-zinc-300 hover:text-white"
+      className={`min-h-10 shrink-0 rounded-full px-4 text-sm font-semibold ${
+        value === id ? "bg-tnt text-onbrand" : "bg-panel text-zinc-300 ring-1 ring-inset ring-white/10 hover:text-white"
       }`}
     >
       {label}
@@ -174,9 +174,9 @@ function PlayerDialog({ player, groupId, onClose, onError }) {
           </Suspense>
         </div>
       )}
-      <h2 id="player-history-title" className="mb-4 break-words font-display text-2xl font-black uppercase italic">{player.name}</h2>
+      <h2 id="player-history-title" className="mb-4 break-words font-display text-2xl font-extrabold">{player.name}</h2>
       {history ? <PlayerRatingHistory history={history} /> : <p role="status" className="text-zinc-300">Cargando…</p>}
-      <button type="button" onClick={onClose} className="mt-5 min-h-11 w-full rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5">
+      <button type="button" onClick={onClose} className="mt-5 min-h-11 w-full rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5">
         Cerrar
       </button>
     </dialog>
@@ -255,12 +255,12 @@ export default function RankingPage({ user, onAccessLost }) {
     <div className="space-y-6">
       <RankingHero stacked={Boolean(group?.can_rate)} title="Ranking" subtitle={group ? `${group.name}${ranking?.week ? ` · ${weekLabel(ranking.week)}` : ""}` : undefined}>
         <div className="flex shrink-0 gap-2">
-          <Link to={group ? `/app/ranking/recompensas?grupo=${group.id}` : "/app/ranking/recompensas"} className="flex min-h-11 items-center gap-1.5 rounded-lg bg-amber-400 px-3 text-sm font-extrabold text-void hover:bg-amber-300">
-            <Crown aria-hidden="true" className="h-4 w-4 fill-void/20" />
+          <Link to={group ? `/app/ranking/recompensas?grupo=${group.id}` : "/app/ranking/recompensas"} className="flex min-h-11 items-center gap-1.5 rounded-full bg-amber-400 px-4 text-sm font-bold text-amber-950 hover:bg-amber-300">
+            <Crown aria-hidden="true" className="h-4 w-4 fill-amber-950/20" />
             Premios
           </Link>
           {group?.can_rate && (
-            <Link to={`/app/ranking/notas?grupo=${group.id}`} className="flex min-h-11 items-center gap-1.5 rounded-lg bg-white px-3 text-sm font-extrabold text-void hover:bg-zinc-200">
+            <Link to={`/app/ranking/notas?grupo=${group.id}`} className="flex min-h-11 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-bold text-void hover:bg-zinc-200">
               <PenLine aria-hidden="true" className="h-4 w-4" />
               Notas
             </Link>
@@ -270,12 +270,12 @@ export default function RankingPage({ user, onAccessLost }) {
 
       {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} />}
 
-      {error && <p role="alert" className="rounded-lg border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
+      {error && <p role="alert" className="rounded-2xl border border-red-300/50 bg-panel p-3 text-sm font-semibold text-red-200">{error}</p>}
       {!error && (!groups || (groupId && !ranking)) && <p role="status" className="text-zinc-300">Cargando…</p>}
-      {groups?.length === 0 && <p className="rounded-xl bg-panel p-4 text-sm text-zinc-300">Tu equipo todavía no tiene ranking.</p>}
+      {groups?.length === 0 && <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">Tu equipo todavía no tiene ranking.</p>}
 
       {ranking && !ranking.week && (
-        <p className="rounded-xl bg-panel p-4 text-sm text-zinc-300">
+        <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">
           {group.can_rate ? "Todavía no has publicado ninguna semana. Pon las notas y publícala para que salga el ranking." : "El entrenador todavía no ha publicado ninguna semana."}
         </p>
       )}
@@ -289,11 +289,15 @@ export default function RankingPage({ user, onAccessLost }) {
           {/* Con el filtro cambian los puestos: se vuelve a montar para que repita la entrada. */}
           <div key={`${groupId}-${position}`} className="space-y-4">
             {visible.length > 0 && (
-              <ol aria-label="Podio" className="grid grid-cols-3 items-end gap-2 border-b-2 border-white/15 pt-6">
-                {visible.slice(0, 3).map((entry, index) => (
-                  <PodiumPlace key={entry.player_id} index={index} {...rowProps(entry, index)} />
-                ))}
-              </ol>
+              <div className="relative overflow-hidden rounded-3xl bg-panel px-3 pt-10 ring-1 ring-white/10">
+                {/* El foco sobre el podio, en el color del club. */}
+                <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-48 bg-[radial-gradient(60%_100%_at_50%_0%,rgb(var(--c-tnt)/0.45),transparent)]" />
+                <ol aria-label="Podio" className="relative grid grid-cols-3 items-end gap-2">
+                  {visible.slice(0, 3).map((entry, index) => (
+                    <PodiumPlace key={entry.player_id} index={index} {...rowProps(entry, index)} />
+                  ))}
+                </ol>
+              </div>
             )}
             {visible.length > 3 && (
               <ol start={4} aria-label="Resto de la clasificación" className="space-y-2">
@@ -307,16 +311,16 @@ export default function RankingPage({ user, onAccessLost }) {
           <p className="text-center text-xs text-zinc-500">Media de las últimas 4 semanas publicadas</p>
 
           {ranking.pending.length > 0 && !position && (
-            <section aria-labelledby="pending-title" className="rounded-xl border border-dashed border-white/15 p-4">
-              <h2 id="pending-title" className="font-display font-extrabold uppercase italic">Aún sin puesto</h2>
+            <section aria-labelledby="pending-title" className="rounded-2xl border border-dashed border-white/15 p-4">
+              <h2 id="pending-title" className="font-display font-extrabold">Aún sin puesto</h2>
               <p className="mt-1 text-sm text-zinc-400">Hacen falta al menos 2 semanas puntuadas de las últimas 4.</p>
               <p className="mt-2 text-sm text-zinc-200">{ranking.pending.map((person) => person.name).join(", ")}</p>
             </section>
           )}
 
           {myHistory && myHistory.weeks.length > 0 && (
-            <section aria-labelledby="my-card-title" className="grain overflow-hidden rounded-2xl border border-tnt/40 bg-gradient-to-b from-tnt/20 to-panel p-5">
-              <h2 id="my-card-title" className="mb-4 font-display text-2xl font-black uppercase italic">Tu ficha</h2>
+            <section aria-labelledby="my-card-title" className="space-y-4 rounded-3xl bg-panel p-5 ring-1 ring-white/10">
+              <CardTitle id="my-card-title" icon={UserRound}>Tu ficha</CardTitle>
               <PlayerRatingHistory history={myHistory} />
             </section>
           )}

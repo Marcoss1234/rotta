@@ -11,7 +11,7 @@ const barTone = (percent) => (percent >= 65 ? "bg-emerald-400" : percent >= 45 ?
 function Section({ icon: Icon, title, children }) {
   return (
     <section className="space-y-2">
-      <h2 className="flex items-center gap-2 px-1 font-display text-base font-black uppercase italic tracking-wide text-zinc-100">
+      <h2 className="flex items-center gap-2 px-1 font-display text-base font-extrabold text-zinc-100">
         <Icon aria-hidden="true" className="h-4 w-4 text-tnt" />
         {title}
       </h2>
@@ -23,10 +23,10 @@ function Section({ icon: Icon, title, children }) {
 // Una barra partida en dos: de dónde salieron los puntos.
 function SplitBar({ label, total, parts }) {
   return (
-    <div className="rounded-xl bg-panel p-3 ring-1 ring-white/10">
+    <div className="rounded-2xl bg-panel p-3 ring-1 ring-white/10">
       <p className="flex items-baseline justify-between text-sm font-bold">
         {label}
-        <span className="font-display text-xl font-black italic tabular-nums">{total}</span>
+        <span className="font-display text-xl font-extrabold tabular-nums">{total}</span>
       </p>
       <div className="mt-2 flex h-3 overflow-hidden rounded-full bg-white/5">
         {parts.map((part) => (part.value > 0 ? <span key={part.label} className={part.color} style={{ width: `${(part.value * 100) / Math.max(1, total)}%` }} /> : null))}
@@ -69,14 +69,14 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
         <button type="button" onClick={onClose} aria-label="Ver la pista del partido" className="flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
           <ArrowLeft aria-hidden="true" className="h-5 w-5" />
         </button>
-        <h1 className="min-w-0 flex-1 truncate font-display text-lg font-black uppercase italic">Informe del partido</h1>
+        <h1 className="min-w-0 flex-1 truncate font-display text-lg font-extrabold">Informe del partido</h1>
       </header>
 
       <div className="mx-auto max-w-2xl space-y-6 px-3 pb-[calc(2rem+env(safe-area-inset-bottom))] pt-4">
         {/* Resultado */}
         <div className={`rounded-2xl p-4 text-center ring-1 ${won ? "bg-gradient-to-br from-tnt/30 via-panel to-panel ring-tnt/40" : "bg-gradient-to-br from-sky-500/20 via-panel to-panel ring-sky-400/30"}`}>
-          <p className={`font-display text-3xl font-black uppercase italic ${won ? "text-orange-200" : "text-sky-200"}`}>{won ? "Victoria" : "Derrota"}</p>
-          <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 font-display text-2xl font-black italic leading-tight">
+          <p className={`font-display text-3xl font-extrabold ${won ? "text-orange-200" : "text-sky-200"}`}>{won ? "Victoria" : "Derrota"}</p>
+          <p className="mt-1 flex flex-wrap items-center justify-center gap-x-3 font-display text-2xl font-extrabold leading-tight">
             <span>Club</span>
             <span className="tabular-nums">
               {game.won.us} - {game.won.them}
@@ -85,7 +85,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
           </p>
           <ol className="mt-3 flex flex-wrap justify-center gap-1.5">
             {report.sets.map((set, index) => (
-              <li key={index} className={`rounded-lg px-2.5 py-1 text-sm font-black tabular-nums ${set.us > set.them ? "bg-tnt/25 text-orange-100" : "bg-sky-500/20 text-sky-100"}`}>
+              <li key={index} className={`rounded-lg px-2.5 py-1 text-sm font-extrabold tabular-nums ${set.us > set.them ? "bg-tnt/25 text-orange-100" : "bg-sky-500/20 text-sky-100"}`}>
                 <span className="mr-1 text-[10px] font-bold text-white/60">S{index + 1}</span>
                 {set.us}-{set.them}
               </li>
@@ -139,13 +139,13 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
           <Section icon={TrendingUp} title="Por fundamento">
             <ul className="space-y-2">
               {report.skills.map((item) => (
-                <li key={item.skill} className="rounded-xl bg-panel p-3 ring-1 ring-white/10">
+                <li key={item.skill} className="rounded-2xl bg-panel p-3 ring-1 ring-white/10">
                   <div className="flex items-center gap-3">
-                    <span className="w-24 shrink-0 text-sm font-black uppercase">{SKILL_LABEL[item.skill]}</span>
+                    <span className="w-24 shrink-0 text-sm font-extrabold">{SKILL_LABEL[item.skill]}</span>
                     <div className="h-2.5 min-w-0 flex-1 overflow-hidden rounded-full bg-red-400/30">
                       <span className={`block h-full ${barTone(item.percent)}`} style={{ width: `${item.percent}%` }} />
                     </div>
-                    <span className={`w-12 shrink-0 text-right font-display text-lg font-black italic tabular-nums ${tone(item.percent)}`}>{item.percent}%</span>
+                    <span className={`w-12 shrink-0 text-right font-display text-lg font-extrabold tabular-nums ${tone(item.percent)}`}>{item.percent}%</span>
                   </div>
                   <p className="mt-1 text-xs text-zinc-400">
                     <span className="font-bold text-emerald-300">✓{item.good}</span> aciertos{item.perfect > 0 && <> (<span className="font-bold text-amber-300">★{item.perfect}</span> {item.perfect === 1 ? "perfecta" : "perfectas"})</>} · <span className="font-bold text-red-300">✗{item.bad}</span> fallos
@@ -153,7 +153,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                   {(item.best || item.worst) && (
                     <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
                       <p className="rounded-lg bg-emerald-400/10 px-2 py-1.5 text-emerald-100">
-                        <span className="block text-[10px] font-bold uppercase text-emerald-300/80">Más aciertos</span>
+                        <span className="block text-[10px] font-bold text-emerald-300/80">Más aciertos</span>
                         {item.best ? (
                           <>
                             <Name person={item.best} /> · ✓{item.best.count}
@@ -163,7 +163,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                         )}
                       </p>
                       <p className="rounded-lg bg-red-400/10 px-2 py-1.5 text-red-100">
-                        <span className="block text-[10px] font-bold uppercase text-red-300/80">Más fallos</span>
+                        <span className="block text-[10px] font-bold text-red-300/80">Más fallos</span>
                         {item.worst ? (
                           <>
                             <Name person={item.worst} /> · ✗{item.worst.count}
@@ -183,13 +183,13 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
         {/* Cada jugador, del que mejor balance tiene al que peor */}
         <Section icon={Flame} title="Jugadores">
           {played.length === 0 ? (
-            <p className="rounded-xl bg-panel p-3 text-sm text-zinc-400 ring-1 ring-white/10">No se apuntaron aciertos ni fallos de jugadores.</p>
+            <p className="rounded-2xl bg-panel p-3 text-sm text-zinc-400 ring-1 ring-white/10">No se apuntaron aciertos ni fallos de jugadores.</p>
           ) : (
             <ol className="space-y-2">
               {played.map((player, index) => (
-                <li key={player.player_id} className="rounded-xl bg-panel p-3 ring-1 ring-white/10">
+                <li key={player.player_id} className="rounded-2xl bg-panel p-3 ring-1 ring-white/10">
                   <div className="flex items-center gap-3">
-                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-sm font-black italic ${index === 0 ? "bg-amber-300 text-void" : "bg-white/10 text-white"}`}>{index + 1}</span>
+                    <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-sm font-extrabold ${index === 0 ? "bg-amber-300 text-void" : "bg-white/10 text-white"}`}>{index + 1}</span>
                     <span className="min-w-0 flex-1">
                       <span className="block">
                         <Name person={player} />
@@ -203,7 +203,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                       </span>
                     </span>
                     <span className="shrink-0 text-right">
-                      <span className={`block font-display text-xl font-black italic tabular-nums ${player.balance > 0 ? "text-emerald-300" : player.balance < 0 ? "text-red-300" : "text-zinc-300"}`}>
+                      <span className={`block font-display text-xl font-extrabold tabular-nums ${player.balance > 0 ? "text-emerald-300" : player.balance < 0 ? "text-red-300" : "text-zinc-300"}`}>
                         {player.balance > 0 ? `+${player.balance}` : player.balance}
                       </span>
                       <span className={`block text-[11px] font-bold tabular-nums ${tone(player.percent)}`}>{player.percent}% acierto</span>
@@ -228,7 +228,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
           <Section icon={ShieldAlert} title="Set a set">
             <div className="overflow-hidden rounded-xl ring-1 ring-white/10">
               <table className="w-full text-left text-sm">
-                <thead className="bg-white/[0.04] text-[10px] uppercase tracking-wider text-zinc-400">
+                <thead className="bg-white/[0.04] text-[10px] text-zinc-400">
                   <tr>
                     <th scope="col" className="px-3 py-2">Set</th>
                     <th scope="col" className="px-2 py-2">Marcador</th>
@@ -241,7 +241,7 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
                   {report.sets.map((set, index) => (
                     <tr key={index} className="border-t border-white/5 bg-panel">
                       <td className="px-3 py-2 font-bold">{index + 1}</td>
-                      <td className={`px-2 py-2 font-black tabular-nums ${set.us > set.them ? "text-orange-200" : "text-sky-200"}`}>
+                      <td className={`px-2 py-2 font-extrabold tabular-nums ${set.us > set.them ? "text-orange-200" : "text-sky-200"}`}>
                         {set.us}-{set.them}
                       </td>
                       <td className="px-2 py-2 text-center font-bold tabular-nums text-emerald-300">{set.good ?? "—"}</td>
@@ -268,9 +268,9 @@ export default function MatchReport({ game, onClose, onChangeMvp = null }) {
               ["Aciertos del equipo (sin jugador)", report.team.good],
               ["Fallos del equipo (sin jugador)", report.team.bad],
             ].map(([label, value]) => (
-              <div key={label} className="rounded-xl bg-panel p-3 ring-1 ring-white/10">
-                <dt className="text-[11px] font-bold uppercase leading-tight tracking-wide text-zinc-400">{label}</dt>
-                <dd className="font-display text-xl font-black italic tabular-nums">{value}</dd>
+              <div key={label} className="rounded-2xl bg-panel p-3 ring-1 ring-white/10">
+                <dt className="text-[11px] font-bold leading-tight text-zinc-400">{label}</dt>
+                <dd className="font-display text-xl font-extrabold tabular-nums">{value}</dd>
               </div>
             ))}
           </dl>

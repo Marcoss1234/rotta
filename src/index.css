@@ -79,7 +79,7 @@
 }
 
 /* En claro, cada tarjeta se separa del fondo con un borde fino y una sombra suave: así no se junta todo. */
-:root[data-theme="light"] :is(.bg-panel, .bg-surface):is(.rounded-lg, .rounded-xl, .rounded-2xl) {
+:root[data-theme="light"] :is(.bg-panel, .bg-surface):is(.rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl) {
   box-shadow:
     0 0 0 1px rgb(15 23 42 / 0.07),
     0 1px 2px rgb(15 23 42 / 0.08),
@@ -110,7 +110,7 @@ body {
   overflow-x: hidden;
   background: var(--void);
   color: rgb(var(--c-white));
-  font-family: "Plus Jakarta Sans", sans-serif;
+  font-family: "Instrument Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -662,4 +662,19 @@ dialog[open]::backdrop {
 .fx-card-icon { animation: fx-card-icon 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) {
   .fx-card-glow, .fx-card-icon { animation: none; }
+}
+
+/* Rotta: los títulos un poco más juntos y con el tamaño óptico de la letra. */
+.font-display {
+  font-optical-sizing: auto;
+  letter-spacing: -0.015em;
+}
+
+/* Filas que se deslizan (pestañas de equipos) sin barra de scroll visible. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }

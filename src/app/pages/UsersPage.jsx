@@ -136,7 +136,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       {error && <p role="alert" className="rounded-lg border border-red-300/50 p-3 text-sm font-semibold text-red-200">{error}</p>}
 
       {pending.length > 0 && (
-        <section aria-labelledby="pending-title" className="overflow-hidden rounded-xl border border-tnt bg-panel" data-testid="users-pending">
+        <section aria-labelledby="pending-title" className="overflow-hidden rounded-3xl bg-panel ring-2 ring-tnt" data-testid="users-pending">
           <h2 id="pending-title" className="px-3 pt-3 text-sm font-bold">Esperando acceso · {pending.length}</h2>
           <ul className="mt-1 divide-y divide-white/10">
             {pending.map((user) => (
@@ -180,8 +180,8 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       </div>
 
       {groups.map((group) => (
-        <section key={group.id} aria-labelledby={`group-${group.id}`} className="overflow-hidden rounded-xl bg-panel" data-testid="users-group">
-          <h2 id={`group-${group.id}`} className="border-b border-white/10 px-3 py-2 text-sm font-bold text-zinc-200">
+        <section key={group.id} aria-labelledby={`group-${group.id}`} className="overflow-hidden rounded-3xl bg-panel ring-1 ring-white/10" data-testid="users-group">
+          <h2 id={`group-${group.id}`} className="border-b border-white/10 px-4 py-3 font-display text-base font-bold">
             {group.name} · {group.users.length}
           </h2>
           <UserList users={group.users} currentUser={currentUser} onOpen={setSelected} />
@@ -189,8 +189,8 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       ))}
 
       {families.length > 0 && (
-        <section aria-labelledby="group-familias" className="mt-8 overflow-hidden rounded-xl border border-white/15 bg-panel" data-testid="users-families">
-          <h2 id="group-familias" className="flex items-center gap-2 border-b border-white/10 px-3 py-2 text-sm font-bold text-zinc-200">
+        <section aria-labelledby="group-familias" className="mt-8 overflow-hidden rounded-3xl bg-panel ring-1 ring-white/10" data-testid="users-families">
+          <h2 id="group-familias" className="flex items-center gap-2 border-b border-white/10 px-4 py-3 font-display text-base font-bold">
             <HeartHandshake aria-hidden="true" className="h-4 w-4 text-zinc-400" />
             Familias · {families.length}
           </h2>
@@ -203,7 +203,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       )}
 
       {groups.length === 0 && families.length === 0 && (
-        <div className="rounded-xl bg-panel p-4 text-sm text-zinc-300">
+        <div className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">
           <p>{filtering ? "No hay nadie con esos filtros." : "Todavía no hay miembros."}</p>
           {filtering && (
             <button type="button" onClick={clearFilters} className="mt-2 min-h-11 font-semibold text-white underline underline-offset-4">

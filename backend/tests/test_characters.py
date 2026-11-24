@@ -73,7 +73,7 @@ def test_el_personaje_sale_en_la_plantilla_para_la_pizarra(admin):
 
 @pytest.mark.parametrize(
     "changes",
-    [{"hair": "cresta"}, {"skin": "s9"}, {"celebration": "baile"}, {"freckles": "mucho"}, {"inventado": 1}, {"headband": "#123456"}],
+    [{"hair": "cresta"}, {"skin": "s9"}, {"celebration": "voltereta"}, {"freckles": "mucho"}, {"inventado": 1}, {"headband": "#123456"}],
 )
 def test_opciones_que_no_existen(admin, changes):
     assert save(member(admin), **changes).status_code == 422
@@ -125,3 +125,16 @@ def test_sin_las_opciones_nuevas_queda_de_un_color(admin):
     ana = member(admin)
     character = save(ana).json()["character"]
     assert character["hair_color2"] == "none" and character["hair_split"] == "vertical" and character["eyeliner"] is False
+
+
+@pytest.mark.parametrize("celebration", ["baile", "avion", "giro"])
+def test_las_celebraciones_nuevas_se_guardan(admin, celebration):
+    ana = member(admin)
+    response = save(ana, celebration=celebration)
+    assert response.status_code == 200, response.text
+    assert response.json()["character"]["celebration"] == celebration
+
+
+def test_una_celebracion_que_no_existe_no_se_guarda(admin):
+    ana = member(admin)
+    assert save(ana, celebration="voltereta").status_code == 422

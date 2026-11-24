@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { avatarColor, contrast } from "@/app/theme.js";
 
 const initials = (name) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join("");
@@ -21,8 +22,14 @@ export default function Avatar({ name, picture, className = "h-10 w-10 text-sm" 
       />
     );
   }
+  // Sin foto, cada persona tiene siempre su color; el texto, blanco o negro según se lea mejor.
+  const color = avatarColor(name);
   return (
-    <span aria-hidden="true" className={`flex shrink-0 items-center justify-center rounded-full bg-zinc-800 font-bold text-zinc-100 ${className}`}>
+    <span
+      aria-hidden="true"
+      style={{ background: color, color: contrast(color, "#FFFFFF") >= 3 ? "#FFFFFF" : "#111318" }}
+      className={`flex shrink-0 items-center justify-center rounded-full font-bold ${className}`}
+    >
       {initials(name)}
     </span>
   );

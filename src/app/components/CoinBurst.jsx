@@ -31,7 +31,7 @@ export default function CoinBurst({ burst }) {
           />
         ))}
       <span
-        className={`${gain ? "coin-burst-up" : "coin-burst-down"} flex items-center gap-1 rounded-full px-3 py-1 font-display text-lg font-black italic shadow-lg ${
+        className={`${gain ? "coin-burst-up" : "coin-burst-down"} flex items-center gap-1 rounded-full px-3 py-1 font-display text-lg font-extrabold shadow-lg ${
           gain ? "bg-gradient-to-r from-amber-300 to-amber-500 text-amber-950 shadow-amber-500/50" : "bg-red-500/90 text-white shadow-red-900/50"
         }`}
       >

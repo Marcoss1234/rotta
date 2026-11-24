@@ -4,9 +4,9 @@ import { WEEKDAY_SHORT, WEEKDAY_NAMES } from "@/app/teams.js";
 
 const timeClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none disabled:opacity-40";
-const primaryClass = "min-h-11 rounded-lg bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
+const primaryClass = "min-h-11 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryClass =
-  "min-h-11 rounded-lg border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
+  "min-h-11 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 
 // Un horario en el formulario: sin hora se guarda como "Horario por consultar".
 const toForm = (session) => ({ days: session.days, start: session.start ?? "", end: session.end ?? "", noTime: session.start === null });
@@ -71,7 +71,7 @@ export default function ScheduleDialog({ teamName, sessions, onSave, onClose }) 
     >
       <form onSubmit={save} className="space-y-5">
         <div>
-          <h2 id="schedule-title" className="font-display text-2xl font-black uppercase italic leading-tight">Horario de entrenamiento</h2>
+          <h2 id="schedule-title" className="font-display text-2xl font-extrabold leading-tight">Horario de entrenamiento</h2>
           <p className="mt-1 text-sm text-zinc-400">{teamName}. Lo ve todo el equipo y es el que se usa para confirmar asistencia.</p>
         </div>
 
@@ -103,7 +103,7 @@ export default function ScheduleDialog({ teamName, sessions, onSave, onClose }) 
                     aria-label={WEEKDAY_NAMES[day]}
                     disabled={taken}
                     onClick={() => toggleDay(index, day)}
-                    className={`min-h-11 rounded-lg text-sm font-bold disabled:opacity-25 ${on ? "bg-tnt text-onbrand" : "border border-white/15 text-zinc-200 hover:bg-white/5"}`}
+                    className={`min-h-11 rounded-full text-sm font-bold disabled:opacity-25 ${on ? "bg-tnt text-onbrand" : "border border-white/15 text-zinc-200 hover:bg-white/5"}`}
                   >
                     {short}
                   </button>
@@ -131,7 +131,7 @@ export default function ScheduleDialog({ teamName, sessions, onSave, onClose }) 
           <button
             type="button"
             onClick={() => setRows((current) => [...current, { days: [], start: "", end: "", noTime: false }])}
-            className="flex min-h-11 items-center gap-1.5 rounded-lg px-2 text-sm font-semibold text-ember hover:bg-white/5"
+            className="flex min-h-11 items-center gap-1.5 rounded-full px-2 text-sm font-semibold text-ember hover:bg-white/5"
           >
             <Plus aria-hidden="true" className="h-4 w-4" />
             Otro horario (otros días a otra hora)
