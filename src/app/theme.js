@@ -185,6 +185,7 @@ export const SIMILAR_COLORS = 15; // por debajo, dos colores se ven casi iguales
 const COLORLESS = 4; // por debajo, el color del club es blanco, negro o gris
 const TOO_CHANGED = 25; // si para leerse como texto cambia más que esto, ya no parece el color del club
 const VOY_GREEN = "#16A34A";
+const TRACK = 0.12; // la pista de las barras (.rating-range en index.css): el color del texto al 12 %
 
 /** Aclara u oscurece el color, a pasos pequeños, hasta llegar al mínimo sobre TODOS los fondos. */
 export function readableOnAll(color, backgrounds, minimum) {
@@ -227,14 +228,23 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
   const clubText = colorless ? base.text : readableOnAll(brand, grounds, 4.5);
   const textChange = colorDistance(brand, clubText);
   const clubLabel = textChange > TOO_CHANGED ? base.text : clubText;
-  const clubUi = colorless ? base.text : readableOnAll(brand, [...grounds, clubSoft], 3);
+  const clubUi = colorless ? base.text : readableOnAll(brand, [...grounds, clubSoft, ...[base.surface, base.bg].map((ground) => mix(ground, base.text, TRACK))], 3);
 
   const yields = !colorless && colorDistance(brand, base.rotta) < SIMILAR_COLORS;
   const rotta = yields ? brand : base.rotta;
   const rottaText = yields ? clubText : readableOnAll(base.rottaText, grounds, 4.5);
   const stripe = colorDistance(accent, base.bg) < 8 || colorDistance(accent, brand) < 6 ? brand : accent;
-  const accentText = readableOnAll(accent, grounds, 4.5);
-  const accentUi = readableOnAll(accent, grounds, 3);
+  // Las barras de la nota y de la jugada: el relleno va sobre una pista del color del texto al 12 %.
+  const tracks = [base.surface, base.bg].map((ground) => mix(ground, base.text, TRACK));
+  // El segundo color como texto también va sobre su propio tono (insignia «borrador») y sobre el del club
+  // («Puntuar»), en las notas del ranking.
+  let accentText = readableOnAll(accent, [...grounds, ...tracks, mix(base.surface, accent, 0.2), mix(base.surface, brand, 0.15)], 4.5);
+  // Su propio tono cambia al ajustarlo: se sigue un poco más hasta que también se lea sobre él.
+  const towards = luminance(base.surface) > 0.3 ? "#000000" : "#FFFFFF";
+  for (let step = 0; step < 20 && contrast(accentText, mix(base.surface, accentText, 0.2)) < 4.5; step += 1) {
+    accentText = mix(accentText, towards, 0.05);
+  }
+  const accentUi = readableOnAll(accent, [...grounds, ...tracks], 3);
   const whiteText = (color) => readableOnAll(color, ["#FFFFFF"], 4.5);
 
   const warnings = [
@@ -303,6 +313,8 @@ export function themeContrastChecks(theme) {
     ["Foco del teclado sobre tarjeta", theme.focus, theme.surface, 3],
     ["Texto del botón Voy", "#FFFFFF", theme.success, 4.5],
     ["Texto verde sobre tarjeta", theme.successText, theme.surface, 4.5],
+    ["Botón Voy sin elegir: texto sobre su tono", theme.successText, mix(theme.surface, theme.success, 0.1), 4.5],
+    ["Botón Voy sin elegir (al pasar el ratón)", theme.successText, mix(theme.surface, theme.success, 0.2), 4.5],
     ["Texto del botón de peligro", "#FFFFFF", theme.danger, 4.5],
     ["Texto rojo sobre tarjeta", theme.dangerText, theme.surface, 4.5],
     ["Texto dorado sobre tarjeta", theme.goldText, theme.surface, 4.5],
@@ -312,8 +324,15 @@ export function themeContrastChecks(theme) {
     ["Segundo color como texto sobre relleno", theme.accentText, theme.raised, 4.5],
     ["Texto sobre el segundo color", theme.onAccent, theme.accent, 4.5],
     ["Marca en el segundo color sobre tarjeta", theme.accentUi, theme.surface, 3],
-    ["Barra de la nota (club) sobre relleno", theme.clubUi, theme.raised, 3],
-    ["Barra de la nota (segundo color) sobre relleno", theme.accentUi, theme.raised, 3],
+    ["Marca en el segundo color sobre fondo", theme.accentUi, theme.bg, 3],
+    ["Insignia «borrador»: segundo color sobre su tono", theme.accentText, mix(theme.surface, theme.accentText, 0.2), 4.5],
+    ["«Puntuar»: segundo color sobre el tono del club", theme.accentText, mix(theme.surface, theme.club, 0.15), 4.5],
+    // Barras de la nota (en tarjeta) y de la jugada (en la pizarra, sobre el fondo): club → segundo color.
+    ["Barra (club) sobre su pista en tarjeta", theme.clubUi, mix(theme.surface, theme.text, TRACK), 3],
+    ["Barra (club) sobre su pista en el fondo", theme.clubUi, mix(theme.bg, theme.text, TRACK), 3],
+    ["Barra (segundo color) sobre su pista en tarjeta", theme.accentUi, mix(theme.surface, theme.text, TRACK), 3],
+    ["Barra (segundo color) sobre su pista en el fondo", theme.accentUi, mix(theme.bg, theme.text, TRACK), 3],
+    ["Marca de grabación sobre la barra", theme.accentText, mix(theme.bg, theme.text, TRACK), 3],
     ["Banner del directo: blanco sobre rojo", "#FFFFFF", "#DC2626", 4.5],
     ["Banner del directo: blanco sobre el club", "#FFFFFF", theme.liveClub, 4.5],
     ["Banner del directo: blanco sobre el segundo color", "#FFFFFF", theme.liveAccent, 4.5],

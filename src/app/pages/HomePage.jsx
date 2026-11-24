@@ -190,10 +190,10 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
           const chosen = mine === status;
           const tone = chosen
             ? status === "going"
-              ? "bg-emerald-500 text-snow shadow-[0_8px_24px_-8px_rgba(16,185,129,0.8)]"
+              ? "bg-voy text-snow shadow-[0_8px_24px_-8px_rgb(var(--c-success)/0.6)]"
               : "bg-zinc-200 text-zinc-900"
             : status === "going"
-              ? "bg-emerald-500/10 text-emerald-300 ring-1 ring-inset ring-emerald-400/40 hover:bg-emerald-500/20"
+              ? "bg-voy/10 text-voy-text ring-1 ring-inset ring-voy/40 hover:bg-voy/20"
               : "bg-white/5 text-zinc-200 ring-1 ring-inset ring-white/15 hover:bg-white/10";
           return (
             <span key={status} className="relative">
@@ -244,7 +244,7 @@ function FollowingTraining({ following, mine, followingMine, busy, onAnswer, onA
               className={`min-h-10 rounded-lg px-3 text-sm font-bold aria-disabled:opacity-60 ${
                 followingMine === status
                   ? status === "going"
-                    ? "bg-emerald-600 text-snow"
+                    ? "bg-voy text-snow"
                     : "bg-red-600 text-snow"
                   : "border border-white/20 text-white hover:bg-white/5"
               }`}
