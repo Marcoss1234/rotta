@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Pencil, Trophy } from "lucide-react";
+import { ChartColumn, Check, ChevronLeft, Pencil, Trophy } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { changeLiveMvp, deleteMatch, listPlayedMatches, listTeams, updateMatch } from "@/app/api.js";
 import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
@@ -7,7 +7,7 @@ import MatchDialog from "@/app/components/MatchDialog.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { placeInfo, setsWon, matchKindLabel } from "@/app/matches.js";
 import { defaultTeamId, isTeamId } from "@/app/teams.js";
-import { Notice } from "@/app/ui/index.js";
+import { Badge, Card, ChipGroup, EmptyState, IconButton, LinkButton, Notice, Select, cx } from "@/app/ui/index.js";
 
 const KIND_TABS = [
   { value: "amistoso", label: "Amistosos" },
@@ -16,65 +16,144 @@ const KIND_TABS = [
   { value: "otro", label: "Otros" },
 ];
 
-function MatchResult({ sets }) {
+// Victoria, derrota o empate según los sets. La victoria destaca (verde); la derrota, en rojo suave; el empate, neutro.
+export function matchOutcome(sets) {
   const { won, lost } = setsWon(sets);
-  const outcome = won > lost ? "Victoria" : won < lost ? "Derrota" : "Empate";
+  return { won, lost, outcome: won > lost ? "win" : won < lost ? "loss" : "draw" };
+}
+const OUTCOME = {
+  win: { label: "Victoria", tone: "voy", icon: Check },
+  loss: { label: "Derrota", tone: "danger-soft" },
+  draw: { label: "Empate", tone: "neutral" },
+};
+
+/**
+ * Resumen de los partidos de un tipo: cuántos, victorias, derrotas (y empates) y sets a favor y en contra.
+ * Solo cuentan los partidos con resultado apuntado; los que no lo tienen se dicen aparte para no engañar.
+ */
+export function summarize(matches) {
+  const withResult = matches.filter((match) => match.sets.length > 0);
+  const totals = { played: matches.length, withResult: withResult.length, win: 0, loss: 0, draw: 0, setsFor: 0, setsAgainst: 0 };
+  for (const match of withResult) {
+    const { won, lost, outcome } = matchOutcome(match.sets);
+    totals[outcome] += 1;
+    totals.setsFor += won;
+    totals.setsAgainst += lost;
+  }
+  return totals;
+}
+
+function Stat({ label, value, className }) {
   return (
-    <div className="rounded-xl bg-void/60 p-3" data-testid="match-result">
+    <div className="min-w-0">
+      <dt className="text-xs font-semibold text-ink-muted">{label}</dt>
+      <dd className={cx("font-score text-2xl leading-tight text-ink", className)}>{value}</dd>
+    </div>
+  );
+}
+
+// La franja de arriba: el marcador del tipo elegido.
+function SeasonSummary({ matches, label }) {
+  const totals = summarize(matches);
+  const missing = totals.played - totals.withResult;
+  return (
+    <Card as="section" aria-label={`Resumen de ${label}`} padding="sm" className="space-y-2" data-testid="played-summary">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 min-[420px]:grid-cols-4">
+        <Stat label="Partidos" value={totals.played} />
+        {totals.withResult > 0 ? (
+          <>
+            <Stat label="Victorias" value={totals.win} className="text-voy-text" />
+            <Stat label={totals.draw > 0 ? "Derrotas · empates" : "Derrotas"} value={totals.draw > 0 ? `${totals.loss} · ${totals.draw}` : totals.loss} className="text-danger-text" />
+            <Stat label="Sets (favor–contra)" value={`${totals.setsFor}–${totals.setsAgainst}`} />
+          </>
+        ) : (
+          <p className="col-span-1 self-end text-sm text-ink-muted min-[420px]:col-span-3">Sin resultados apuntados todavía.</p>
+        )}
+      </dl>
+      {totals.withResult > 0 && missing > 0 && (
+        <p className="text-xs text-ink-muted">{missing === 1 ? "1 partido sin resultado no cuenta" : `${missing} partidos sin resultado no cuentan`} en victorias, derrotas ni sets.</p>
+      )}
+    </Card>
+  );
+}
+
+function MatchResult({ sets }) {
+  const { won, lost, outcome } = matchOutcome(sets);
+  const { label, tone, icon: Icon } = OUTCOME[outcome];
+  return (
+    <div className="space-y-2.5 rounded-field bg-raised p-3" data-testid="match-result">
       <div className="flex items-center justify-between gap-3">
-        <p className={`font-display text-xl font-extrabold ${won > lost ? "text-ember" : "text-zinc-300"}`}>{outcome}</p>
-        <p className="font-display text-4xl font-extrabold leading-none">
+        <Badge tone={tone} className="gap-1 px-2.5 py-1 text-sm">
+          {Icon && <Icon aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={3} />}
+          {label}
+        </Badge>
+        <p className="font-score text-4xl leading-none text-ink">
           <span className="sr-only">Sets ganados y perdidos: </span>
-          {won}<span className="mx-1.5 text-zinc-500">-</span>{lost}
+          {won}<span className="mx-1 text-ink-muted">–</span>{lost}
         </p>
       </div>
-      <ol className="mt-2.5 grid auto-cols-fr grid-flow-col gap-1.5">
-        {sets.map((set, index) => (
-          <li key={index} className={`rounded-lg py-1.5 text-center ${set.us > set.them ? "bg-green-500/20" : "bg-red-500/20"}`}>
-            <p className="text-[10px] font-semibold text-zinc-400">Set {index + 1}</p>
-            <p className={`text-sm font-extrabold tabular-nums ${set.us > set.them ? "text-green-400" : "text-red-400"}`}>{set.us}-{set.them}</p>
-          </li>
-        ))}
+      <ol className="grid auto-cols-fr grid-flow-col gap-1.5">
+        {sets.map((set, index) => {
+          const ours = set.us > set.them;
+          return (
+            <li key={index} className={cx("rounded-field py-1.5 text-center", ours ? "bg-voy/10 text-voy-text" : "bg-danger/10 text-danger-text")}>
+              <p className="text-xs font-semibold">Set {index + 1}</p>
+              <p className="font-score text-base">{set.us}-{set.them}</p>
+            </li>
+          );
+        })}
       </ol>
     </div>
   );
 }
 
-// El entrenador elige el MVP de un menú con los que jugaron (o «Sin MVP»).
+// El MVP: lo único dorado de la tarjeta. El entrenador lo elige de un menú con los que jugaron (o «Sin MVP»).
+function MvpStrip({ children }) {
+  return (
+    <div className="flex items-center gap-2.5 rounded-field bg-gold/10 p-2.5 ring-1 ring-inset ring-gold/30" data-testid="match-mvp">
+      <Trophy aria-hidden="true" className="h-5 w-5 shrink-0 text-gold-text" />
+      {children}
+    </div>
+  );
+}
+
 function MvpPicker({ match, onChange }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const current = match.mvp_player_id ?? "";
+  const id = `mvp-${match.id}`;
   return (
     <div>
-      <label className="flex items-center gap-2 text-sm font-bold text-amber-200">
-        <span aria-hidden="true">🏆</span>
-        MVP:
-        <select
-          value={current}
-          disabled={busy}
-          onChange={async (event) => {
-            setBusy(true);
-            setError("");
-            try {
-              await changeLiveMvp(match.live_id, event.target.value || null);
-              await onChange();
-            } catch (requestError) {
-              setError(requestError.message);
-            } finally {
-              setBusy(false);
-            }
-          }}
-          className="min-h-11 min-w-0 flex-1 rounded-full border border-amber-300/40 bg-void px-2 text-sm font-bold text-white disabled:opacity-50"
-        >
-          <option value="">Sin MVP</option>
-          {match.players.map((player) => (
-            <option key={player.player_id} value={player.player_id}>
-              {player.name}
-            </option>
-          ))}
-        </select>
-      </label>
+      <MvpStrip>
+        <label htmlFor={id} className="shrink-0 text-sm font-bold text-gold-text">MVP</label>
+        <div className="min-w-0 flex-1">
+          <Select
+            id={id}
+            value={current}
+            disabled={busy}
+            onChange={async (event) => {
+              setBusy(true);
+              setError("");
+              try {
+                await changeLiveMvp(match.live_id, event.target.value || null);
+                await onChange();
+              } catch (requestError) {
+                setError(requestError.message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+            className="font-semibold"
+          >
+            <option value="">Sin MVP</option>
+            {match.players.map((player) => (
+              <option key={player.player_id} value={player.player_id}>
+                {player.name}
+              </option>
+            ))}
+          </Select>
+        </div>
+      </MvpStrip>
       {error && <Notice tone="error" inline size="sm" className="mt-1">{error}</Notice>}
     </div>
   );
@@ -82,62 +161,49 @@ function MvpPicker({ match, onChange }) {
 
 function PlayedMatchRow({ match, onEdit, onReload }) {
   return (
-    <li className="space-y-2.5 rounded-2xl ring-1 ring-white/10 bg-panel p-3" data-testid="played-match">
+    <Card as="li" padding="sm" className="flex flex-col gap-3" data-testid="played-match">
       <div className="flex items-center gap-3">
         <DateBadge iso={match.date} />
         <div className="min-w-0 flex-1">
-          <p className="break-words text-base font-semibold text-zinc-300">contra <span className="text-white">{match.opponent}</span></p>
-          <p className="mt-0.5 text-xs font-bold text-ember">{matchKindLabel(match.kind)} · {match.time}</p>
+          <p className="text-xs font-semibold text-ink-muted">contra</p>
+          <p className="break-words font-display text-lg font-extrabold leading-tight text-ink">{match.opponent}</p>
+          <p className="mt-0.5 text-sm text-ink-muted">{matchKindLabel(match.kind)} · {match.time}</p>
         </div>
-        {match.can_edit && (
-          <button type="button" onClick={() => onEdit(match)} aria-label={`Editar el partido contra ${match.opponent}`} className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/5 hover:text-white">
-            <Pencil aria-hidden="true" className="h-4 w-4" />
-          </button>
-        )}
+        {match.can_edit && <IconButton icon={Pencil} label={`Editar el partido contra ${match.opponent}`} onClick={() => onEdit(match)} />}
       </div>
-      {match.sets.length > 0 ? <MatchResult sets={match.sets} /> : <p className="text-sm text-zinc-400">Resultado sin apuntar</p>}
+      {match.sets.length > 0 ? (
+        <MatchResult sets={match.sets} />
+      ) : (
+        <p className="rounded-field bg-raised px-3 py-2.5 text-sm text-ink-muted">Resultado sin apuntar</p>
+      )}
       {match.can_edit && match.live_id && match.players.length > 0 ? (
         <MvpPicker match={match} onChange={onReload} />
       ) : (
         match.mvp && (
-          <p className="flex items-center gap-1.5 text-sm font-bold text-amber-200">
-            <span aria-hidden="true">🏆</span> MVP: {match.mvp}
-          </p>
+          <MvpStrip>
+            <p className="min-w-0 text-sm">
+              <span className="font-bold text-gold-text">MVP</span>
+              <span className="mx-1.5 text-ink-muted">·</span>
+              <span className="font-bold text-ink">{match.mvp}</span>
+            </p>
+          </MvpStrip>
         )
       )}
       {match.live_id && (
-        <Link
-          to={`/app/directo/${match.live_id}`}
-          className="flex min-h-11 items-center justify-center gap-2 rounded-full bg-amber-400 px-4 font-display text-sm font-bold text-amber-950"
-        >
-          <Trophy aria-hidden="true" className="h-4 w-4" />
+        <LinkButton as={Link} to={`/app/directo/${match.live_id}`} icon={ChartColumn} block>
           Ver informe
-          <ChevronRight aria-hidden="true" className="h-4 w-4" />
-        </Link>
+        </LinkButton>
       )}
       {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
       {match.notes && <MatchNotes notes={match.notes} />}
-    </li>
+    </Card>
   );
 }
 
 function KindTabs({ tabs, active, counts, onChange }) {
   return (
-    <div className={`grid gap-1 rounded-2xl ring-1 ring-white/10 bg-panel p-1 ${tabs.length === 4 ? "grid-cols-4" : "grid-cols-3"}`} data-testid="played-kinds">
-      {tabs.map(({ value, label }) => (
-        <button
-          key={value}
-          type="button"
-          aria-pressed={value === active}
-          onClick={() => onChange(value)}
-          className={`flex min-h-14 flex-col items-center justify-center rounded-xl font-display font-extrabold transition-colors ${
-            value === active ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
-          }`}
-        >
-          <span className="text-[13px] leading-tight">{label}</span>
-          <span className="text-lg leading-tight tabular-nums">{counts[value] ?? 0}</span>
-        </button>
-      ))}
+    <div data-testid="played-kinds">
+      <ChipGroup label="Tipo de partido" options={tabs.map(({ value, label }) => ({ value, label, count: counts[value] ?? 0 }))} value={active} onChange={onChange} />
     </div>
   );
 }
@@ -199,26 +265,29 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
   return (
     <div className="space-y-6">
       <RankingHero title="Jugados" subtitle={teamName} stacked>
-        <Link to={`/app?equipo=${teamId}&pestana=partidos`} className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white pl-2 pr-3 text-sm font-extrabold text-void hover:bg-zinc-200">
-          <ChevronLeft aria-hidden="true" className="h-4 w-4" />
+        <LinkButton as={Link} to={`/app?equipo=${teamId}&pestana=partidos`} icon={ChevronLeft} className="pl-3">
           Partidos
-        </Link>
+        </LinkButton>
       </RankingHero>
 
       {error && <Notice tone="error">{error}</Notice>}
-      {!error && !played && <p role="status" className="text-zinc-300">Cargando…</p>}
+      {!error && !played && <p role="status" className="text-ink-muted">Cargando…</p>}
 
       {played && (
         <>
           <KindTabs tabs={tabs} active={active} counts={counts} onChange={setSelected} />
           {shown.length === 0 ? (
-            <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">Todavía no hay partidos en {activeLabel}.</p>
+            <EmptyState>Todavía no hay partidos en {activeLabel}.</EmptyState>
           ) : (
-            <ul className="space-y-2">
+            <>
+            <SeasonSummary matches={shown} label={activeLabel} />
+            {/* Dos columnas solo con sitio de verdad (ordenador ancho); en móvil y tableta, una. */}
+            <ul className="grid items-start gap-3 lg:grid-cols-2">
               {shown.map((match) => (
                 <PlayedMatchRow key={match.id} match={match} onEdit={setEditing} onReload={load} />
               ))}
             </ul>
+            </>
           )}
         </>
       )}

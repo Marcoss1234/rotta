@@ -52,13 +52,16 @@ export const Button = forwardRef(function Button(
   );
 });
 
-/** Un enlace con aspecto de botón (abrir un mapa, ir a otra web). Mismas props de aspecto que Button. */
-export const LinkButton = forwardRef(function LinkButton({ variant = "secondary", size = "md", icon: Icon, block = false, className, children, ...rest }, ref) {
+/**
+ * Un enlace con aspecto de botón (abrir un mapa, ir a otra pantalla). Mismas props de aspecto que Button.
+ * as: el componente del enlace; por defecto <a>, o el Link de react-router para ir a otra pantalla de la app.
+ */
+export const LinkButton = forwardRef(function LinkButton({ as: Tag = "a", variant = "secondary", size = "md", icon: Icon, block = false, className, children, ...rest }, ref) {
   return (
-    <a ref={ref} className={cx(BASE, BUTTON_VARIANTS[variant], SIZES[size], block && "w-full", className)} {...rest}>
+    <Tag ref={ref} className={cx(BASE, BUTTON_VARIANTS[variant], SIZES[size], block && "w-full", className)} {...rest}>
       {Icon && <Icon aria-hidden="true" className={ICON_SIZES[size]} />}
       {children}
-    </a>
+    </Tag>
   );
 });
 

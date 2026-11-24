@@ -327,6 +327,12 @@ export function themeContrastChecks(theme) {
     ["Advertencia sobre fondo", theme.warningText, theme.bg, 4.5],
     ["Advertencia en tarjeta (sobre su tono)", theme.warningText, mix(theme.surface, theme.warning, 0.1), 4.5],
     ["Advertencia en el fondo (sobre su tono)", theme.warningText, mix(theme.bg, theme.warning, 0.1), 4.5],
+    // Partidos jugados: resultado (sobre el relleno de la tarjeta), sets ganados y perdidos y la franja del MVP.
+    ["Derrota: rojo suave sobre el relleno", theme.dangerText, mix(theme.raised, theme.danger, 0.1), 4.5],
+    ["Set ganado: texto sobre su tono", theme.successText, mix(theme.raised, theme.success, 0.1), 4.5],
+    ["Set perdido: texto sobre su tono", theme.dangerText, mix(theme.raised, theme.danger, 0.1), 4.5],
+    ["MVP: dorado sobre su franja", theme.goldText, mix(theme.surface, theme.gold, 0.1), 4.5],
+    ["MVP: nombre sobre su franja", theme.text, mix(theme.surface, theme.gold, 0.1), 4.5],
     // Calendario del móvil (Eventos): marcas de partido (club-ui) y de evento (texto secundario), también en el día elegido.
     ["Marca de evento sobre tarjeta", theme.muted, theme.surface, 3],
     ["Marca de evento sobre el día elegido", theme.muted, theme.clubSoft, 3],

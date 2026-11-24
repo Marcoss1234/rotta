@@ -1,15 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { Plus } from "lucide-react";
 import { localToday, MATCH_KINDS } from "@/app/matches.js";
-import { Notice } from "@/app/ui/index.js";
+import { Button, Dialog, Field, Input, Notice, Select, Textarea } from "@/app/ui/index.js";
 
 const MAX_SETS = 5;
 const EMPTY_SET = { us: "", them: "" };
-const fieldClass =
-  "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none";
-const labelClass = "mb-1.5 block text-sm font-semibold text-zinc-300";
-const primaryClass = "min-h-11 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
-const secondaryClass =
-  "min-h-11 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 
 // En el ordenador el calendario solo se abría tocando el icono: así se abre al pulsar en cualquier parte.
 function openCalendar(event) {
@@ -20,8 +15,9 @@ function openCalendar(event) {
   }
 }
 
+const LOCATION_HINT = "Escribe la dirección con el pueblo, o pega el enlace de Google Maps que te hayan pasado.";
+
 export default function MatchDialog({ match, teams, defaultTeamId, onSave, onDelete, onClose }) {
-  const dialogRef = useRef(null);
   const editing = Boolean(match);
   const [form, setForm] = useState(() => ({
     team_id: match?.team_id ?? defaultTeamId,
@@ -38,12 +34,6 @@ export default function MatchDialog({ match, teams, defaultTeamId, onSave, onDel
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    dialog.showModal();
-    return () => dialog.close();
-  }, []);
 
   const set = (field) => (event) => setForm((current) => ({ ...current, [field]: event.target.value }));
   const setPoints = (index, side) => (event) => {
@@ -95,75 +85,61 @@ export default function MatchDialog({ match, teams, defaultTeamId, onSave, onDel
   };
 
   return (
-    <dialog
-      ref={dialogRef}
-      aria-labelledby="match-dialog-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        if (!busy) onClose();
-      }}
-      className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/20 bg-panel p-5 font-body text-white backdrop:bg-black/70"
-    >
-      <h2 id="match-dialog-title" className="font-display text-2xl font-extrabold">{editing ? "Editar partido" : "Nuevo partido"}</h2>
-
-      <form onSubmit={submit} className="mt-4 space-y-4">
-        {!editing && (
-          <div>
-            <label htmlFor="match-team" className={labelClass}>Equipo</label>
-            <select id="match-team" value={form.team_id} onChange={set("team_id")} disabled={busy} className={fieldClass}>
-              {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-            </select>
+    <Dialog title={editing ? "Editar partido" : "Nuevo partido"} onClose={onClose} busy={busy}>
+      <form onSubmit={submit} className="space-y-5">
+        <div className="space-y-4">
+          {!editing && (
+            <Field id="match-team" label="Equipo">
+              <Select id="match-team" value={form.team_id} onChange={set("team_id")} disabled={busy}>
+                {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+              </Select>
+            </Field>
+          )}
+          <Field id="match-opponent" label="Rival">
+            <Input id="match-opponent" value={form.opponent} onChange={set("opponent")} maxLength={80} required disabled={busy} />
+          </Field>
+          <div className="grid grid-cols-2 gap-3">
+            <Field id="match-date" label="Día">
+              <Input id="match-date" type="date" value={form.date} onChange={set("date")} onClick={openCalendar} required disabled={busy} className="cursor-pointer" />
+            </Field>
+            <Field id="match-time" label="Hora">
+              <Input id="match-time" type="time" value={form.time} onChange={set("time")} required disabled={busy} />
+            </Field>
           </div>
-        )}
-        <div>
-          <label htmlFor="match-opponent" className={labelClass}>Rival</label>
-          <input id="match-opponent" value={form.opponent} onChange={set("opponent")} maxLength={80} required disabled={busy} className={fieldClass} />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label htmlFor="match-date" className={labelClass}>Día</label>
-            <input id="match-date" type="date" value={form.date} onChange={set("date")} onClick={openCalendar} required disabled={busy} className={`${fieldClass} cursor-pointer [color-scheme:dark]`} />
-          </div>
-          <div>
-            <label htmlFor="match-time" className={labelClass}>Hora</label>
-            <input id="match-time" type="time" value={form.time} onChange={set("time")} required disabled={busy} className={fieldClass} />
-          </div>
-        </div>
-        <div>
-          <label htmlFor="match-kind" className={labelClass}>Tipo</label>
-          <select id="match-kind" value={form.kind} onChange={set("kind")} disabled={busy} className={fieldClass}>
-            {MATCH_KINDS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="match-location" className={labelClass}>Lugar <span className="font-normal text-zinc-400">(opcional)</span></label>
-          <input id="match-location" value={form.location} onChange={set("location")} maxLength={300} disabled={busy} placeholder="Pabellón, dirección o enlace de Maps" aria-describedby="match-location-hint" className={fieldClass} />
-          <p id="match-location-hint" className="mt-1 text-xs text-zinc-400">Escribe la dirección con el pueblo, o pega el enlace de Google Maps que te hayan pasado.</p>
-        </div>
-        <div>
-          <label htmlFor="match-notes" className={labelClass}>Notas <span className="font-normal text-zinc-400">(opcional)</span></label>
-          <textarea id="match-notes" value={form.notes} onChange={set("notes")} maxLength={300} rows={2} disabled={busy} placeholder="Hora de quedar, equipación…" className={`${fieldClass} py-2.5`} />
+          <Field id="match-kind" label="Tipo">
+            <Select id="match-kind" value={form.kind} onChange={set("kind")} disabled={busy}>
+              {MATCH_KINDS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
+            </Select>
+          </Field>
+          <Field id="match-location" label="Lugar" optional hint={LOCATION_HINT}>
+            <Input id="match-location" value={form.location} onChange={set("location")} maxLength={300} disabled={busy} placeholder="Pabellón, dirección o enlace de Maps" hint={LOCATION_HINT} />
+          </Field>
+          <Field id="match-notes" label="Notas" optional>
+            <Textarea id="match-notes" value={form.notes} onChange={set("notes")} maxLength={300} rows={2} disabled={busy} placeholder="Hora de quedar, equipación…" />
+          </Field>
         </div>
 
         {showResult && (
-          <fieldset disabled={busy} data-testid="match-result-fields">
-            <legend className={labelClass}>Resultado por sets <span className="font-normal text-zinc-400">(opcional)</span></legend>
-            <div className="grid grid-cols-[3.25rem_1fr_1fr] items-center gap-2">
+          <fieldset disabled={busy} data-testid="match-result-fields" className="space-y-2 border-t border-line pt-4">
+            <legend className="float-left mb-2 w-full text-sm font-semibold text-ink">
+              Resultado por sets <span className="font-normal text-ink-muted">(opcional)</span>
+            </legend>
+            <div className="clear-left grid grid-cols-[3.25rem_1fr_1fr] items-center gap-2">
               <span aria-hidden="true" />
-              <span aria-hidden="true" className="text-center text-xs font-bold text-ember">Club</span>
-              <span aria-hidden="true" className="text-center text-xs font-bold text-zinc-400">Rival</span>
+              <span aria-hidden="true" className="text-center text-xs font-bold text-club-label">Club</span>
+              <span aria-hidden="true" className="text-center text-xs font-bold text-ink-muted">Rival</span>
               {sets.map((item, index) => (
                 <div key={index} className="contents">
-                  <span className="text-sm font-semibold text-zinc-300">Set {index + 1}</span>
-                  <input aria-label={`Set ${index + 1}, puntos de Club`} inputMode="numeric" maxLength={2} value={item.us} onChange={setPoints(index, "us")} className={`${fieldClass} text-center font-bold`} />
-                  <input aria-label={`Set ${index + 1}, puntos del rival`} inputMode="numeric" maxLength={2} value={item.them} onChange={setPoints(index, "them")} className={`${fieldClass} text-center font-bold`} />
+                  <span className="text-sm font-semibold text-ink-muted">Set {index + 1}</span>
+                  <Input aria-label={`Set ${index + 1}, puntos de Club`} inputMode="numeric" maxLength={2} value={item.us} onChange={setPoints(index, "us")} className="font-score text-center text-lg" />
+                  <Input aria-label={`Set ${index + 1}, puntos del rival`} inputMode="numeric" maxLength={2} value={item.them} onChange={setPoints(index, "them")} className="font-score text-center text-lg" />
                 </div>
               ))}
             </div>
             {sets.length < MAX_SETS && (
-              <button type="button" onClick={() => setSets((current) => [...current, EMPTY_SET])} className="mt-2 min-h-11 w-full rounded-full text-sm font-semibold text-white hover:bg-white/5">
+              <Button variant="quiet" icon={Plus} block onClick={() => setSets((current) => [...current, EMPTY_SET])}>
                 Añadir set
-              </button>
+              </Button>
             )}
           </fieldset>
         )}
@@ -171,30 +147,26 @@ export default function MatchDialog({ match, teams, defaultTeamId, onSave, onDel
         {error && <Notice tone="error">{error}</Notice>}
 
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" disabled={busy} onClick={onClose} className={secondaryClass}>Cancelar</button>
-          <button type="submit" disabled={busy} className={primaryClass}>{busy ? "Guardando…" : editing ? "Guardar" : "Crear partido"}</button>
+          <Button variant="secondary" disabled={busy} onClick={onClose}>Cancelar</Button>
+          <Button type="submit" busy={busy} busyLabel="Guardando…">{editing ? "Guardar" : "Crear partido"}</Button>
         </div>
       </form>
 
       {editing && (
-        <div className="mt-4 border-t border-white/10 pt-4">
+        <div className="mt-5 border-t border-line pt-4">
           {confirmingDelete ? (
             <div className="space-y-2">
-              <p className="text-sm text-zinc-200">¿Borrar este partido? También se borrarán las respuestas de quién va.</p>
+              <p className="text-sm text-ink">¿Borrar este partido? También se borrarán las respuestas de quién va.</p>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" disabled={busy} onClick={() => setConfirmingDelete(false)} className={secondaryClass}>No</button>
-                <button type="button" disabled={busy} onClick={() => run(onDelete)} className="min-h-11 rounded-full border border-red-300 px-4 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
-                  Sí, borrar
-                </button>
+                <Button variant="secondary" disabled={busy} onClick={() => setConfirmingDelete(false)}>No</Button>
+                <Button variant="danger" disabled={busy} onClick={() => run(onDelete)}>Sí, borrar</Button>
               </div>
             </div>
           ) : (
-            <button type="button" disabled={busy} onClick={() => setConfirmingDelete(true)} className="min-h-11 w-full rounded-full text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
-              Borrar partido
-            </button>
+            <Button variant="danger-quiet" block disabled={busy} onClick={() => setConfirmingDelete(true)}>Borrar partido</Button>
           )}
         </div>
       )}
-    </dialog>
+    </Dialog>
   );
 }

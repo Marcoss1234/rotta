@@ -8,7 +8,7 @@ Para verlos todos: `npm run demo` y abrir `/componentes` (solo existe en desarro
 | Componente | Para qué | Props principales |
 | --- | --- | --- |
 | `Button` | Acciones | `variant`: `primary` (color del club, una por zona), `secondary`, `quiet`, `danger`, `danger-quiet` · `size`: `sm`, `md`, `lg` · `icon` · `busy` + `busyLabel` · `block` |
-| `LinkButton` | Un enlace con aspecto de botón (mapa, otra web) | las de `Button` (por defecto `secondary`) + `href`, `target`... |
+| `LinkButton` | Un enlace con aspecto de botón (mapa, otra pantalla) | las de `Button` (por defecto `secondary`) + `href`, `target`... · `as={Link}` (react-router) con `to` para ir a otra pantalla |
 | `IconButton` | Acción solo con icono | `icon`, `label` (obligatorio: se lee en voz alta) · `variant` · `size` |
 | `Card` | Separar un bloque | `level`: `base`, `raised` (dentro de otra tarjeta), `outline`, `accent` (lo tuyo o lo elegido) · `padding`: `none`, `sm`, `md` · `as` · `interactive` |
 | `CardHeader` | Título de una tarjeta | `title`, `subtitle`, `action` |
@@ -20,7 +20,7 @@ Para verlos todos: `npm run demo` y abrir `/componentes` (solo existe en desarro
 | `Dialog` | Ventana o panel lateral | `title`, `description`, `onClose`, `busy`, `placement`: `center` o `side`, `footer` |
 | `Notice` | Avisos | `tone`: `error` (se anuncia con alert), `warning`, `success`, `info` · `inline` (sin recuadro) · `size`: `sm` (12 px) o `md` · `announce={false}` (aviso fijo, no se anuncia) · `as` (`div` si lleva una lista) |
 | `EmptyState` | Lista vacía | `action` |
-| `Badge` | Etiqueta pequeña | `tone`: `neutral`, `club`, `rotta`, `voy`, `danger` |
+| `Badge` | Etiqueta pequeña | `tone`: `neutral`, `club`, `rotta`, `voy`, `danger`, `danger-soft` (lo negativo sin alarmar, como una derrota) |
 
 Reglas de uso:
 - Una sola acción principal por zona; las demás, `secondary` o `quiet`.

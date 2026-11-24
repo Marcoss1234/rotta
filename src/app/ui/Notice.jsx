@@ -51,6 +51,8 @@ const BADGES = {
   rotta: "bg-rotta text-on-rotta",
   voy: "bg-voy text-snow",
   danger: "bg-danger text-snow",
+  // Rojo suave: lo negativo sin alarmar (una derrota, no un error).
+  "danger-soft": "bg-danger/10 text-danger-text ring-1 ring-inset ring-danger/30",
 };
 
 /** Etiqueta pequeña (tipo, estado, contador). Texto de 12 px como mínimo. */
