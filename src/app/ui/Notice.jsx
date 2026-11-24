@@ -2,6 +2,10 @@ import { CircleAlert, CircleCheck, Info, TriangleAlert } from "lucide-react";
 import { cx } from "./cx.js";
 
 // Los cuatro tonos, de más a menos urgente. Solo los errores se anuncian en voz alta con alert; el resto, con status.
+// Etiquetas que solo admiten texto dentro (contenido «de frase»): con ellas, el interior va en un <span>.
+// Con cualquier otra (div, section...), el interior es un <div> y puede llevar listas o párrafos.
+const PHRASING = new Set(["p", "span", "label", "strong", "em", "small", "b"]);
+
 const TONES = {
   error: { box: "bg-danger/10 text-danger-text ring-1 ring-inset ring-danger/30", inline: "text-danger-text", icon: CircleAlert, role: "alert" },
   warning: { box: "bg-warning/10 text-warning-text ring-1 ring-inset ring-warning/40", inline: "text-warning-text", icon: TriangleAlert, role: "status" },
@@ -14,17 +18,19 @@ const TONES = {
  * - inline: sin recuadro (debajo de un campo, dentro de una fila o de un formulario corto).
  * - announce: false si es un aviso fijo que no aparece por algo que acaba de pasar (no se anuncia en voz alta).
  * - size: "sm" (12 px) donde no cabe más; "md" (14 px) por defecto.
- * - as: la etiqueta HTML ("div" si dentro va una lista).
+ * - as: la etiqueta HTML. Con "p" (por defecto) el texto va en un <span>; con "div", en un <div>, así que puede
+ *   llevar una lista sin anidar bloques dentro de texto.
  */
 export function Notice({ tone = "info", inline = false, announce = true, size = "md", as: Tag = "p", className, children }) {
   const { box, inline: inlineClass, icon: Icon, role } = TONES[tone];
+  const Body = PHRASING.has(Tag) ? "span" : "div";
   return (
     <Tag
       role={announce ? role : undefined}
       className={cx("flex items-start font-semibold", size === "sm" ? "gap-1.5 text-xs" : "gap-2 text-sm", inline ? inlineClass : cx("rounded-card p-3", box), className)}
     >
       <Icon aria-hidden="true" className={cx("shrink-0", size === "sm" ? "mt-px h-3.5 w-3.5" : "mt-0.5 h-4 w-4")} />
-      <span className="min-w-0">{children}</span>
+      <Body className="min-w-0">{children}</Body>
     </Tag>
   );
 }
