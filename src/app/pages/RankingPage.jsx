@@ -19,6 +19,18 @@ const MEDALS = [
   { order: "order-3", pedestal: "h-20 from-[#FDBA74] via-[#F97316] to-[#7C2D12]", ring: "ring-[#FB923C]", avatar: "h-16 w-16 text-lg" },
 ];
 
+// Quien tiene una sola semana puntuada: sale en la tabla, pero con 10 puntos menos (lo explica al tocarla).
+function FewWeeksTag() {
+  return (
+    <span
+      title="Solo tiene 1 semana puntuada: cuenta con 10 puntos menos hasta que tenga 2"
+      className="rounded-full bg-amber-400/15 px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-200 ring-1 ring-amber-300/40"
+    >
+      1 semana · −10
+    </span>
+  );
+}
+
 function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onOpen }) {
   const medal = MEDALS[index];
   const content = (
@@ -32,6 +44,7 @@ function PodiumPlace({ entry, index, place, mine, hasPrevious, showMovement, onO
       </span>
       <span className="mb-1 mt-1 flex min-h-6 flex-wrap items-center justify-center gap-1">
         <PositionTag position={entry.position} />
+        {entry.provisional && <FewWeeksTag />}
         {showMovement && <MovementPill value={entry.movement} hasPrevious={hasPrevious} />}
       </span>
       <span className={`flex w-full flex-col items-center justify-start rounded-t-xl bg-gradient-to-b pt-2 text-[#0B0C0F] ${medal.pedestal}`}>
@@ -67,6 +80,7 @@ function RankRow({ entry, place, mine, hasPrevious, showMovement, onOpen, delay 
         <span className="block break-words font-bold">{entry.name}{mine && <span className="font-normal text-zinc-400"> (tú)</span>}</span>
         <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
           <PositionTag position={entry.position} />
+          {entry.provisional && <FewWeeksTag />}
           {entry.week_overall !== null && <span className="text-xs text-zinc-400">Última: {formatOverall(entry.week_overall)}</span>}
         </span>
         <AnimatedBar percent={entry.overall} className="mt-2 h-1" />

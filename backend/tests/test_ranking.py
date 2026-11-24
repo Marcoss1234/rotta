@@ -342,16 +342,30 @@ def test_las_semanas_sin_publicar_no_cuentan(admin):
 def test_la_primera_semana_basta_con_una_nota_y_luego_hacen_falta_dos(admin):
     lola = add_player(admin, "Lola")
     nora = add_player(admin, "Nora")
-    rate_ok(admin, lola, {"saque": 8}, offset=1)
+    rate_ok(admin, lola, {"saque": 9}, offset=1)
     rate_ok(admin, nora, {"saque": 7}, offset=1)
     publish_ok(admin, offset=1)
-    assert [entry["name"] for entry in table(admin)["entries"]] == ["Lola", "Nora"]
+    first = table(admin)["entries"]
+    assert [(entry["name"], entry["overall"], entry["provisional"]) for entry in first] == [("Lola", 90, False), ("Nora", 70, False)]
 
     rate_ok(admin, nora, {"saque": 7})
     publish_ok(admin)
     result = table(admin)
-    assert [entry["name"] for entry in result["entries"]] == ["Nora"]
-    assert [person["name"] for person in result["pending"]] == ["Lola"]
+    # Lola solo tiene 1 de las 2 semanas: sale igual, con 10 puntos menos y la marca de provisional.
+    assert [(entry["name"], entry["overall"], entry["provisional"]) for entry in result["entries"]] == [("Lola", 80, True), ("Nora", 70, False)]
+    assert result["pending"] == []
+
+
+def test_una_sola_semana_no_gana_a_quien_tiene_mas(admin):
+    lola = add_player(admin, "Lola")
+    nora = add_player(admin, "Nora")
+    rate_ok(admin, nora, {"saque": 8}, offset=1)
+    publish_ok(admin, offset=1)
+    rate_ok(admin, nora, {"saque": 8})
+    rate_ok(admin, lola, {"saque": 8.5})
+    publish_ok(admin)
+    # Lola saca mejor nota esta semana (85), pero con una sola semana se queda en 75: Nora (80) va primera.
+    assert [entry["name"] for entry in table(admin)["entries"]] == ["Nora", "Lola"]
 
 
 def test_quien_falta_una_semana_conserva_su_media(admin):

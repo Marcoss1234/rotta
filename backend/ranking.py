@@ -17,6 +17,9 @@ CLUB_TIME = ZoneInfo("Europe/Madrid")
 # El ranking es la media de las últimas semanas publicadas, para que una sola semana no lo decida todo.
 WINDOW_WEEKS = 4
 MIN_WEEKS = 2
+# Quien tiene menos semanas de las necesarias sale igual en la tabla, pero con esta penalización en la media
+# (de 0 a 100) y la marca de «1 semana»: así aparece, pero una sola semana buena no le sube arriba del todo.
+FEW_WEEKS_PENALTY = 10
 HISTORY_WEEKS = 12
 
 # Playa no entra hasta que se decida cómo funciona. Las dos Escuelas comparten ranking.
@@ -285,14 +288,21 @@ def _standings(ratings, window, roster_ids):
         if rating["week"] in window and rating["player_id"] in roster_ids and overall is not None:
             overalls.setdefault(rating["player_id"], []).append(overall)
 
-    averages = {player: sum(values) / len(values) for player, values in overalls.items() if len(values) >= required}
+    averages, provisional = {}, set()
+    for player, values in overalls.items():
+        average = sum(values) / len(values)
+        if len(values) < required:
+            # Pocas semanas: entra igual, pero con penalización (ver FEW_WEEKS_PENALTY).
+            average = max(0.0, average - FEW_WEEKS_PENALTY)
+            provisional.add(player)
+        averages[player] = average
     places, place, previous = {}, 0, None
     for index, (player, average) in enumerate(sorted(averages.items(), key=lambda item: -item[1]), start=1):
         rounded = round(average, 1)
         # Con la misma media se comparte puesto.
         if rounded != previous:
             place, previous = index, rounded
-        places[player] = {"rank": place, "overall": rounded}
+        places[player] = {"rank": place, "overall": rounded, "provisional": player in provisional}
     return places, [player for player in overalls if player not in places]
 
 
