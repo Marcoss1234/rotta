@@ -1056,6 +1056,7 @@
   --c-danger-text: 251 113 133;
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
+  --c-calendar: 212 42 46;
   --radius-card: 14px;
   --radius-control: 12px;
   --num-width: 78%;
@@ -1132,6 +1133,7 @@
   --c-danger-text: 185 28 28;
   --c-gold: 217 154 0;
   --c-gold-text: 138 97 0;
+  --c-calendar: 212 42 46;
 }
 
 :root[data-rotta="lima"][data-theme="light"][data-onbrand="light"] .text-onbrand,
@@ -1263,6 +1265,7 @@
   --c-danger-text: 251 113 133;
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
+  --c-calendar: 212 42 46;
 }
 
 :root[data-rotta="lima"][data-theme="dark"][data-onbrand="dark"] .text-onbrand {
@@ -1394,6 +1397,7 @@
   --c-danger-text: 251 113 133;
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
+  --c-calendar: 212 42 46;
   --radius-card: 26px;
   --radius-control: 999px;
   --num-width: 100%;
@@ -1470,6 +1474,7 @@
   --c-danger-text: 185 28 28;
   --c-gold: 217 154 0;
   --c-gold-text: 138 97 0;
+  --c-calendar: 212 42 46;
 }
 
 :root[data-rotta="naranja"][data-theme="light"][data-onbrand="light"] .text-onbrand,
@@ -1601,6 +1606,7 @@
   --c-danger-text: 251 113 133;
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
+  --c-calendar: 212 42 46;
 }
 
 :root[data-rotta="naranja"][data-theme="dark"][data-onbrand="dark"] .text-onbrand {
@@ -1732,6 +1738,7 @@
   --c-danger-text: 251 113 133;
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
+  --c-calendar: 212 42 46;
   --radius-card: 18px;
   --radius-control: 999px;
   --num-width: 90%;
@@ -1808,6 +1815,7 @@
   --c-danger-text: 185 28 28;
   --c-gold: 217 154 0;
   --c-gold-text: 138 97 0;
+  --c-calendar: 212 42 46;
 }
 
 :root[data-rotta="tinta"][data-theme="light"][data-onbrand="light"] .text-onbrand,
@@ -1939,6 +1947,7 @@
   --c-danger-text: 251 113 133;
   --c-gold: 245 197 66;
   --c-gold-text: 245 197 66;
+  --c-calendar: 212 42 46;
 }
 
 :root[data-rotta="tinta"][data-theme="dark"][data-onbrand="dark"] .text-onbrand {

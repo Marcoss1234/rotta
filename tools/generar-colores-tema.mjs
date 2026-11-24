@@ -81,6 +81,7 @@ function semantic(mode) {
     `  --c-danger-text: ${triplet(meanings.dangerText)};`,
     `  --c-gold: ${triplet(meanings.gold)};`,
     `  --c-gold-text: ${triplet(meanings.goldText)};`,
+    `  --c-calendar: ${triplet(meanings.calendar)};`,
   ];
 }
 const block = (selectors, lines) => `${selectors.join(",\n")} {\n${lines.join("\n")}\n}\n`;

@@ -62,6 +62,8 @@ export default {
         "danger-text": themed("danger-text"),
         gold: themed("gold"),
         "gold-text": themed("gold-text"),
+        // Rojo de hoja de calendario (DateBadge): igual en todos los temas.
+        calendar: themed("calendar"),
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         // Fondo de tarjeta del tema para los componentes de src/app/ui (a diferencia de bg-panel, no le afectan

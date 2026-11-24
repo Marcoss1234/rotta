@@ -185,10 +185,13 @@ export default function EventsPage({ onAccessLost }) {
         <p aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs font-semibold text-ink-muted md:hidden">
           <span className="flex items-center gap-1.5"><MatchMark /> Partido</span>
           <span className="flex items-center gap-1.5"><EventMark /> Evento</span>
-          <span className="flex items-center gap-1.5">
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-club font-display text-xs font-extrabold text-on-club">{Number(today.slice(8))}</span>
-            Hoy
-          </span>
+          {/* Solo en el mes de hoy: en otro mes no hay ningún día marcado como hoy. */}
+          {today.startsWith(month) && (
+            <span className="flex items-center gap-1.5">
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-club font-display text-xs font-extrabold text-on-club">{Number(today.slice(8))}</span>
+              Hoy
+            </span>
+          )}
         </p>
       </section>
 

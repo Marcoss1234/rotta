@@ -326,6 +326,7 @@ export function themeContrastChecks(theme) {
     ["Marca de evento sobre tarjeta", theme.muted, theme.surface, 3],
     ["Marca de evento sobre el día elegido", theme.muted, theme.clubSoft, 3],
     ["Texto dorado sobre tarjeta", theme.goldText, theme.surface, 4.5],
+    ["Hoja de calendario: texto blanco sobre la cabecera roja", "#FFFFFF", theme.calendar, 4.5],
     // Segundo color del club: solo donde da información (el adorno, `stripe`, no lo necesita).
     ["Segundo color como texto sobre tarjeta", theme.accentText, theme.surface, 4.5],
     ["Segundo color como texto sobre fondo", theme.accentText, theme.bg, 4.5],
