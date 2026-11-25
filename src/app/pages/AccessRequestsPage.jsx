@@ -43,7 +43,7 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
           )}
         </div>
       </div>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+      <div className="grid gap-3 min-[380px]:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
         <Field id={`${ids}-rol`} label="Entra como">
           <Select id={`${ids}-rol`} value={role} disabled={Boolean(busy)} onChange={(event) => setRole(event.target.value)}>
             <option value="jugador">Jugador</option>
@@ -56,7 +56,7 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
             {teams.map((team) => <option key={team.id} value={team.id}>{team.name.replace(/^Club /, "")}</option>)}
           </Select>
         </Field>
-        <div className="col-span-2 grid grid-cols-2 gap-2 lg:col-span-1 lg:flex">
+        <div className="grid grid-cols-2 gap-2 min-[380px]:col-span-2 lg:col-span-1 lg:flex">
           <Button variant="secondary" disabled={Boolean(busy)} busy={busy === "rejected"} busyLabel="Guardando…" onClick={() => decide({ status: "rejected" })}>
             Rechazar
           </Button>
