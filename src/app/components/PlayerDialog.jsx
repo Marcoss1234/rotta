@@ -1,32 +1,73 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { POSITIONS } from "@/app/roles.js";
-import { Notice } from "@/app/ui/index.js";
+import { Button, Dialog, Field, Input, Notice, Select } from "@/app/ui/index.js";
 
-const fieldClass =
-  "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white placeholder-zinc-400 focus:border-white focus:outline-none";
-const labelClass = "mb-1.5 block text-sm font-semibold text-zinc-300";
+// Las mismas reglas que el servidor (backend/players.py), para avisar en el campo antes de enviar.
+const PHONE_PATTERN = /^\+?[0-9][0-9 ()-]{5,28}$/;
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const NUMBER_PATTERN = /^\d{1,2}$/;
+const LINKED_TEAM_HINT = "Tiene cuenta en la app: su equipo se cambia desde Usuarios.";
+const MOVE_HINT = "Si cambia de equipo, empieza en el banquillo de su nuevo equipo.";
 
-export default function PlayerDialog({ player, teams, defaultTeamId, onSave, onDelete, onClose }) {
-  const dialogRef = useRef(null);
-  const [form, setForm] = useState({
-    name: player?.name ?? "",
-    team_id: player?.team_id ?? defaultTeamId,
-    position: player?.position ?? "Sin definir",
-    number: player?.number ?? "",
-    phone: player?.phone ?? "",
-    email: player?.email ?? "",
-  });
+const initialForm = (player, defaultTeamId) => ({
+  name: player?.name ?? "",
+  team_id: player?.team_id ?? defaultTeamId,
+  position: player?.position ?? "Sin definir",
+  number: player?.number ?? "",
+  phone: player?.phone ?? "",
+  email: player?.email ?? "",
+});
+
+/**
+ * Los datos limpios del formulario (sin espacios de más, vacío = null) y los errores de cada campo.
+ * Se exporta para probarlo aparte.
+ */
+export function readPlayerForm(form) {
+  const name = form.name.trim().replace(/\s+/g, " ");
+  const number = String(form.number).trim();
+  const phone = form.phone.trim();
+  const email = form.email.trim();
+  const errors = {};
+  if (name.length < 2) errors.name = "Escribe su nombre y apellidos";
+  if (number && !NUMBER_PATTERN.test(number)) errors.number = "Del 0 al 99";
+  if (phone && !PHONE_PATTERN.test(phone)) errors.phone = "Solo números, espacios, guiones y paréntesis (al menos 7 cifras)";
+  if (email && !EMAIL_PATTERN.test(email)) errors.email = "Revisa el correo";
+  return {
+    errors,
+    values: {
+      name,
+      team_id: form.team_id,
+      position: form.position,
+      number: number === "" ? null : Number(number),
+      phone: phone || null,
+      email: email ? email.toLowerCase() : null,
+    },
+  };
+}
+
+// Al editar solo se manda lo que ha cambiado (así no se pisa lo que otro haya tocado a la vez).
+const changedValues = (player, values) =>
+  Object.fromEntries(Object.entries(values).filter(([key, value]) => value !== (player[key] ?? null)));
+
+/**
+ * Añadir o editar un jugador de la plantilla (solo entrenadores y administradores).
+ * player: null para añadir. Si tiene cuenta (`linked`), el equipo no se cambia aquí sino desde Usuarios.
+ * onSave(datos) recibe todo al crear y solo lo cambiado al editar; onDelete (opcional) para quitarlo.
+ */
+export default function PlayerDialog({ player, teams, defaultTeamId, onSave, onDelete = null, onClose }) {
+  const editing = Boolean(player);
+  const linked = Boolean(player?.linked);
+  const [form, setForm] = useState(() => initialForm(player, defaultTeamId));
+  const [fieldErrors, setFieldErrors] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    dialog.showModal();
-    return () => dialog.close();
-  }, []);
-
-  const update = (key) => (event) => setForm((current) => ({ ...current, [key]: event.target.value }));
+  const setValue = (key, value) => {
+    setForm((current) => ({ ...current, [key]: value }));
+    setFieldErrors((current) => (current[key] ? { ...current, [key]: undefined } : current));
+  };
+  const update = (key) => (event) => setValue(key, event.target.value);
 
   const run = async (action) => {
     setBusy(true);
@@ -34,118 +75,118 @@ export default function PlayerDialog({ player, teams, defaultTeamId, onSave, onD
     try {
       await action();
     } catch (actionError) {
-      setError(actionError.message);
+      // Dorsal repetido: el aviso va en su campo.
+      if (actionError.status === 409 && /dorsal/i.test(actionError.message)) setFieldErrors((current) => ({ ...current, number: actionError.message }));
+      else setError(actionError.message);
       setBusy(false);
     }
   };
 
   const submit = (event) => {
     event.preventDefault();
-    run(() =>
-      onSave({
-        name: form.name.trim(),
-        team_id: form.team_id,
-        position: form.position,
-        number: form.number === "" ? null : Number(form.number),
-        phone: form.phone.trim() || null,
-        email: form.email.trim() || null,
-      }),
-    );
+    const { errors, values } = readPlayerForm(form);
+    setFieldErrors(errors);
+    setError("");
+    if (Object.keys(errors).length > 0) return;
+    if (!editing) {
+      run(() => onSave(values));
+      return;
+    }
+    const changes = changedValues(player, values);
+    if (linked) delete changes.team_id;
+    if (Object.keys(changes).length === 0) {
+      onClose();
+      return;
+    }
+    run(() => onSave(changes));
   };
 
+  const firstName = player?.name.split(" ")[0];
+  const teamHint = linked ? LINKED_TEAM_HINT : editing ? MOVE_HINT : undefined;
+
   return (
-    <dialog
-      ref={dialogRef}
-      aria-labelledby="player-dialog-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        if (!busy) onClose();
-      }}
-      className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/20 bg-panel p-5 font-body text-white backdrop:bg-black/70"
+    <Dialog
+      title={editing ? "Editar jugador" : "Añadir jugador"}
+      description={editing ? player.name : "Entra en la plantilla del equipo que elijas."}
+      onClose={onClose}
+      busy={busy}
     >
-      <h2 id="player-dialog-title" className="font-display text-2xl font-extrabold">
-        {player ? "Editar jugador" : "Añadir jugador"}
-      </h2>
+      <form onSubmit={submit} noValidate className="space-y-5">
+        <div className="space-y-4">
+          <Field id="player-name" label="Nombre y apellidos" error={fieldErrors.name}>
+            <Input id="player-name" value={form.name} onChange={update("name")} maxLength={120} autoComplete="off" required disabled={busy} error={fieldErrors.name} />
+          </Field>
 
-      <form onSubmit={submit} className="mt-4 space-y-4">
-        <div>
-          <label htmlFor="player-name" className={labelClass}>Nombre y apellidos</label>
-          <input id="player-name" required minLength={2} maxLength={120} autoComplete="off" value={form.name} onChange={update("name")} className={fieldClass} />
+          <Field id="player-team" label="Equipo" hint={teamHint}>
+            <Select id="player-team" value={form.team_id} onChange={update("team_id")} disabled={busy || linked} hint={teamHint}>
+              {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
+            </Select>
+          </Field>
+
+          <div className="grid grid-cols-[minmax(0,1fr)_6.5rem] gap-3">
+            <Field id="player-position" label="Posición">
+              <Select id="player-position" value={form.position} onChange={update("position")} disabled={busy}>
+                {POSITIONS.map((position) => <option key={position}>{position}</option>)}
+              </Select>
+            </Field>
+            <Field id="player-number" label="Dorsal" error={fieldErrors.number}>
+              <Input
+                id="player-number"
+                inputMode="numeric"
+                maxLength={2}
+                autoComplete="off"
+                value={form.number}
+                onChange={(event) => setValue("number", event.target.value.replace(/\D/g, ""))}
+                disabled={busy}
+                error={fieldErrors.number}
+                className="font-display text-lg font-bold tabular-nums"
+              />
+            </Field>
+          </div>
         </div>
 
-        <div>
-          <label htmlFor="player-team" className={labelClass}>Equipo</label>
-          <select id="player-team" value={form.team_id} disabled={player?.linked} onChange={update("team_id")} className={`${fieldClass} disabled:opacity-60`}>
-            {teams.map((team) => <option key={team.id} value={team.id}>{team.name}</option>)}
-          </select>
-          {player?.linked && <p className="mt-1.5 text-sm text-zinc-400">Tiene cuenta: su equipo se cambia desde Usuarios.</p>}
-        </div>
-
-        <div className="grid grid-cols-[1fr_6rem] gap-3">
-          <div>
-            <label htmlFor="player-position" className={labelClass}>Posición</label>
-            <select id="player-position" value={form.position} onChange={update("position")} className={fieldClass}>
-              {POSITIONS.map((position) => <option key={position}>{position}</option>)}
-            </select>
-          </div>
-          <div>
-            <label htmlFor="player-number" className={labelClass}>Dorsal</label>
-            <input id="player-number" type="number" min={0} max={99} step={1} inputMode="numeric" value={form.number} onChange={update("number")} className={fieldClass} />
-          </div>
-        </div>
-
-        <fieldset className="space-y-4 rounded-lg border border-white/10 p-3">
-          <legend className="px-1 text-sm font-semibold text-zinc-300">Contacto (opcional)</legend>
-          <p className="text-sm text-zinc-400">Solo lo ven entrenadores y administradores.</p>
-          <div>
-            <label htmlFor="player-phone" className={labelClass}>Teléfono</label>
-            <input id="player-phone" type="tel" maxLength={30} autoComplete="off" pattern="\+?[0-9][0-9 ()\-]{5,28}" title="Solo números, espacios, guiones y paréntesis" value={form.phone} onChange={update("phone")} className={fieldClass} />
-          </div>
-          <div>
-            <label htmlFor="player-email" className={labelClass}>Correo</label>
-            <input id="player-email" type="email" maxLength={254} autoComplete="off" value={form.email} onChange={update("email")} className={fieldClass} />
+        <fieldset disabled={busy} className="space-y-4 border-t border-line pt-4">
+          <legend className="float-left w-full">
+            <span className="block text-sm font-semibold text-ink">
+              Contacto <span className="font-normal text-ink-muted">(opcional)</span>
+            </span>
+            <span className="mt-0.5 block text-xs text-ink-muted">Solo lo ven entrenadores y administradores.</span>
+          </legend>
+          <div className="clear-left space-y-4 pt-1">
+            <Field id="player-phone" label="Teléfono" error={fieldErrors.phone}>
+              <Input id="player-phone" type="tel" inputMode="tel" maxLength={30} autoComplete="off" value={form.phone} onChange={update("phone")} error={fieldErrors.phone} />
+            </Field>
+            <Field id="player-email" label="Correo" error={fieldErrors.email}>
+              <Input id="player-email" type="email" inputMode="email" maxLength={254} autoComplete="off" value={form.email} onChange={update("email")} error={fieldErrors.email} />
+            </Field>
           </div>
         </fieldset>
 
         {error && <Notice tone="error">{error}</Notice>}
 
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" disabled={busy} onClick={onClose} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
-            Cancelar
-          </button>
-          <button type="submit" disabled={busy} className="min-h-11 rounded-full bg-tnt text-sm font-bold text-onbrand disabled:opacity-50">
-            {busy ? "Guardando…" : "Guardar"}
-          </button>
+          <Button variant="secondary" disabled={busy} onClick={onClose}>Cancelar</Button>
+          <Button type="submit" busy={busy} busyLabel="Guardando…">{editing ? "Guardar" : "Añadir"}</Button>
         </div>
       </form>
 
-      {player?.linked && (
-        <p className="mt-4 border-t border-white/10 pt-4 text-sm text-zinc-400">
-          Para sacarlo de la plantilla, quítale el equipo o el acceso desde Usuarios.
-        </p>
-      )}
-
-      {player && !player.linked && (
-        <div className="mt-4 border-t border-white/10 pt-4">
-          {confirmingDelete ? (
+      {editing && onDelete && (
+        <div className="mt-5 border-t border-line pt-4">
+          {linked ? (
+            <Notice tone="info" announce={false} size="sm">Para sacarlo de la plantilla, quítale el equipo o el acceso desde Usuarios.</Notice>
+          ) : confirmingDelete ? (
             <div className="space-y-2">
-              <p className="text-sm text-zinc-200">¿Eliminar a {player.name} de la plantilla? No se puede deshacer.</p>
+              <p className="text-sm text-ink">¿Quitar a {firstName} de la plantilla? No se puede deshacer.</p>
               <div className="grid grid-cols-2 gap-2">
-                <button type="button" disabled={busy} onClick={() => setConfirmingDelete(false)} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">
-                  No
-                </button>
-                <button type="button" disabled={busy} onClick={() => run(onDelete)} className="min-h-11 rounded-full border border-red-300 text-sm font-bold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
-                  Sí, eliminar
-                </button>
+                <Button variant="secondary" disabled={busy} onClick={() => setConfirmingDelete(false)}>No</Button>
+                <Button variant="danger" disabled={busy} onClick={() => run(onDelete)}>Sí, quitar</Button>
               </div>
             </div>
           ) : (
-            <button type="button" disabled={busy} onClick={() => setConfirmingDelete(true)} className="min-h-11 w-full rounded-full text-sm font-semibold text-red-200 hover:bg-red-300/10 disabled:opacity-50">
-              Eliminar de la plantilla
-            </button>
+            <Button variant="danger-quiet" block disabled={busy} onClick={() => setConfirmingDelete(true)}>Quitar de la plantilla</Button>
           )}
         </div>
       )}
-    </dialog>
+    </Dialog>
   );
 }
