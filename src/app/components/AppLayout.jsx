@@ -9,6 +9,7 @@ import TapSplash from "@/app/components/TapSplash.jsx";
 import usePolling from "@/app/usePolling.js";
 import ClubCrest from "@/app/components/ClubCrest.jsx";
 import { useClubIdentity } from "@/app/clubIdentity.js";
+import { useWelcomeVisible } from "@/app/welcome.js";
 
 const UNREAD_POLL_MS = 30000;
 const CHAT_PATH = "/app/chat";
@@ -139,7 +140,9 @@ export default function AppLayout({ isAdmin, user, children }) {
     .flatMap((group) => group.items)
     .filter((item) => !bottomItems.some((bottom) => bottom.to === item.to))
     .map((item) => item.label);
-  const showHint = !menuSeen && hintReady && !hintDismissed && pathname === "/app";
+  // Mientras la bienvenida de Inicio está a la vista, el aviso del menú espera (no se amontonan).
+  const welcomeVisible = useWelcomeVisible();
+  const showHint = !menuSeen && hintReady && !hintDismissed && !welcomeVisible && pathname === "/app";
 
   // En el móvil la página no se desplaza: solo el contenido. Así el menú no tiene cómo moverse.
   useEffect(() => {

@@ -25,6 +25,7 @@ import TrainingStars from "@/app/components/TrainingStars.jsx";
 import usePolling from "@/app/usePolling.js";
 import GoingCourt, { initialsOf } from "@/app/components/GoingCourt.jsx";
 import InstallCard from "@/app/components/InstallCard.jsx";
+import WelcomeCard from "@/app/components/WelcomeCard.jsx";
 import { EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
 import MatchDialog from "@/app/components/MatchDialog.jsx";
 import NotificationsCard from "@/app/components/NotificationsCard.jsx";
@@ -1068,6 +1069,8 @@ export default function HomePage({ user, onAccessLost }) {
           <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-ink-muted" />
         </Link>
       )}
+
+      <WelcomeCard user={user} />
 
       <LiveNow />
 

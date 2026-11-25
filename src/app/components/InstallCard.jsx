@@ -42,7 +42,7 @@ function IphoneSteps() {
       <Step number={3}>
         Baja y elige <strong>Añadir a pantalla de inicio</strong> <SquarePlus aria-hidden="true" className={inlineIcon} />.
       </Step>
-      <Step number={4}>Pulsa <strong>Añadir</strong>. Ya puedes abrirla desde el icono del Club.</Step>
+      <Step number={4}>Pulsa <strong>Añadir</strong>. Ya puedes abrirla desde su icono, como cualquier app.</Step>
     </ol>
   );
 }
