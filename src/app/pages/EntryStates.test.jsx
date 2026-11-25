@@ -47,7 +47,7 @@ describe("ConsentPage", () => {
     fireEvent.click(screen.getByRole("radio", { name: /se puede ver mi foto/ }));
     fireEvent.click(screen.getByRole("checkbox"));
     expect(accept().disabled).toBe(true);
-    fireEvent.change(screen.getByLabelText(/madre, el padre o el tutor/), { target: { value: "  Luis Prueba " } });
+    fireEvent.change(screen.getByLabelText(/quien da el permiso/), { target: { value: "  Luis Prueba " } });
     expect(accept().disabled).toBe(false);
     await act(async () => fireEvent.click(accept()));
     expect(api.saveConsent).toHaveBeenCalledWith({ adult: false, photos: true, guardian_name: "Luis Prueba" });
@@ -63,6 +63,19 @@ describe("ConsentPage", () => {
     await act(async () => fireEvent.click(accept()));
     expect(api.saveConsent).toHaveBeenCalledWith({ adult: true, photos: false, guardian_name: null });
     expect(screen.getByRole("alert").textContent).toMatch(/Algo ha fallado/);
+  });
+
+  it("las opciones son radios nativos agrupados (se eligen con las flechas) y dice qué falta", () => {
+    setup();
+    const [older, younger] = [screen.getByRole("radio", { name: /14 años o más/ }), screen.getByRole("radio", { name: /menor de 14/ })];
+    expect(older.tagName).toBe("INPUT");
+    expect(older.type).toBe("radio");
+    expect(older.name).toBe(younger.name);
+    expect(older.name).not.toBe(screen.getByRole("radio", { name: /sin foto/ }).name);
+    expect(screen.getByText(/Para seguir falta decir quién usa la cuenta, elegir lo de las fotos y marcar que has leído la política/)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /Aceptar y entrar/ }).getAttribute("aria-describedby")).toBeTruthy();
+    fireEvent.click(younger);
+    expect(screen.getByText(/el nombre de quien da el permiso/)).toBeTruthy();
   });
 
   it("No acepto: cierra la sesión", async () => {

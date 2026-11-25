@@ -1,31 +1,56 @@
-import { useState } from "react";
+import { useId, useState } from "react";
 import { Camera, CameraOff, ShieldCheck, UserRound, Users } from "lucide-react";
 import { logout, saveConsent } from "@/app/api.js";
-import { Notice } from "@/app/ui/index.js";
+import { AuthCard, AuthShell } from "@/app/components/auth/AuthShell.jsx";
+import { Button, Field, Input, Notice, cx } from "@/app/ui/index.js";
 
 // Al entrar por primera vez (o si cambia la política): aceptar la privacidad, decir si es mayor de 14
 // y, si no, quién da el permiso; y aparte, si se pueden ver sus fotos.
 // También sirve desde el perfil para cambiar el permiso de fotos (`initial` y `onCancel`).
+// Las opciones son radios de verdad (se eligen con las flechas del teclado), con aspecto de tarjeta.
 
-function Choice({ checked, onSelect, icon: Icon, title, text }) {
+function Choice({ name, checked, onSelect, icon: Icon, title, text }) {
   return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={checked}
-      onClick={onSelect}
-      className={`flex w-full items-start gap-3 rounded-2xl p-3 text-left ring-2 transition-colors ${checked ? "bg-tnt/15 ring-tnt" : "bg-panel ring-white/10 hover:ring-white/25"}`}
+    <label
+      className={cx(
+        "flex cursor-pointer items-start gap-3 rounded-card p-3.5 ring-1 ring-inset transition",
+        "has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rotta-text",
+        checked ? "bg-club-soft ring-club-ui" : "bg-card ring-line hover:ring-control",
+      )}
     >
-      <Icon aria-hidden="true" className={`mt-0.5 h-5 w-5 shrink-0 ${checked ? "text-tnt" : "text-zinc-400"}`} />
-      <span>
-        <span className="block font-bold text-white">{title}</span>
-        <span className="block text-sm text-zinc-400">{text}</span>
+      <input type="radio" name={name} checked={checked} onChange={onSelect} className="mt-0.5 h-5 w-5 shrink-0 accent-club focus:outline-none" />
+      <Icon aria-hidden="true" className={cx("mt-0.5 h-5 w-5 shrink-0", checked ? "text-club-ui" : "text-ink-muted")} />
+      <span className="min-w-0">
+        <span className="block font-bold text-ink">{title}</span>
+        <span className="block text-sm text-ink-muted">{text}</span>
       </span>
-    </button>
+    </label>
   );
 }
 
+function Group({ legend, children }) {
+  return (
+    <fieldset className="space-y-2">
+      <legend className="mb-2 text-sm font-bold text-ink">{legend}</legend>
+      {children}
+    </fieldset>
+  );
+}
+
+// Qué falta para poder seguir, en palabras (se lee junto al botón).
+function missingParts({ read, adult, needsGuardian, guardian, photos, askRead }) {
+  const missing = [];
+  if (adult === null) missing.push("decir quién usa la cuenta");
+  if (needsGuardian && guardian.trim().length < 3) missing.push("el nombre de quien da el permiso");
+  if (photos === null) missing.push("elegir lo de las fotos");
+  if (askRead && !read) missing.push("marcar que has leído la política");
+  return missing;
+}
+
+const joinParts = (parts) => (parts.length < 2 ? parts.join("") : `${parts.slice(0, -1).join(", ")} y ${parts[parts.length - 1]}`);
+
 export default function ConsentPage({ user, initial = null, onSaved, onSignedOut, onCancel }) {
+  const ids = useId();
   const [adult, setAdult] = useState(initial ? initial.adult : null);
   const [guardian, setGuardian] = useState("");
   const [photos, setPhotos] = useState(initial ? initial.photos : null);
@@ -34,7 +59,8 @@ export default function ConsentPage({ user, initial = null, onSaved, onSignedOut
   const [error, setError] = useState("");
 
   const needsGuardian = adult === false;
-  const ready = read && adult !== null && photos !== null && (!needsGuardian || guardian.trim().length >= 3);
+  const missing = missingParts({ read, adult, needsGuardian, guardian, photos, askRead: !initial });
+  const ready = missing.length === 0;
 
   const submit = async (event) => {
     event.preventDefault();
@@ -54,77 +80,76 @@ export default function ConsentPage({ user, initial = null, onSaved, onSignedOut
     onSignedOut?.();
   };
 
-  return (
-    <div className="min-h-screen bg-void px-5 py-8 font-body text-white">
-      <form onSubmit={submit} className="mx-auto max-w-md space-y-6">
-        <header className="space-y-2 text-center">
-          <ShieldCheck aria-hidden="true" className="mx-auto h-10 w-10 text-tnt" />
-          <h1 className="font-display text-3xl font-extrabold">{initial ? "Tus permisos" : `Antes de entrar, ${user.name.split(" ")[0]}`}</h1>
-          <p className="text-sm text-zinc-400">
-            La app guarda datos tuyos para organizar el club: tu ficha, si vas a entrenar, las notas, el chat… Lo tienes todo explicado en la{" "}
-            <a href="/app/privacidad" target="_blank" rel="noreferrer" className="font-semibold text-ember underline">política de privacidad</a>.
-          </p>
-        </header>
+  const policyLink = (
+    <a href="/app/privacidad" target="_blank" rel="noreferrer" className="font-semibold text-ink underline underline-offset-2 hover:text-club-text">
+      política de privacidad
+    </a>
+  );
 
-        <fieldset className="space-y-2">
-          <legend className="mb-2 text-sm font-extrabold">¿Quién va a usar esta cuenta?</legend>
-          <div role="radiogroup" className="space-y-2">
-            <Choice checked={adult === true} onSelect={() => setAdult(true)} icon={UserRound} title="Tengo 14 años o más" text="Acepto yo." />
-            <Choice
-              checked={adult === false}
-              onSelect={() => setAdult(false)}
-              icon={Users}
-              title="Es un menor de 14 años"
-              text="Lo acepta su madre, padre o tutor."
-            />
-          </div>
-          {needsGuardian && (
-            <label className="block space-y-1 pt-1">
-              <span className="text-sm font-semibold">Nombre de la madre, el padre o el tutor que da el permiso</span>
-              <input
-                value={guardian}
-                onChange={(event) => setGuardian(event.target.value)}
-                maxLength={80}
-                autoComplete="name"
-                className="min-h-11 w-full rounded-lg border border-white/15 bg-panel px-3 text-white placeholder:text-zinc-500 focus:border-tnt focus:outline-none"
-                placeholder="Nombre y apellidos"
-              />
-            </label>
-          )}
-        </fieldset>
-
-        <fieldset className="space-y-2">
-          <legend className="mb-2 text-sm font-extrabold">Fotos</legend>
-          <div role="radiogroup" className="space-y-2">
-            <Choice checked={photos === true} onSelect={() => setPhotos(true)} icon={Camera} title="Sí, se puede ver mi foto" text="La del perfil o la de Google, junto a mi nombre." />
-            <Choice checked={photos === false} onSelect={() => setPhotos(false)} icon={CameraOff} title="No, sin foto" text="Saldrán solo mis iniciales." />
-          </div>
-        </fieldset>
-
-        {!initial && (
-          <label className="flex items-start gap-3 rounded-2xl bg-panel p-3 text-sm">
-            <input type="checkbox" checked={read} onChange={(event) => setRead(event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-tnt" />
-            <span>He leído la política de privacidad y acepto que el club use estos datos para organizarse. Puedo borrar mi cuenta cuando quiera.</span>
-          </label>
+  const form = (
+    <form onSubmit={submit} className="space-y-6">
+      <Group legend="¿Quién va a usar esta cuenta?">
+        <Choice name={`${ids}-edad`} checked={adult === true} onSelect={() => setAdult(true)} icon={UserRound} title="Tengo 14 años o más" text="Acepto yo." />
+        <Choice name={`${ids}-edad`} checked={adult === false} onSelect={() => setAdult(false)} icon={Users} title="Es un menor de 14 años" text="Lo acepta su madre, padre o tutor." />
+        {needsGuardian && (
+          <Field id={`${ids}-tutor`} label="Nombre de quien da el permiso" hint="Su madre, su padre o su tutor legal." className="pt-2">
+            <Input id={`${ids}-tutor`} value={guardian} onChange={(event) => setGuardian(event.target.value)} maxLength={80} autoComplete="name" placeholder="Nombre y apellidos" hint="Su madre, su padre o su tutor legal." />
+          </Field>
         )}
+      </Group>
 
-        {error && <Notice tone="error" inline>{error}</Notice>}
+      <Group legend="Fotos">
+        <Choice name={`${ids}-fotos`} checked={photos === true} onSelect={() => setPhotos(true)} icon={Camera} title="Sí, se puede ver mi foto" text="La del perfil o la de Google, junto a mi nombre." />
+        <Choice name={`${ids}-fotos`} checked={photos === false} onSelect={() => setPhotos(false)} icon={CameraOff} title="No, sin foto" text="Saldrán solo mis iniciales." />
+      </Group>
 
-        <div className="space-y-2">
-          <button type="submit" disabled={!ready || busy} className="min-h-12 w-full rounded-full bg-tnt font-bold text-onbrand disabled:opacity-40">
-            {busy ? "Guardando…" : initial ? "Guardar permisos" : "Aceptar y entrar"}
-          </button>
-          {onCancel ? (
-            <button type="button" onClick={onCancel} className="min-h-11 w-full rounded-full text-sm font-semibold text-zinc-300 hover:text-white">
-              Cancelar
-            </button>
-          ) : (
-            <button type="button" onClick={leave} className="min-h-11 w-full rounded-full text-sm font-semibold text-zinc-400 hover:text-white">
-              No acepto · Salir
-            </button>
-          )}
+      {!initial && (
+        <label className="flex cursor-pointer items-start gap-3 rounded-card bg-raised p-3.5 text-sm text-ink has-[:focus-visible]:ring-2 has-[:focus-visible]:ring-rotta-text">
+          <input type="checkbox" checked={read} onChange={(event) => setRead(event.target.checked)} className="mt-0.5 h-5 w-5 shrink-0 accent-club focus:outline-none" />
+          <span>He leído la política de privacidad y acepto que el club use estos datos para organizarse. Puedo borrar mi cuenta cuando quiera.</span>
+        </label>
+      )}
+
+      {error && <Notice tone="error">{error}</Notice>}
+
+      <div className="space-y-2">
+        <Button type="submit" size="lg" block disabled={!ready} busy={busy} busyLabel="Guardando…" aria-describedby={ready ? undefined : `${ids}-falta`}>
+          {initial ? "Guardar permisos" : "Aceptar y entrar"}
+        </Button>
+        {!ready && (
+          <p id={`${ids}-falta`} className="text-center text-sm text-ink-muted">
+            Para seguir falta {joinParts(missing)}.
+          </p>
+        )}
+        {onCancel ? (
+          <Button variant="quiet" block onClick={onCancel}>Cancelar</Button>
+        ) : (
+          <Button variant="secondary" block onClick={leave}>No acepto · Salir</Button>
+        )}
+      </div>
+    </form>
+  );
+
+  const description = (
+    <p>
+      La app guarda datos tuyos para organizar el club: tu ficha, si vas a entrenar, las notas, el chat… Lo tienes todo explicado en la {policyLink}.
+    </p>
+  );
+
+  // Desde el perfil, sin el marco de la entrada: solo la tarjeta, centrada.
+  if (initial) {
+    return (
+      <div className="min-h-dvh bg-canvas px-4 py-8 font-body text-ink">
+        <div className="mx-auto max-w-md">
+          <AuthCard icon={ShieldCheck} title="Tus permisos" description={description}>{form}</AuthCard>
         </div>
-      </form>
-    </div>
+      </div>
+    );
+  }
+
+  return (
+    <AuthShell compact>
+      <AuthCard icon={ShieldCheck} title={`Antes de entrar, ${user.name.split(" ")[0]}`} description={description}>{form}</AuthCard>
+    </AuthShell>
   );
 }
