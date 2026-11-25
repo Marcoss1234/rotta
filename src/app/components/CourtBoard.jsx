@@ -1,6 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import CourtStands, { CourtSideStands } from "@/app/components/CourtStands.jsx";
+import { Check } from "lucide-react";
+import CourtStands from "@/app/components/CourtStands.jsx";
+import { positionTone } from "@/app/components/RankingVisuals.jsx";
 import { POSITIONS } from "@/app/roles.js";
+import { Button, cx } from "@/app/ui/index.js";
 
 const DRAG_THRESHOLD = 4;
 // Con el dedo la chapa sube un poco para que se vea; con ratón va justo debajo del puntero.
@@ -109,7 +112,7 @@ function Token({ player, canEdit, hidden, onPointerDown, onPointerUp, onKeyDown 
       onPointerUp={(event) => onPointerUp(event, player)}
       onKeyDown={(event) => onKeyDown(event, player)}
       // touch-none y sin menú de "guardar imagen": en el móvil, mantener pulsada la chapa no debe abrir nada.
-      className={`cursor-grab touch-none select-none rounded-lg [-webkit-touch-callout:none] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:cursor-grabbing ${dimmed}`}
+      className={`cursor-grab touch-none select-none rounded-lg [-webkit-touch-callout:none] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rotta-text active:cursor-grabbing ${dimmed}`}
     >
       <Badge player={player} />
     </button>
@@ -117,6 +120,7 @@ function Token({ player, canEdit, hidden, onPointerDown, onPointerUp, onKeyDown 
 }
 
 // Un toque rápido en una chapa abre esta ventanita para cambiar el puesto sin salir de la pista.
+// Cada puesto con su color (el de PositionTag); el actual, marcado. Al tocar fuera, se cierra.
 function PositionPicker({ player, onPick, onClose }) {
   const dialogRef = useRef(null);
   useEffect(() => {
@@ -129,22 +133,22 @@ function PositionPicker({ player, onPick, onClose }) {
     <dialog
       ref={dialogRef}
       aria-labelledby="position-picker-title"
+      aria-describedby="position-picker-help"
       onCancel={(event) => {
         event.preventDefault();
         onClose();
       }}
-      // Al tocar fuera de la ventanita, se cierra.
       onClick={(event) => {
         if (event.target === dialogRef.current) onClose();
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-panel p-0 font-body text-white backdrop:bg-black/60"
+      className="!m-auto w-[calc(100%-2rem)] max-w-xs rounded-card bg-card p-0 font-body text-ink shadow-card ring-1 ring-line backdrop:bg-canvas/75 backdrop:backdrop-blur-sm"
     >
       <div className="p-4">
-        <p id="position-picker-title" className="font-display text-lg font-bold">
-          {player.name}
-          {player.number !== null && <span className="ml-1.5 text-zinc-400">#{player.number}</span>}
+        <p id="position-picker-title" className="flex items-baseline gap-2 font-display text-lg font-extrabold leading-tight">
+          <span className="min-w-0 break-words">{player.name}</span>
+          {player.number !== null && <span className="shrink-0 tabular-nums text-ink-muted">#{player.number}</span>}
         </p>
-        <p className="text-sm text-zinc-400">Elige su puesto</p>
+        <p id="position-picker-help" className="text-sm text-ink-muted">Elige su puesto</p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           {POSITIONS.map((position) => {
             const current = position === player.position;
@@ -154,18 +158,20 @@ function PositionPicker({ player, onPick, onClose }) {
                 type="button"
                 aria-pressed={current}
                 onClick={() => onPick(position)}
-                className={`min-h-11 rounded-full border text-sm font-semibold ${
-                  current ? "border-tnt bg-tnt text-onbrand" : "border-white/20 text-zinc-100 hover:bg-white/5"
-                }`}
+                className={cx(
+                  "flex min-h-11 items-center gap-2 rounded-control px-3 text-left text-sm font-semibold ring-1 ring-inset transition",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
+                  current ? "bg-club-soft text-ink ring-club-ui" : "text-ink ring-line hover:bg-raised hover:ring-control",
+                )}
               >
-                {position}
+                <span aria-hidden="true" className={cx("h-2 w-2 shrink-0 rounded-full", positionTone(position).dot)} />
+                <span className="min-w-0 flex-1">{position}</span>
+                {current && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-club-ui" />}
               </button>
             );
           })}
         </div>
-        <button type="button" onClick={onClose} className="mt-3 min-h-11 w-full rounded-full text-sm font-semibold text-zinc-300 hover:bg-white/5">
-          Cancelar
-        </button>
+        <Button variant="quiet" block onClick={onClose} className="mt-3">Cancelar</Button>
       </div>
     </dialog>
   );
@@ -309,26 +315,26 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
   const onCourt = players.filter((player) => player.court);
   const onBench = players.filter((player) => !player.court);
   const moving = drag?.moved ? drag : null;
-  const leftStand = family.filter((_, index) => index % 2 === 0);
-  const rightStand = family.filter((_, index) => index % 2 === 1);
 
   return (
-    <section aria-labelledby="court-title" className="rounded-3xl bg-panel p-4 ring-1 ring-white/10">
-      <h2 id="court-title" className="font-display text-2xl font-bold">Pista</h2>
+    <section aria-labelledby="court-title" className="rounded-card bg-card p-4 shadow-card ring-1 ring-line md:p-5">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="court-title" className="font-display text-lg font-extrabold leading-tight">Pista</h2>
+        <p className="text-xs font-semibold text-ink-muted">{onCourt.length} en pista</p>
+      </div>
       {canEdit && (
-        <p id="court-help" className="mt-1 text-xs text-zinc-400">
+        <p id="court-help" className="mt-1 text-xs text-ink-muted">
           Arrastra cada chapa a donde quieras. Se guarda sola, y si la sacas de la pista vuelve al banquillo. Tócala para cambiar su puesto.
           <span className="sr-only"> Con el teclado: flechas para mover, Intro para cambiar el puesto y Suprimir para devolverla al banquillo.</span>
         </p>
       )}
 
-      <div className="mt-3 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)_minmax(0,1fr)] lg:gap-2">
-      <CourtSideStands side="left" label="Gradas, lado izquierdo" people={leftStand} />
       <div
         ref={courtRef}
         data-testid="court"
         // isolate: el orden de las chapas solo cuenta dentro de la pista, nunca por encima del menú.
-        className="relative isolate mx-auto w-full max-w-sm overflow-hidden rounded-lg"
+        // force-dark: la pista, el banquillo y las gradas van siempre en oscuro (como la pizarra y el directo).
+        className="force-dark relative isolate mx-auto mt-3 w-full max-w-sm overflow-hidden rounded-lg"
         style={{ aspectRatio: "100 / 190" }}
       >
         <CourtDrawing beach={beach} />
@@ -353,13 +359,13 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
           </div>
         ))}
       </div>
-      <CourtSideStands side="right" label="Gradas, lado derecho" people={rightStand} />
-      </div>
 
-      <div className="mx-auto mt-3 max-w-sm rounded-2xl border border-white/15 p-3" data-testid="court-bench">
-        <h3 className="font-display text-sm font-extrabold text-zinc-200">Banquillo · {onBench.length}</h3>
+      <div className="force-dark mx-auto mt-3 max-w-sm rounded-card bg-raised p-3 text-ink" data-testid="court-bench">
+        <h3 className="flex items-baseline justify-between font-display text-sm font-extrabold text-ink">
+          Banquillo <span className="font-body text-xs font-semibold text-ink-muted">{onBench.length}</span>
+        </h3>
         {onBench.length === 0 ? (
-          <p className="mt-1 text-sm text-zinc-400">No hay nadie en el banquillo.</p>
+          <p className="mt-1 text-sm text-ink-muted">No hay nadie en el banquillo.</p>
         ) : (
           <div className="mt-2 flex flex-wrap gap-2">
             {onBench.map((player) => (
@@ -393,7 +399,7 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
       {moving && (
         <div
           aria-hidden="true"
-          className="pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-[22px]"
+          className="force-dark pointer-events-none fixed z-50 -translate-x-1/2 -translate-y-[22px]"
           style={{ left: moving.x, top: moving.y - moving.lift }}
         >
           <Badge player={moving.player} lifted />
