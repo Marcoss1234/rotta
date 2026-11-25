@@ -12,7 +12,7 @@ vi.mock("@/app/clubIdentity.js", () => ({
   useClubIdentity: () => ({ name: "Club Prueba", crest: "/escudo.png", custom: { name: true, crest: true } }),
 }));
 import * as api from "@/app/api.js";
-import AccessStatusPage from "./AccessStatusPage.jsx";
+import AccessStatusPage, { AUTO_CHECK_MS } from "./AccessStatusPage.jsx";
 import ChangePasswordPage from "./ChangePasswordPage.jsx";
 import ConsentPage from "./ConsentPage.jsx";
 
@@ -106,10 +106,51 @@ describe("AccessStatusPage", () => {
     const onSignedOut = vi.fn();
     render(<AccessStatusPage user={USER} onRefresh={onRefresh} onSignedOut={onSignedOut} />);
     expect(screen.getByText("@ana.prueba")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "Comprobar de nuevo" }));
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Comprobar de nuevo" })));
     expect(onRefresh).toHaveBeenCalled();
+    expect(screen.getByText(/Sigue pendiente · comprobado a las/)).toBeTruthy();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" })));
     expect(api.logout).toHaveBeenCalled();
+    expect(onSignedOut).toHaveBeenCalled();
+  });
+
+  it("pendiente: los pasos, con el último en espera", () => {
+    render(<AccessStatusPage user={USER} onRefresh={vi.fn()} onSignedOut={vi.fn()} />);
+    const steps = screen.getByRole("list", { name: "Pasos para entrar" });
+    expect(steps.textContent).toMatch(/Cuenta creada \(hecho\).*Permisos aceptados \(hecho\).*Aprobación del club \(en espera\)/);
+  });
+
+  it("al volver a la app comprueba solo, como mucho una vez cada medio minuto", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    const onRefresh = vi.fn().mockResolvedValue(undefined);
+    render(<AccessStatusPage user={USER} onRefresh={onRefresh} onSignedOut={vi.fn()} />);
+    const back = async () => act(async () => document.dispatchEvent(new Event("visibilitychange")));
+    try {
+      vi.setSystemTime(new Date(2026, 10, 25, 10, 0, 0));
+      await back();
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+      await back();
+      expect(onRefresh).toHaveBeenCalledTimes(1);
+      vi.setSystemTime(new Date(2026, 10, 25, 10, 0, 0) .getTime() + AUTO_CHECK_MS + 1);
+      await back();
+      expect(onRefresh).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("rechazado: no comprueba solo al volver", async () => {
+    const onRefresh = vi.fn();
+    render(<AccessStatusPage user={{ ...USER, status: "rejected" }} onRefresh={onRefresh} onSignedOut={vi.fn()} />);
+    await act(async () => document.dispatchEvent(new Event("visibilitychange")));
+    expect(onRefresh).not.toHaveBeenCalled();
+  });
+
+  it("cerrar sesión sale aunque no haya conexión", async () => {
+    api.logout.mockRejectedValueOnce(apiError("Sin conexión", 0));
+    const onSignedOut = vi.fn();
+    render(<AccessStatusPage user={USER} onRefresh={vi.fn()} onSignedOut={onSignedOut} />);
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" })));
     expect(onSignedOut).toHaveBeenCalled();
   });
 

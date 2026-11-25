@@ -119,14 +119,21 @@ export function AuthShell({ children, brandAs = "p", compact = false }) {
   );
 }
 
-/** La tarjeta del formulario o del aviso. title: el h1 de la pantalla (si no lo es el club). */
-export function AuthCard({ title, description, icon: Icon, children, className }) {
+// El tono del icono: el del club, o uno con significado (espera, neutro) que no cambia con el color del club.
+const ICON_TONES = {
+  club: "bg-club-soft text-club-ui",
+  warning: "bg-warning/10 text-warning-text ring-1 ring-inset ring-warning/40",
+  neutral: "bg-raised text-ink-muted",
+};
+
+/** La tarjeta del formulario o del aviso. title: el h1 de la pantalla (si no lo es el club). iconTone: club | warning | neutral. */
+export function AuthCard({ title, description, icon: Icon, iconTone = "club", children, className }) {
   return (
     <section className={cx("rounded-card bg-card p-5 shadow-card ring-1 ring-line sm:p-7", className)}>
       {(title || Icon) && (
         <header className="mb-5 space-y-2">
           {Icon && (
-            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-club-soft text-club-ui">
+            <span className={cx("flex h-10 w-10 items-center justify-center rounded-full", ICON_TONES[iconTone])}>
               <Icon aria-hidden="true" className="h-5 w-5" />
             </span>
           )}
