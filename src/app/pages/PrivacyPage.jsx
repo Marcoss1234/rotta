@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { RottaSignature } from "@/app/components/auth/AuthShell.jsx";
+import { LinkButton } from "@/app/ui/index.js";
 
 // Política de privacidad de Rotta. Se ve sin iniciar sesión (/app/privacidad).
 // El responsable es cada club; Rotta trata los datos por encargo suyo.
@@ -8,11 +10,26 @@ import { ArrowLeft } from "lucide-react";
 
 const UPDATED = "12 de noviembre de 2026";
 
+// Los apartados, en orden: con ellos se hace el índice (en el ordenador, a la izquierda).
+export const SECTIONS = [
+  "Quién se encarga de tus datos",
+  "Qué datos guarda la app",
+  "Para qué los usamos",
+  "Quién los ve",
+  "Menores de 14 años",
+  "Dónde se guardan",
+  "Cuánto tiempo",
+  "Tus derechos",
+];
+
+export const sectionId = (title) =>
+  title.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
 function Section({ title, children }) {
   return (
-    <section className="space-y-2">
-      <h2 className="font-display text-xl font-extrabold">{title}</h2>
-      <div className="space-y-2 text-[15px] leading-relaxed text-zinc-300">{children}</div>
+    <section id={sectionId(title)} aria-labelledby={`${sectionId(title)}-titulo`} className="scroll-mt-6 space-y-2.5 border-t border-line pt-6 first:border-t-0 first:pt-0">
+      <h2 id={`${sectionId(title)}-titulo`} className="font-display text-xl font-extrabold text-ink">{title}</h2>
+      <div className="space-y-2.5 text-[15px] leading-relaxed text-ink">{children}</div>
     </section>
   );
 }
@@ -23,21 +40,31 @@ export default function PrivacyPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-void px-5 py-8 font-body text-white">
-      <article className="mx-auto max-w-2xl space-y-7">
-        <a href="/app" className="inline-flex min-h-11 items-center gap-1.5 text-sm font-bold text-zinc-300 hover:text-white">
-          <ArrowLeft aria-hidden="true" className="h-4 w-4" />
-          Volver a la app
-        </a>
-        <header className="space-y-1">
-          <h1 className="font-display text-4xl font-extrabold leading-tight">Política de privacidad</h1>
-          <p className="text-sm text-zinc-400">Rotta · Gestor de clubs · Actualizada el {UPDATED}</p>
+    <div className="min-h-dvh bg-canvas px-5 py-8 font-body text-ink md:px-8 lg:py-12">
+      <div className="mx-auto max-w-5xl lg:grid lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-12">
+        <aside className="hidden lg:block">
+          <nav aria-label="Apartados de la política" className="sticky top-12 space-y-1">
+            <p className="mb-2 text-xs font-bold text-ink-muted">En esta página</p>
+            {SECTIONS.map((title) => (
+              <a key={title} href={`#${sectionId(title)}`} className="block rounded-control px-3 py-1.5 text-sm text-ink-muted hover:bg-raised hover:text-ink">
+                {title}
+              </a>
+            ))}
+          </nav>
+        </aside>
+
+      <article className="max-w-2xl space-y-8">
+        <LinkButton href="/app" icon={ArrowLeft} size="sm" variant="secondary">Volver a la app</LinkButton>
+        <header className="space-y-2">
+          <h1 className="font-display text-4xl font-extrabold leading-tight md:text-5xl">Política de privacidad</h1>
+          <p className="text-sm text-ink-muted">Rotta · Gestor de clubs · Actualizada el {UPDATED}</p>
         </header>
 
+        <div className="space-y-6 rounded-card bg-card p-5 shadow-card ring-1 ring-line md:p-8">
         <Section title="Quién se encarga de tus datos">
           <p>
-            <strong className="text-white">Tu club</strong>, el que te ha dado acceso a la app, es el responsable de tus datos: decide
-            qué se apunta y para qué. <strong className="text-white">Rotta</strong> es la herramienta que usa el club y guarda los datos por
+            <strong className="font-bold text-ink">Tu club</strong>, el que te ha dado acceso a la app, es el responsable de tus datos: decide
+            qué se apunta y para qué. <strong className="font-bold text-ink">Rotta</strong> es la herramienta que usa el club y guarda los datos por
             encargo suyo, sin usarlos para nada más.
           </p>
           <p>Para cualquier cosa sobre tus datos, habla con tu club (sus entrenadores o la directiva).</p>
@@ -96,14 +123,18 @@ export default function PrivacyPage() {
         <Section title="Tus derechos">
           <p>
             Puedes ver, corregir o borrar tus datos, oponerte a que se usen, limitarlos o pedir una copia. Casi todo lo puedes hacer tú
-            desde tu perfil, incluido <strong className="text-white">borrar tu cuenta</strong>. Para lo demás, habla con tu club.
+            desde tu perfil, incluido <strong className="font-bold text-ink">borrar tu cuenta</strong>. Para lo demás, habla con tu club.
           </p>
           <p>
             Si crees que no hemos tratado bien tus datos, puedes reclamar ante la Agencia Española de Protección de Datos
-            (<a className="font-semibold text-ember underline" href="https://www.aepd.es">www.aepd.es</a>).
+            (<a className="font-semibold text-ink underline underline-offset-2 hover:text-club-text" href="https://www.aepd.es">www.aepd.es</a>).
           </p>
         </Section>
+        </div>
+
+        <RottaSignature />
       </article>
+      </div>
     </div>
   );
 }
