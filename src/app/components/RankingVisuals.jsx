@@ -50,17 +50,25 @@ export function GroupPicker({ groups, groupId, onChange }) {
   );
 }
 
-const POSITION_STYLES = {
-  Líbero: "bg-sky-400/15 text-sky-300",
-  Colocador: "bg-violet-400/15 text-violet-300",
-  Receptor: "bg-emerald-400/15 text-emerald-300",
-  Central: "bg-amber-400/15 text-amber-300",
-  Opuesto: "bg-rose-400/15 text-rose-300",
+// Cada posición tiene su color propio (no el del club), en todos los temas: un punto de color y el texto en su
+// tono, sobre un fondo suave del mismo color. Las familias de Tailwind siguen al modo claro u oscuro
+// (src/theme-palette.css), así que el texto se lee en los dos. Texto de 12 px como mínimo.
+export const POSITION_TONES = {
+  Líbero: { tag: "bg-sky-400/10 text-sky-300 ring-sky-400/30", dot: "bg-sky-400" },
+  Colocador: { tag: "bg-violet-400/10 text-violet-300 ring-violet-400/30", dot: "bg-violet-400" },
+  Receptor: { tag: "bg-emerald-400/10 text-emerald-300 ring-emerald-400/30", dot: "bg-emerald-400" },
+  // El ámbar, un tono más oscuro en claro (amber-200 pasa a amber-800): con el 300 quedaba justo en 4,5:1.
+  Central: { tag: "bg-amber-400/10 text-amber-200 ring-amber-400/30", dot: "bg-amber-400" },
+  Opuesto: { tag: "bg-rose-400/10 text-rose-300 ring-rose-400/30", dot: "bg-rose-400" },
 };
+const NEUTRAL_TONE = { tag: "bg-raised text-ink-muted ring-line", dot: "bg-ink-muted" };
+export const positionTone = (position) => POSITION_TONES[position] ?? NEUTRAL_TONE;
 
 export function PositionTag({ position }) {
+  const { tag, dot } = positionTone(position);
   return (
-    <span className={`inline-block rounded px-1.5 py-0.5 text-[11px] font-bold ${POSITION_STYLES[position] ?? "bg-white/10 text-zinc-300"}`}>
+    <span className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2 py-0.5 text-xs font-bold ring-1 ring-inset ${tag}`}>
+      <span aria-hidden="true" className={`h-1.5 w-1.5 shrink-0 rounded-full ${dot}`} />
       {position}
     </span>
   );
