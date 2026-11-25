@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import { CalendarDays, Plus, Settings2, Trash2, Trophy } from "lucide-react";
 import { STYLES, THEMES } from "@/app/themes.js";
 import { useThemeControls } from "@/app/useTheme.js";
-import { Badge, Button, Card, CardHeader, ChipGroup, Dialog, EmptyState, Field, IconButton, Input, Notice, Select, TabPanel, Tabs, Textarea } from "./index.js";
+import { Badge, Button, Card, CardHeader, ChipGroup, Dialog, EmptyState, Field, IconButton, Input, Notice, PasswordInput, Select, TabPanel, Tabs, Textarea } from "./index.js";
 
 // Catálogo de los componentes comunes, con el tema y el modo de verdad (solo en desarrollo y en la demo).
 // Sirve para revisarlos en Lima, Naranja y Tinta, en claro y en oscuro, antes de llevarlos a más pantallas.
@@ -67,6 +67,9 @@ export default function UiCatalogPage() {
           </Field>
           <Field id="cat-dorsal" label="Dorsal" error="Ese dorsal ya lo tiene otra jugadora.">
             <Input id="cat-dorsal" defaultValue="10" error="Ese dorsal ya lo tiene otra jugadora." />
+          </Field>
+          <Field id="cat-clave" label="Contraseña" hint="Al menos 8 caracteres.">
+            <PasswordInput id="cat-clave" autoComplete="new-password" hint="Al menos 8 caracteres." />
           </Field>
           <Field id="cat-notas" label="Notas" optional>
             <Textarea id="cat-notas" rows={2} />

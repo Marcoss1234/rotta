@@ -2,6 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { getMe } from "@/app/api.js";
 import AppLayout from "@/app/components/AppLayout.jsx";
+import { AuthError, AuthLoading } from "@/app/components/auth/AuthShell.jsx";
 import AccessRequestsPage from "@/app/pages/AccessRequestsPage.jsx";
 import LiveMatchPage from "@/app/pages/LiveMatchPage.jsx";
 import ShopPage from "@/app/pages/ShopPage.jsx";
@@ -29,14 +30,6 @@ const BoardsPage = lazy(() => import("@/app/pages/BoardsPage.jsx"));
 const BoardEditorPage = lazy(() => import("@/app/pages/BoardEditorPage.jsx"));
 const boardLoading = <p role="status" className="text-zinc-300">Cargando la pizarra…</p>;
 import useAppViewport from "@/app/useAppViewport.js";
-
-function FullScreenMessage({ children }) {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-void px-6 text-center font-body text-zinc-200">
-      {children}
-    </div>
-  );
-}
 
 export default function PrivateApp() {
   const [session, setSession] = useState({ state: "loading", user: null });
@@ -70,23 +63,8 @@ export default function PrivateApp() {
   const signedOut = useCallback(() => setSession({ state: "anonymous", user: null }), []);
   const signedIn = useCallback((user) => setSession({ state: "ready", user }), []);
 
-  if (session.state === "loading") {
-    return <FullScreenMessage><p role="status">Cargando…</p></FullScreenMessage>;
-  }
-  if (session.state === "error") {
-    return (
-      <FullScreenMessage>
-        <p role="alert">No se ha podido conectar con el servidor.</p>
-        <button
-          type="button"
-          onClick={refresh}
-          className="min-h-11 rounded-full border border-white/20 px-5 font-semibold text-white hover:bg-white/5"
-        >
-          Reintentar
-        </button>
-      </FullScreenMessage>
-    );
-  }
+  if (session.state === "loading") return <AuthLoading />;
+  if (session.state === "error") return <AuthError onRetry={refresh} />;
   if (session.state === "anonymous") {
     return <LoginPage onSignedIn={signedIn} />;
   }

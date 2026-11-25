@@ -5,6 +5,7 @@ export { Card, CardHeader } from "./Card.jsx";
 export { Tabs, TabPanel } from "./Tabs.jsx";
 export { ChipGroup } from "./ChipGroup.jsx";
 export { Field, Input, Textarea, Select } from "./Field.jsx";
+export { PasswordInput } from "./PasswordInput.jsx";
 export { Dialog } from "./Dialog.jsx";
 export { Notice, EmptyState, Badge } from "./Notice.jsx";
 export { cx } from "./cx.js";

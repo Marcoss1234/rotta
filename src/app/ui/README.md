@@ -17,6 +17,7 @@ Para verlos todos: `npm run demo` y abrir `/componentes` (solo existe en desarro
 | `ChipGroup` | Elegir equipo, filtros, opciones | `options` (`value`, `label`, `count`), `value`, `onChange`, `label`, `multiple`, `scroll` (una fila que se desliza: difumina el borde por donde quedan opciones y trae la elegida a la vista) |
 | `Field` | Etiqueta, ayuda y error de un campo | `id`, `label`, `optional`, `hint`, `error` |
 | `Input`, `Textarea`, `Select` | Campos | los de HTML + `invalid`, `hint`, `error` (para enlazarlos) |
+| `PasswordInput` | Contraseña con el ojo para verla | las de `Input` + `autoComplete` (`current-password` o `new-password`) · `what` (qué contraseña es, para el botón: «Mostrar contraseña temporal») |
 | `Dialog` | Ventana o panel lateral | `title`, `description`, `onClose`, `busy`, `placement`: `center` o `side`, `footer` |
 | `Notice` | Avisos | `tone`: `error` (se anuncia con alert), `warning`, `success`, `info` · `inline` (sin recuadro) · `size`: `sm` (12 px) o `md` · `announce={false}` (aviso fijo, no se anuncia) · `as` (`div` si lleva una lista) |
 | `EmptyState` | Lista vacía | `action` |
