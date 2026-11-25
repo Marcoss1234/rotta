@@ -1,7 +1,11 @@
 import { useState } from "react";
+import { KeyRound } from "lucide-react";
 import { logout } from "@/app/api.js";
+import { AuthCard, AuthShell } from "@/app/components/auth/AuthShell.jsx";
 import PasswordChangeForm from "@/app/components/PasswordChangeForm.jsx";
+import { Button } from "@/app/ui/index.js";
 
+// Al entrar con la contraseña temporal que da un administrador: hay que cambiarla antes de seguir.
 export default function ChangePasswordPage({ onChanged, onSignedOut }) {
   const [busy, setBusy] = useState(false);
 
@@ -9,23 +13,23 @@ export default function ChangePasswordPage({ onChanged, onSignedOut }) {
     setBusy(true);
     try {
       await logout();
+    } catch {
+      // Sin conexión también se sale: la sesión caduca sola.
     } finally {
       onSignedOut();
     }
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-void px-6 py-8 font-body text-white">
-      <div className="mx-auto w-full max-w-sm space-y-5">
-        <div className="space-y-2">
-          <h1 className="font-display text-2xl font-extrabold">Elige una contraseña nueva</h1>
-          <p className="text-base leading-relaxed text-zinc-300">Has entrado con una contraseña temporal. Cámbiala para seguir.</p>
-        </div>
-        <PasswordChangeForm currentLabel="Contraseña temporal" onChanged={onChanged} />
-        <button type="button" onClick={signOut} disabled={busy} className="min-h-11 w-full text-sm font-semibold text-zinc-300 hover:text-white disabled:opacity-60">
-          Cerrar sesión
-        </button>
-      </div>
-    </div>
+    <AuthShell>
+      <AuthCard
+        icon={KeyRound}
+        title="Elige una contraseña nueva"
+        description="Has entrado con la contraseña temporal que te ha dado el club. Cámbiala por una tuya para seguir."
+      >
+        <PasswordChangeForm currentLabel="Contraseña temporal" onChanged={onChanged} block />
+        <Button variant="quiet" block onClick={signOut} disabled={busy} className="mt-3">Cerrar sesión</Button>
+      </AuthCard>
+    </AuthShell>
   );
 }

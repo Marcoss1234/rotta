@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { setUpPassword } from "@/app/api.js";
-import PasswordField, { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
-import { Notice } from "@/app/ui/index.js";
+import PasswordField from "@/app/components/PasswordField.jsx";
+import { Button, Field, Input, Notice } from "@/app/ui/index.js";
 
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
 // Los mismos que rechaza el servidor: harían creer que la cuenta es del club.
@@ -46,10 +46,9 @@ export default function PasswordSetupForm({ onDone }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <div>
-        <label htmlFor="setup-username" className={fieldLabelClass}>Usuario</label>
-        <input
+    <form onSubmit={submit} className="space-y-4">
+      <Field id="setup-username" label="Usuario" hint="Por ejemplo, marcos.nino">
+        <Input
           id="setup-username"
           value={username}
           onChange={(event) => setUsername(event.target.value)}
@@ -60,16 +59,12 @@ export default function PasswordSetupForm({ onDone }) {
           maxLength={30}
           required
           disabled={busy}
-          aria-describedby="setup-username-hint"
-          className={fieldClass}
+          hint="Por ejemplo, marcos.nino"
         />
-        <p id="setup-username-hint" className="mt-1 text-xs text-zinc-400">Por ejemplo, marcos.nino</p>
-      </div>
+      </Field>
       <PasswordField id="setup-password" label="Contraseña" value={password} onChange={setPassword} autoComplete="new-password" hint="Al menos 8 caracteres." disabled={busy} />
       {error && <Notice tone="error" inline>{error}</Notice>}
-      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt px-6 font-bold text-onbrand disabled:opacity-60 md:w-auto">
-        {busy ? "Guardando…" : "Crear usuario y contraseña"}
-      </button>
+      <Button type="submit" busy={busy} busyLabel="Guardando…" className="w-full md:w-auto">Crear usuario y contraseña</Button>
     </form>
   );
 }

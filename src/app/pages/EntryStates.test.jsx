@@ -146,6 +146,13 @@ describe("ChangePasswordPage (contraseña temporal)", () => {
     expect(screen.getByRole("alert").textContent).toMatch(/no es correcta/);
   });
 
+  it("cerrar sesión sale aunque no haya conexión", async () => {
+    api.logout.mockRejectedValueOnce(apiError("No se ha podido conectar con el servidor", 0));
+    const { onSignedOut } = setup();
+    await act(async () => fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" })));
+    expect(onSignedOut).toHaveBeenCalled();
+  });
+
   it("cerrar sesión", async () => {
     const { onSignedOut } = setup();
     await act(async () => fireEvent.click(screen.getByRole("button", { name: "Cerrar sesión" })));
