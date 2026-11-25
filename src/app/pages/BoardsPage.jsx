@@ -208,9 +208,9 @@ export default function BoardsPage({ user, onAccessLost }) {
         )}
       </RankingHero>
 
-      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={(id) => setSearchParams({ equipo: id }, { replace: true })} />}
-
       <RosterTabs active="pizarra" teamId={teamId} />
+
+      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={(id) => setSearchParams({ equipo: id }, { replace: true })} />}
 
       {error && <Notice tone="error">{error}</Notice>}
       {!error && !data && <p role="status" className="text-zinc-300">Cargando…</p>}

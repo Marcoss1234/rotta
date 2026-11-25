@@ -91,7 +91,8 @@ export default function PlayerProfileDialog({ player, onClose, onEdit = null, on
       className="!m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-md overflow-y-auto rounded-card bg-card p-0 font-body text-ink shadow-card ring-1 ring-line backdrop:bg-canvas/75 backdrop:backdrop-blur-sm"
     >
       {/* El personaje, con su nombre, dorsal y corona si la lleva. */}
-      <div className="relative h-72 bg-raised">
+      {/* Más bajo en el móvil (224 px) para que el nombre y los datos se vean antes; 288 px desde tableta. */}
+      <div className="relative h-56 bg-raised sm:h-72">
         <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-ink-muted">Cargando su personaje…</p>}>
           <AvatarStage look={lookOf(shown)} name={firstName} number={shown.number} position={shown.position} heightCm={shown.height_cm} crown={shown.crown} />
         </Suspense>

@@ -20,12 +20,12 @@ const WIDE = "(min-width: 1024px)";
 
 const playersLabel = (count) => (count === 1 ? "1 jugador" : `${count} jugadores`);
 
-// El dorsal, grande y neutro; el color del club solo en una rayita debajo.
+// El dorsal, grande y neutro (en gris, para que el nombre mande); el color del club solo en una rayita debajo.
 function Dorsal({ number }) {
   if (number === null || number === undefined) return null;
   return (
     <span className="flex shrink-0 flex-col items-center gap-1 pr-1">
-      <span className="font-display text-4xl font-extrabold leading-none tabular-nums text-ink">
+      <span className="font-display text-3xl font-extrabold leading-none tabular-nums text-ink-muted">
         <span className="sr-only">Dorsal </span>{number}
       </span>
       <span aria-hidden="true" className="h-1 w-5 rounded-full bg-club" />
@@ -39,7 +39,7 @@ function PlayerCardContent({ player }) {
     <>
       <Avatar name={player.name} picture={player.picture} className="h-12 w-12 text-sm" />
       <span className="min-w-0 flex-1 text-left">
-        <span className="block break-words font-display text-base font-bold leading-tight text-ink">{player.name}</span>
+        <span className="block break-words font-display text-lg font-extrabold leading-tight text-ink">{player.name}</span>
         <span className="mt-1.5 flex flex-wrap items-center gap-1">
           <PositionTag position={player.position} />
           {preferred.map((position) => (
@@ -281,9 +281,9 @@ export default function RosterPage({ user, onAccessLost }) {
         {canEdit && teams && <Button icon={UserPlus} onClick={openAdd}>Añadir</Button>}
       </RankingHero>
 
-      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} />}
-
       {teams && <RosterTabs active="plantilla" teamId={teamId} />}
+
+      {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} />}
 
       {error && <div className="sticky top-2 z-30 rounded-card bg-card"><Notice tone="error">{error}</Notice></div>}
       {!error && (!teams || !players) && (

@@ -188,4 +188,39 @@ describe("Plantilla", () => {
     await act(async () => fireEvent.keyDown(screen.getByRole("button", { name: /Mover a Marta Ruiz/ }), { key: "ArrowLeft" }));
     expect(onAccessLost).toHaveBeenCalled();
   });
+
+  it("ventanita de puesto: el foco empieza en su puesto actual, no en el primero", async () => {
+    await renderPage();
+    fireEvent.keyDown(screen.getByRole("button", { name: /Mover a Marta Ruiz/ }), { key: "Enter" });
+    expect(document.activeElement.textContent).toBe("Líbero");
+    expect(within(screen.getByRole("dialog", { name: /Marta Ruiz/ })).getAllByRole("button", { pressed: true }).map((item) => item.textContent)).toEqual(["Líbero"]);
+  });
+
+  it("chapas: el puesto se escribe a 12 px en su color, y el líbero lleva la chapa de su color", async () => {
+    await renderPage();
+    const marta = screen.getByRole("button", { name: /Mover a Marta Ruiz/ });
+    const role = within(marta).getByText("Líbero");
+    expect(role.className).toContain("text-xs");
+    expect(role.className).toContain("text-sky-300");
+    expect(within(marta).getByText("3").className).toContain("bg-sky-400");
+    expect(within(screen.getByRole("button", { name: /Mover a Lucía Pérez/ })).getByText("7").className).toContain("border-amber-400");
+  });
+
+  it("gradas vacías: una línea, sin asientos", async () => {
+    await renderPage();
+    const stands = screen.getByTestId("court-stands");
+    expect(stands.textContent).toContain("Todavía no hay familias en este equipo.");
+    expect(within(stands).queryAllByRole("listitem")).toHaveLength(0);
+  });
+
+  it("gradas con familias: sus asientos con cada persona", async () => {
+    api.listTeamFamily.mockResolvedValue([{ id: "f1", name: "Rosa Jiménez", picture: "" }]);
+    api.listTeams.mockResolvedValue(TEAMS);
+    api.listPlayers.mockResolvedValue([LUCIA]);
+    api.getPlayerProfile.mockImplementation(() => new Promise(() => {}));
+    await act(async () => {
+      render(<MemoryRouter><RosterPage user={COACH} onAccessLost={() => {}} /></MemoryRouter>);
+    });
+    expect(within(screen.getByTestId("court-stands")).getByText("Rosa")).toBeTruthy();
+  });
 });

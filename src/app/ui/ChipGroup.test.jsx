@@ -50,4 +50,31 @@ describe("ChipGroup", () => {
     render(<Controlled initial="central" />);
     expect(chip("Central").textContent).toBe("Central2");
   });
+
+  it("con scroll: difumina el borde por donde quedan opciones y deja de hacerlo al llegar al final", () => {
+    // jsdom no mide: se simula una fila de 300 px con 600 px de opciones.
+    const sizes = { scrollWidth: 600, clientWidth: 300 };
+    const restore = Object.keys(sizes).map((key) => {
+      const original = Object.getOwnPropertyDescriptor(HTMLElement.prototype, key);
+      Object.defineProperty(HTMLElement.prototype, key, { configurable: true, get: () => sizes[key] });
+      // Son de Element.prototype: basta con quitar la copia de HTMLElement.
+      return () => (original ? Object.defineProperty(HTMLElement.prototype, key, original) : delete HTMLElement.prototype[key]);
+    });
+    try {
+      render(<ChipGroup label="Equipo" scroll value="a" onChange={() => {}} options={[{ value: "a", label: "A" }, { value: "b", label: "B" }]} />);
+      const group = screen.getByRole("group", { name: "Equipo" });
+      expect(group.dataset.fade).toBe("derecha");
+      // (jsdom no conoce mask-image: la máscara se comprueba en el navegador; aquí, qué bordes se difuminan).
+      group.scrollLeft = 300;
+      fireEvent.scroll(group);
+      expect(group.dataset.fade).toBe("izquierda");
+    } finally {
+      restore.forEach((undo) => undo());
+    }
+  });
+
+  it("sin scroll no difumina nada", () => {
+    render(<Controlled initial="central" />);
+    expect(screen.getByRole("group").dataset.fade).toBeUndefined();
+  });
 });

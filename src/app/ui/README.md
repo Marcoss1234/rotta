@@ -14,7 +14,7 @@ Para verlos todos: `npm run demo` y abrir `/componentes` (solo existe en desarro
 | `CardHeader` | Título de una tarjeta | `title`, `subtitle`, `action` |
 | `Tabs` | Apartados dentro de una pantalla | `id` (de `useId()`), `items` (`id`, `label`, `icon`, `count`, `disabled`), `value`, `onChange`, `label`, `hasPanels` · teclado: flechas, Inicio, Fin (se salta las desactivadas) |
 | `TabPanel` | El contenido de cada pestaña | `tabsId` (el mismo `id` de `Tabs`), `tab`, `value` · enlazado con `aria-controls` y `aria-labelledby` |
-| `ChipGroup` | Elegir equipo, filtros, opciones | `options` (`value`, `label`, `count`), `value`, `onChange`, `label`, `multiple`, `scroll` |
+| `ChipGroup` | Elegir equipo, filtros, opciones | `options` (`value`, `label`, `count`), `value`, `onChange`, `label`, `multiple`, `scroll` (una fila que se desliza: difumina el borde por donde quedan opciones y trae la elegida a la vista) |
 | `Field` | Etiqueta, ayuda y error de un campo | `id`, `label`, `optional`, `hint`, `error` |
 | `Input`, `Textarea`, `Select` | Campos | los de HTML + `invalid`, `hint`, `error` (para enlazarlos) |
 | `Dialog` | Ventana o panel lateral | `title`, `description`, `onClose`, `busy`, `placement`: `center` o `side`, `footer` |

@@ -35,6 +35,15 @@ function Seat({ person }) {
 // Las gradas van debajo de la pista (también en el ordenador, donde la pista va en su columna), y cada fila
 // se llena desde el centro.
 export default function CourtStands({ family }) {
+  // Sin familias, solo una línea: no hace falta enseñar asientos vacíos.
+  if (family.length === 0) {
+    return (
+      <section aria-labelledby="stands-title" className="force-dark mx-auto mt-3 flex max-w-sm items-baseline justify-between gap-3 rounded-card bg-raised px-3 py-2.5 text-ink" data-testid="court-stands">
+        <h3 id="stands-title" className="font-display text-sm font-extrabold">Gradas</h3>
+        <p className="text-right text-xs text-ink-muted">Todavía no hay familias en este equipo.</p>
+      </section>
+    );
+  }
   const rowCount = Math.max(PHONE_MIN_ROWS, Math.ceil(family.length / PHONE_COLUMNS));
   const order = centerOut(PHONE_COLUMNS);
   const rows = Array.from({ length: rowCount }, (_, rowIndex) => {
@@ -50,7 +59,6 @@ export default function CourtStands({ family }) {
       <h3 id="stands-title" className="flex items-baseline justify-between font-display text-sm font-extrabold text-ink">
         Gradas <span className="font-body text-xs font-semibold text-ink-muted">{family.length}</span>
       </h3>
-      {family.length === 0 && <p className="mt-1 text-sm text-ink-muted">Todavía no hay familias en este equipo.</p>}
       <div className="mt-2 space-y-1 rounded-lg bg-void/70 p-1">
         {rows.map((row, rowIndex) => (
           <ul key={rowIndex} className="grid grid-cols-4 gap-1">

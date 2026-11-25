@@ -55,15 +55,17 @@ export function CourtDrawing({ beach, horizontal = false, showZones = true, stre
   );
 }
 
+// La chapa: el aro del color de su puesto (el mismo de PositionTag); el líbero, rellena de su color.
+// Debajo, el nombre y el puesto a 12 px, el puesto en su color. La pista va siempre en oscuro (force-dark).
 function Badge({ player, lifted = false }) {
-  const isLibero = player.position === "Líbero";
-  // El dorsal va en la chapa; debajo, el nombre y el puesto en pequeño para que no tape la pista.
   const role = player.position && player.position !== "Sin definir" ? player.position : "";
+  const tone = positionTone(player.position);
+  const libero = player.position === "Líbero";
   return (
-    <span className="flex w-[4.5rem] select-none flex-col items-center gap-0.5">
+    <span className="flex w-20 select-none flex-col items-center gap-0.5">
       <span
         className={`relative flex h-11 w-11 items-center justify-center rounded-full border-[3px] text-sm font-extrabold shadow-[0_3px_8px_rgba(0,0,0,0.55)] motion-safe:transition-transform ${
-          isLibero ? "border-amber-300 bg-amber-300 text-zinc-950" : "border-white bg-zinc-950 text-white"
+          libero ? tone.chip : `${tone.chip} bg-zinc-950 text-white`
         } ${lifted ? "scale-110" : ""}`}
       >
         {player.picture ? (
@@ -85,9 +87,9 @@ function Badge({ player, lifted = false }) {
           player.number ?? initials(player.name)
         )}
       </span>
-      <span className="flex max-w-full flex-col items-center rounded-md bg-black/75 px-1.5 py-px text-center leading-none backdrop-blur-[2px]">
-        <span className="max-w-full truncate text-[11px] font-semibold leading-4 text-snow">{shortName(player.name)}</span>
-        {role && <span className="max-w-full truncate pb-0.5 text-[9px] font-medium leading-3 tracking-wide text-zinc-300">{role}</span>}
+      <span className="flex max-w-full flex-col items-center rounded-md bg-black/75 px-1.5 py-0.5 text-center backdrop-blur-[2px]">
+        <span className="max-w-full truncate text-xs font-semibold leading-4 text-snow">{shortName(player.name)}</span>
+        {role && <span className={`max-w-full truncate text-xs font-medium leading-4 ${tone.label}`}>{role}</span>}
       </span>
     </span>
   );
@@ -123,9 +125,12 @@ function Token({ player, canEdit, hidden, onPointerDown, onPointerUp, onKeyDown 
 // Cada puesto con su color (el de PositionTag); el actual, marcado. Al tocar fuera, se cierra.
 function PositionPicker({ player, onPick, onClose }) {
   const dialogRef = useRef(null);
+  const currentRef = useRef(null);
   useEffect(() => {
     const dialog = dialogRef.current;
     dialog.showModal();
+    // El foco empieza en su puesto actual (no en el primero): así solo se ve una opción destacada.
+    currentRef.current?.focus();
     return () => dialog.close();
   }, []);
 
@@ -155,6 +160,7 @@ function PositionPicker({ player, onPick, onClose }) {
             return (
               <button
                 key={position}
+                ref={current ? currentRef : undefined}
                 type="button"
                 aria-pressed={current}
                 onClick={() => onPick(position)}
@@ -367,7 +373,7 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
         {onBench.length === 0 ? (
           <p className="mt-1 text-sm text-ink-muted">No hay nadie en el banquillo.</p>
         ) : (
-          <div className="mt-2 flex flex-wrap gap-2">
+          <div className="mt-2 flex flex-wrap gap-x-1.5 gap-y-2">
             {onBench.map((player) => (
               <Token
                 key={player.id}
