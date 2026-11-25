@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, Volleyball, X, Zap } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, UserPlus, Volleyball, X, Zap } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   answerAttendance,
@@ -1051,9 +1051,21 @@ export default function HomePage({ user, onAccessLost }) {
         />
       )}
       {pendingCount > 0 && (
-        <Link to={isAdmin ? "/app/usuarios" : "/app/solicitudes"} className="flex min-h-11 items-center justify-between gap-3 rounded-lg border border-tnt/60 bg-tnt/15 px-3 text-sm hover:bg-tnt/25">
-          <span>{pendingCount === 1 ? "1 persona espera acceso" : `${pendingCount} personas esperan acceso`}</span>
-          <span className="font-bold">Revisar</span>
+        // Aviso para entrenadores y administradores: una tarjeta del tema, con el número y a dónde lleva.
+        <Link
+          to={isAdmin ? "/app/usuarios" : "/app/solicitudes"}
+          data-testid="pending-access"
+          className="flex min-h-14 items-center gap-3 rounded-card bg-card px-3.5 py-2.5 text-ink shadow-card ring-1 ring-line transition hover:ring-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text"
+        >
+          <span className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-club-soft text-club-ui">
+            <UserPlus aria-hidden="true" className="h-5 w-5" />
+            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-club px-1 text-xs font-bold text-on-club ring-2 ring-card">{pendingCount}</span>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block text-sm font-bold">{pendingCount === 1 ? "1 persona espera acceso" : `${pendingCount} personas esperan acceso`}</span>
+            <span className="block text-xs text-ink-muted">Revísalas para darles entrada al club</span>
+          </span>
+          <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-ink-muted" />
         </Link>
       )}
 

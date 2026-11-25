@@ -1,23 +1,22 @@
-import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft } from "lucide-react";
-import { Link } from "react-router-dom";
+import { useCallback, useEffect, useId, useState } from "react";
+import { TriangleAlert } from "lucide-react";
 import { listPendingUsers, listTeams, reviewAccess } from "@/app/api.js";
 import Avatar from "@/app/components/Avatar.jsx";
 import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { accountLabel } from "@/app/roles.js";
-import { Notice } from "@/app/ui/index.js";
+import { Button, Card, EmptyState, Field, Notice, Select } from "@/app/ui/index.js";
 
-const fieldClass = "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white focus:border-white focus:outline-none";
-const labelClass = "mb-1.5 block text-xs font-semibold text-zinc-300";
+const UNVERIFIED = "Sin correo verificado";
 
 function RequestCard({ person, teams, onDone, onAccessLost }) {
+  const ids = useId();
   const [role, setRole] = useState("jugador");
   const [teamId, setTeamId] = useState("");
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(null);
   const [error, setError] = useState("");
 
   const decide = async (decision) => {
-    setBusy(true);
+    setBusy(decision.status);
     setError("");
     try {
       await reviewAccess(person.id, decision);
@@ -25,50 +24,51 @@ function RequestCard({ person, teams, onDone, onAccessLost }) {
     } catch (requestError) {
       if (requestError.status === 401 || requestError.status === 403) onAccessLost();
       setError(requestError.message);
-      setBusy(false);
+      setBusy(null);
     }
   };
 
   return (
-    <li className="space-y-3 rounded-2xl ring-1 ring-white/10 bg-panel p-3" data-testid="access-request">
+    <Card as="li" padding="sm" className="space-y-4 md:p-4" data-testid="access-request">
       <div className="flex items-center gap-3">
-        <Avatar name={person.name} picture={person.picture} className="h-10 w-10 text-sm" />
-        <div className="min-w-0">
-          <p className="break-words font-semibold">{person.name}</p>
-          <p className="break-words text-sm text-zinc-400">{accountLabel(person)}</p>
+        <Avatar name={person.name} picture={person.picture} className="h-11 w-11 text-sm" />
+        <div className="min-w-0 flex-1">
+          <p className="break-words font-display text-base font-bold leading-tight text-ink">{person.name}</p>
+          <p className="break-words text-sm text-ink-muted">{accountLabel(person)}</p>
+          {person.has_password && (
+            <span className="mt-1.5 inline-flex items-center gap-1 rounded-full bg-warning/10 px-2 py-0.5 text-xs font-bold text-warning-text ring-1 ring-inset ring-warning/40">
+              <TriangleAlert aria-hidden="true" className="h-3.5 w-3.5" />
+              {UNVERIFIED}
+            </span>
+          )}
         </div>
       </div>
-      {person.has_password && (
-        <Notice tone="warning" announce={false} size="sm">
-          El nombre lo ha escrito esa persona, sin correo verificado: confirma que es quien dice.
-        </Notice>
-      )}
-      <div className="grid grid-cols-2 gap-2">
-        <div>
-          <label htmlFor={`role-${person.id}`} className={labelClass}>Entra como</label>
-          <select id={`role-${person.id}`} value={role} disabled={busy} onChange={(event) => setRole(event.target.value)} className={fieldClass}>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+        <Field id={`${ids}-rol`} label="Entra como">
+          <Select id={`${ids}-rol`} value={role} disabled={Boolean(busy)} onChange={(event) => setRole(event.target.value)}>
             <option value="jugador">Jugador</option>
             <option value="familia">Familia</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor={`team-${person.id}`} className={labelClass}>Equipo</label>
-          <select id={`team-${person.id}`} value={teamId} disabled={busy} onChange={(event) => setTeamId(event.target.value)} className={fieldClass}>
+          </Select>
+        </Field>
+        <Field id={`${ids}-equipo`} label="Equipo">
+          <Select id={`${ids}-equipo`} value={teamId} disabled={Boolean(busy)} onChange={(event) => setTeamId(event.target.value)} hint={teamId ? undefined : "Elige su equipo para poder aceptar."}>
             <option value="" disabled>Elige equipo</option>
             {teams.map((team) => <option key={team.id} value={team.id}>{team.name.replace(/^Club /, "")}</option>)}
-          </select>
+          </Select>
+        </Field>
+        <div className="col-span-2 grid grid-cols-2 gap-2 lg:col-span-1 lg:flex">
+          <Button variant="secondary" disabled={Boolean(busy)} busy={busy === "rejected"} busyLabel="Guardando…" onClick={() => decide({ status: "rejected" })}>
+            Rechazar
+          </Button>
+          <Button disabled={Boolean(busy) || !teamId} busy={busy === "approved"} busyLabel="Guardando…" onClick={() => decide({ status: "approved", role, team_id: teamId })}>
+            Aceptar
+          </Button>
         </div>
       </div>
-      {error && <Notice tone="error" inline>{error}</Notice>}
-      <div className="grid grid-cols-2 gap-2">
-        <button type="button" disabled={busy} onClick={() => decide({ status: "rejected" })} className="min-h-11 rounded-full border border-white/30 text-sm font-semibold text-white hover:bg-white/5 disabled:opacity-50">
-          Rechazar
-        </button>
-        <button type="button" disabled={busy || !teamId} onClick={() => decide({ status: "approved", role, team_id: teamId })} className="min-h-11 rounded-full bg-tnt text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50">
-          {busy ? "Guardando…" : "Aceptar"}
-        </button>
-      </div>
-    </li>
+      {/* La ayuda va debajo de la fila (en el ordenador, dentro del campo descuadraba las etiquetas). */}
+      {!teamId && <p id={`${ids}-equipo-ayuda`} className="text-xs text-ink-muted">Elige su equipo para poder aceptar.</p>}
+      {error && <Notice tone="error" size="sm">{error}</Notice>}
+    </Card>
   );
 }
 
@@ -87,20 +87,23 @@ export default function AccessRequestsPage({ onAccessLost }) {
     listTeams().then(setTeams).catch(handleError);
   }, [handleError]);
 
+  const unverified = people?.some((person) => person.has_password);
+  const subtitle = people ? (people.length === 1 ? "1 persona espera acceso" : `${people.length} personas esperan acceso`) : undefined;
+
   return (
-    <div className="space-y-6">
-      <RankingHero title="Nuevos" subtitle={people ? `${people.length} esperando acceso` : ""} stacked>
-        <Link to="/app" className="flex min-h-11 shrink-0 items-center gap-1 rounded-full bg-white pl-2 pr-3 text-sm font-extrabold text-void hover:bg-zinc-200">
-          <ChevronLeft aria-hidden="true" className="h-4 w-4" />
-          Inicio
-        </Link>
-      </RankingHero>
+    <div className="space-y-5">
+      <RankingHero title="Solicitudes de acceso" subtitle={subtitle} />
 
       {error && <Notice tone="error">{error}</Notice>}
-      {!error && !people && <p role="status" className="text-zinc-300">Cargando…</p>}
-      {people?.length === 0 && <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">No hay nadie esperando acceso.</p>}
+      {!error && !people && <p role="status" className="text-sm text-ink-muted">Cargando…</p>}
+      {people?.length === 0 && <EmptyState>No hay nadie esperando acceso.</EmptyState>}
+      {unverified && (
+        <Notice tone="warning" announce={false}>
+          Quien entra con usuario y contraseña ha escrito su nombre sin un correo verificado: confirma que es quien dice antes de aceptarlo.
+        </Notice>
+      )}
       {people?.length > 0 && (
-        <ul className="space-y-2">
+        <ul className="space-y-3">
           {people.map((person) => (
             <RequestCard
               key={person.id}

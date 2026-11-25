@@ -31,11 +31,13 @@ const card = (name) => screen.getAllByTestId("access-request").find((item) => it
 beforeEach(() => vi.clearAllMocks());
 
 describe("AccessRequestsPage", () => {
-  it("lista quién espera, con el aviso de identidad solo para quien entra con contraseña", async () => {
+  it("lista quién espera; el aviso de identidad una vez arriba y una etiqueta en quien entra con contraseña", async () => {
     await renderPage();
     expect(screen.getAllByTestId("access-request")).toHaveLength(2);
-    expect(within(card("Ana Prueba")).getByText(/confirma que es quien dice/)).toBeTruthy();
-    expect(within(card("Luis Prueba")).queryByText(/confirma que es quien dice/)).toBeNull();
+    expect(screen.getAllByText(/confirma que es quien dice/)).toHaveLength(1);
+    expect(within(card("Ana Prueba")).getByText("Sin correo verificado")).toBeTruthy();
+    expect(within(card("Luis Prueba")).queryByText("Sin correo verificado")).toBeNull();
+    expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Solicitudes de acceso");
     expect(within(card("Luis Prueba")).getByText("luis@ejemplo.test")).toBeTruthy();
   });
 
@@ -44,6 +46,7 @@ describe("AccessRequestsPage", () => {
     api.reviewAccess.mockResolvedValue({});
     const ana = within(card("Ana Prueba"));
     expect(ana.getByRole("button", { name: "Aceptar" }).disabled).toBe(true);
+    expect(ana.getByText("Elige su equipo para poder aceptar.")).toBeTruthy();
     fireEvent.change(ana.getByLabelText("Entra como"), { target: { value: "familia" } });
     fireEvent.change(ana.getByLabelText("Equipo"), { target: { value: "escuela" } });
     await act(async () => fireEvent.click(ana.getByRole("button", { name: "Aceptar" })));
@@ -78,8 +81,9 @@ describe("AccessRequestsPage", () => {
     expect(onAccessLost).toHaveBeenCalled();
   });
 
-  it("sin nadie esperando, lo dice", async () => {
+  it("sin nadie esperando, lo dice (y sin aviso de identidad)", async () => {
     await renderPage([]);
     expect(screen.getByText("No hay nadie esperando acceso.")).toBeTruthy();
+    expect(screen.queryByText(/confirma que es quien dice/)).toBeNull();
   });
 });
