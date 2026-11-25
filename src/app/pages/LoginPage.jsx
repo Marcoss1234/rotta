@@ -1,9 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { getAuthConfig, loginWithGoogle, loginWithPassword, registerAccount } from "@/app/api.js";
-import PasswordField, { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
-import ClubCrest from "@/app/components/ClubCrest.jsx";
-import { useClubIdentity } from "@/app/clubIdentity.js";
-import { Notice } from "@/app/ui/index.js";
+import { AuthCard, AuthShell } from "@/app/components/auth/AuthShell.jsx";
+import { Badge, Button, Field, Input, Notice, PasswordInput, TabPanel, Tabs, cx } from "@/app/ui/index.js";
 
 const GOOGLE_SCRIPT = "https://accounts.google.com/gsi/client";
 const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
@@ -20,40 +18,70 @@ function loadGoogleScript() {
   });
 }
 
-function registrationProblem({ name, username, password }) {
-  if (name.trim().length < 2) return "Escribe tu nombre y apellidos";
-  if (!USERNAME_PATTERN.test(username.trim().toLowerCase())) {
-    return "El usuario debe tener de 3 a 30 caracteres: letras sin acentos, números, punto, guion o guion bajo";
+// Las mismas reglas que el servidor (backend/password_auth.py), para avisar en cada campo antes de enviar.
+// Se exporta para probarlo aparte.
+export function accessProblems({ registering, name, username, password }) {
+  const user = username.trim().toLowerCase();
+  const problems = {};
+  if (registering) {
+    if (name.trim().length < 2) problems.name = "Escribe tu nombre y apellidos";
+    if (!USERNAME_PATTERN.test(user)) problems.username = "Usa de 3 a 30 letras sin acentos, números o . _ -";
+    if (password.length < 8) problems.password = "Al menos 8 caracteres";
+    else if (user && password.toLowerCase().includes(user)) problems.password = "La contraseña no puede contener tu usuario";
+  } else {
+    if (!user) problems.username = "Escribe tu usuario";
+    if (!password) problems.password = "Escribe tu contraseña";
   }
-  if (password.length < 8) return "La contraseña debe tener al menos 8 caracteres";
-  if (password.toLowerCase().includes(username.trim().toLowerCase())) return "La contraseña no puede contener tu usuario";
-  return "";
+  return problems;
 }
 
-function PasswordAccess({ onSignedIn }) {
-  const [mode, setMode] = useState("login");
+const FIELD_ORDER = ["name", "username", "password"];
+const FIELD_IDS = { name: "account-name", username: "account-username", password: "account-password" };
+
+// Qué pasa después de crear la cuenta: así nadie se sorprende al ver «pendiente».
+const STEPS = ["Creas tu cuenta", "Aceptas los permisos de privacidad", "El club te da acceso a tu equipo"];
+
+function NextSteps() {
+  return (
+    <div className="rounded-card bg-raised p-4">
+      <p className="text-sm font-bold text-ink">Así funciona</p>
+      <ol className="mt-2.5 space-y-2">
+        {STEPS.map((step, index) => (
+          <li key={step} className="flex items-center gap-2.5 text-sm text-ink-muted">
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-card text-xs font-bold text-ink ring-1 ring-line">{index + 1}</span>
+            {step}
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function AccessForm({ registering, onSignedIn, onSwitch }) {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [problems, setProblems] = useState({});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const registering = mode === "register";
+  const refs = { name: useRef(null), username: useRef(null), password: useRef(null) };
 
-  const changeMode = (next) => {
-    setMode(next);
-    setError("");
-    setPassword("");
+  const change = (setter, key) => (event) => {
+    setter(event.target.value);
+    setProblems((current) => (current[key] ? { ...current, [key]: undefined } : current));
   };
 
   const submit = async (event) => {
     event.preventDefault();
-    const problem = registering ? registrationProblem({ name, username, password }) : "";
-    if (problem) {
-      setError(problem);
+    const found = accessProblems({ registering, name, username, password });
+    setProblems(found);
+    setError("");
+    const first = FIELD_ORDER.find((key) => found[key]);
+    if (first) {
+      refs[first].current?.focus();
       return;
     }
     setBusy(true);
-    setError("");
     try {
       const user = registering
         ? await registerAccount({ name: name.trim(), username: username.trim().toLowerCase(), password })
@@ -66,43 +94,18 @@ function PasswordAccess({ onSignedIn }) {
   };
 
   return (
-    <form onSubmit={submit} className="space-y-3">
-      <div role="group" aria-label="Tengo cuenta o soy nuevo" className="grid grid-cols-2 gap-1 rounded-lg bg-panel p-1">
-        {[["login", "Entrar"], ["register", "Crear cuenta"]].map(([value, label]) => (
-          <button
-            key={value}
-            type="button"
-            aria-pressed={mode === value}
-            onClick={() => changeMode(value)}
-            className={`min-h-10 rounded-md text-sm font-semibold ${mode === value ? "bg-white text-zinc-900" : "text-zinc-300 hover:text-white"}`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
+    <form onSubmit={submit} noValidate className="space-y-4">
       {registering && (
-        <div>
-          <label htmlFor="account-name" className={fieldLabelClass}>Nombre y apellidos</label>
-          <input
-            id="account-name"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            autoComplete="name"
-            maxLength={120}
-            required
-            disabled={busy}
-            className={fieldClass}
-          />
-        </div>
+        <Field id={FIELD_IDS.name} label="Nombre y apellidos" error={problems.name}>
+          <Input ref={refs.name} id={FIELD_IDS.name} value={name} onChange={change(setName, "name")} autoComplete="name" maxLength={120} required disabled={busy} error={problems.name} />
+        </Field>
       )}
-
-      <div>
-        <label htmlFor="account-username" className={fieldLabelClass}>Usuario</label>
-        <input
-          id="account-username"
+      <Field id={FIELD_IDS.username} label="Usuario" hint={registering ? "Por ejemplo, martin.garcia" : undefined} error={problems.username}>
+        <Input
+          ref={refs.username}
+          id={FIELD_IDS.username}
           value={username}
-          onChange={(event) => setUsername(event.target.value)}
+          onChange={change(setUsername, "username")}
           autoComplete="username"
           autoCapitalize="none"
           autoCorrect="off"
@@ -110,28 +113,78 @@ function PasswordAccess({ onSignedIn }) {
           maxLength={64}
           required
           disabled={busy}
-          aria-describedby={registering ? "account-username-hint" : undefined}
-          className={fieldClass}
+          hint={registering ? "Por ejemplo, martin.garcia" : undefined}
+          error={problems.username}
         />
-        {registering && <p id="account-username-hint" className="mt-1 text-xs text-zinc-400">Por ejemplo, martin.garcia</p>}
-      </div>
+      </Field>
+      <Field id={FIELD_IDS.password} label="Contraseña" hint={registering ? "Al menos 8 caracteres. Mejor una que no uses en otro sitio." : undefined} error={problems.password}>
+        <PasswordInput
+          ref={refs.password}
+          id={FIELD_IDS.password}
+          value={password}
+          onChange={change(setPassword, "password")}
+          autoComplete={registering ? "new-password" : "current-password"}
+          required
+          disabled={busy}
+          hint={registering ? "Al menos 8 caracteres. Mejor una que no uses en otro sitio." : undefined}
+          error={problems.password}
+        />
+      </Field>
 
-      <PasswordField
-        id="account-password"
-        label="Contraseña"
-        value={password}
-        onChange={setPassword}
-        autoComplete={registering ? "new-password" : "current-password"}
-        hint={registering ? "Al menos 8 caracteres. Mejor una que no uses en otro sitio." : "Si la has olvidado, pídele una nueva a un administrador del club."}
-        disabled={busy}
-      />
+      {!registering && (
+        <details className="group text-sm">
+          <summary className="inline-flex min-h-10 cursor-pointer list-none items-center font-semibold text-ink-muted underline-offset-2 hover:text-ink hover:underline [&::-webkit-details-marker]:hidden">
+            ¿Has olvidado la contraseña?
+          </summary>
+          <p className="mt-1 rounded-card bg-raised p-3 text-ink-muted">
+            Pídele una nueva a un administrador del club. Te dará una contraseña temporal para entrar y, al hacerlo, elegirás una tuya.
+          </p>
+        </details>
+      )}
 
-      {error && <Notice tone="error" inline>{error}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
 
-      <button type="submit" disabled={busy} className="min-h-11 w-full rounded-full bg-tnt font-bold text-onbrand disabled:opacity-60">
-        {busy ? "Un momento…" : registering ? "Crear cuenta" : "Entrar"}
-      </button>
+      <Button type="submit" size="lg" block busy={busy} busyLabel={registering ? "Creando la cuenta…" : "Entrando…"}>
+        {registering ? "Crear cuenta" : "Entrar"}
+      </Button>
+
+      {registering ? (
+        <NextSteps />
+      ) : (
+        <p className="text-center text-sm text-ink-muted">
+          ¿Es tu primera vez?{" "}
+          <button type="button" onClick={onSwitch} className="font-semibold text-ink underline underline-offset-2 hover:text-club-text">
+            Crea tu cuenta
+          </button>
+        </p>
+      )}
     </form>
+  );
+}
+
+function PasswordAccess({ onSignedIn }) {
+  const tabsId = useId();
+  const [mode, setMode] = useState("login");
+  return (
+    <div className="space-y-5">
+      <Tabs
+        id={tabsId}
+        label="Tengo cuenta o soy nuevo"
+        value={mode}
+        onChange={setMode}
+        items={[
+          { id: "login", label: "Entrar" },
+          { id: "register", label: "Crear cuenta" },
+        ]}
+      />
+      {/* Cada pestaña tiene su formulario: al cambiar, no se arrastra la contraseña escrita. */}
+      <TabPanel tabsId={tabsId} tab="login" value={mode}>
+        <AccessForm onSignedIn={onSignedIn} onSwitch={() => setMode("register")} />
+      </TabPanel>
+      <TabPanel tabsId={tabsId} tab="register" value={mode}>
+        <AccessForm registering onSignedIn={onSignedIn} />
+      </TabPanel>
+    </div>
   );
 }
 
@@ -160,34 +213,39 @@ function DemoAccess({ onSignedIn }) {
     }
   };
   return (
-    <section aria-labelledby="demo-title" className="space-y-2 rounded-2xl border border-tnt/40 bg-tnt/10 p-3">
-      <h2 id="demo-title" className="text-center text-xs font-extrabold text-orange-200">Demo · entra como</h2>
-      <ul className="space-y-1.5">
+    <section aria-labelledby="demo-title" className="space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="demo-title" className="font-display text-lg font-extrabold text-ink">Entra como</h2>
+        <Badge tone="rotta">Demo</Badge>
+      </div>
+      <ul className="space-y-2">
         {DEMO_ACCOUNTS.map((account) => (
           <li key={account.credential}>
             <button
               type="button"
               disabled={Boolean(busy)}
               onClick={() => enter(account.credential)}
-              className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl bg-panel px-3 py-2 text-left ring-1 ring-white/10 hover:bg-white/10 disabled:opacity-60"
+              className={cx(
+                "flex min-h-14 w-full items-center justify-between gap-3 rounded-card bg-raised px-4 py-2.5 text-left transition",
+                "hover:ring-1 hover:ring-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text disabled:opacity-60",
+              )}
             >
               <span className="min-w-0">
-                <span className="block font-bold text-white">{account.role}</span>
-                <span className="block truncate text-xs text-zinc-400">{account.name} · {account.hint}</span>
+                <span className="block font-bold text-ink">{account.role}</span>
+                <span className="block text-xs text-ink-muted">{account.name} · {account.hint}</span>
               </span>
-              <span className="shrink-0 text-sm font-extrabold text-orange-300">{busy === account.credential ? "Entrando…" : "Entrar"}</span>
+              <span className="shrink-0 text-sm font-bold text-club-text">{busy === account.credential ? "Entrando…" : "Entrar"}</span>
             </button>
           </li>
         ))}
       </ul>
-      {error && <Notice tone="error" inline className="justify-center text-center">{error}</Notice>}
+      {error && <Notice tone="error">{error}</Notice>}
     </section>
   );
 }
 
 export default function LoginPage({ onSignedIn }) {
   const buttonRef = useRef(null);
-  const club = useClubIdentity();
   // Google sigue en modo de prueba: el botón solo sale en /app?google, para quien ya entra con Google.
   const [googleReady, setGoogleReady] = useState(() => new URLSearchParams(window.location.search).has("google"));
   const [error, setError] = useState("");
@@ -241,44 +299,28 @@ export default function LoginPage({ onSignedIn }) {
   }, [googleReady, onSignedIn]);
 
   return (
-    <div className="flex min-h-screen flex-col bg-void px-6 py-8 font-body text-white">
-      <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center gap-6">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <ClubCrest className="h-20 w-20" alt={`Escudo de ${club.name}`} />
-          <div className="space-y-1">
-            <h1 className="font-display text-3xl font-extrabold">{club.name}</h1>
-            <p className="text-base leading-relaxed text-zinc-300">Plantillas, chat y entrenamientos del club.</p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          {DEMO && <DemoAccess onSignedIn={onSignedIn} />}
-          {!DEMO && googleReady && (
-            <>
-              <div ref={buttonRef} className="flex min-h-11 w-full justify-center" data-testid="google-button" />
-              {busy && <p role="status" className="text-center text-sm text-zinc-300">Entrando…</p>}
-              {error && <Notice tone="error" inline className="justify-center text-center">{error}</Notice>}
-              <div className="flex items-center gap-3 text-sm text-zinc-400" aria-hidden="true">
-                <span className="h-px flex-1 bg-white/15" />
-                o con usuario y contraseña
-                <span className="h-px flex-1 bg-white/15" />
+    <AuthShell brandAs="h1">
+      <AuthCard>
+        {DEMO ? (
+          <DemoAccess onSignedIn={onSignedIn} />
+        ) : (
+          <div className="space-y-5">
+            {googleReady && (
+              <div className="space-y-3">
+                <div ref={buttonRef} className="flex min-h-11 w-full justify-center" data-testid="google-button" />
+                {busy && <p role="status" className="text-center text-sm text-ink-muted">Entrando…</p>}
+                {error && <Notice tone="error">{error}</Notice>}
+                <div className="flex items-center gap-3 text-xs font-semibold text-ink-muted" aria-hidden="true">
+                  <span className="h-px flex-1 bg-line" />
+                  o con usuario y contraseña
+                  <span className="h-px flex-1 bg-line" />
+                </div>
               </div>
-            </>
-          )}
-
-          {!DEMO && <PasswordAccess onSignedIn={onSignedIn} />}
-
-          {!DEMO && <p className="text-center text-sm leading-relaxed text-zinc-400">
-            La primera vez, un administrador del club tendrá que aprobar tu acceso.
-          </p>}
-          {!DEMO && <a href="/" className="flex min-h-11 items-center justify-center text-sm font-semibold text-zinc-200 hover:text-white">
-            Volver a la web del club
-          </a>}
-          <a href="/app/privacidad" className="flex min-h-11 items-center justify-center text-xs font-semibold text-zinc-400 underline hover:text-white">
-            Política de privacidad
-          </a>
-        </div>
-      </div>
-    </div>
+            )}
+            <PasswordAccess onSignedIn={onSignedIn} />
+          </div>
+        )}
+      </AuthCard>
+    </AuthShell>
   );
 }

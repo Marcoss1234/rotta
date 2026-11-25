@@ -24,12 +24,12 @@ const HIGHLIGHTS = [
 function CourtLines() {
   return (
     <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-      <div className="absolute -bottom-28 -right-32 h-72 w-[30rem] rotate-[-18deg] rounded-sm border-[3px] border-ink/10 lg:-bottom-16 lg:h-[26rem] lg:w-[44rem]">
+      <div className="absolute -bottom-40 -right-40 h-72 w-[30rem] rotate-[-18deg] sm:-bottom-28 sm:-right-32 rounded-sm border-[3px] border-ink/10 lg:-bottom-16 lg:h-[26rem] lg:w-[44rem]">
         <span className="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 bg-ink/15" />
         <span className="absolute inset-y-0 left-[33.3%] w-[3px] bg-ink/10" />
         <span className="absolute inset-y-0 left-[66.6%] w-[3px] bg-ink/10" />
       </div>
-      <Volleyball className="absolute bottom-6 right-6 h-16 w-16 rotate-12 text-ink/10 lg:bottom-12 lg:right-14 lg:h-24 lg:w-24" strokeWidth={1.3} />
+      <Volleyball className="absolute bottom-6 right-6 hidden h-16 w-16 sm:block rotate-12 text-ink/10 lg:bottom-12 lg:right-14 lg:h-24 lg:w-24" strokeWidth={1.3} />
     </div>
   );
 }
@@ -76,7 +76,10 @@ export function AuthShell({ children, brandAs = "p", compact = false }) {
       <aside
         className={cx(
           "relative isolate shrink-0 overflow-hidden bg-raised px-6 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:flex-col lg:justify-between lg:px-14 lg:py-14",
-          compact ? "pb-14 pt-8 sm:pb-20 sm:pt-12" : "pb-16 pt-12 sm:pb-24 sm:pt-16",
+          // En la tableta la franja es más alta y el club queda en su centro: así no sobra media pantalla abajo.
+          "sm:flex sm:flex-col sm:justify-center",
+          compact ? "pb-14 pt-8 sm:min-h-[30vh] sm:pb-20 sm:pt-12" : "pb-16 pt-12 sm:min-h-[40vh] sm:pb-24 sm:pt-16",
+          "lg:min-h-0",
         )}
         data-testid="auth-club-panel"
       >
@@ -102,7 +105,7 @@ export function AuthShell({ children, brandAs = "p", compact = false }) {
 
       <main className="relative flex flex-1 flex-col px-4 sm:px-6 lg:justify-center lg:px-12 lg:py-12">
         {/* En el móvil la tarjeta sube un poco sobre la franja del club. */}
-        <div className="-mt-8 flex flex-1 flex-col sm:-mt-12 sm:justify-center sm:pb-12 lg:mt-0 lg:flex-none lg:pb-0">
+        <div className="-mt-8 flex flex-1 flex-col sm:-mt-12 sm:pb-12 lg:mt-0 lg:flex-none lg:pb-0">
           <div className="mx-auto w-full max-w-md">{children}</div>
         </div>
         <footer className="mx-auto flex w-full max-w-md flex-wrap items-center justify-between gap-x-4 gap-y-2 py-6 lg:mt-10 lg:py-0">

@@ -12,7 +12,7 @@ vi.mock("@/app/clubIdentity.js", () => ({
   useClubIdentity: () => ({ name: "Club Prueba", crest: "/escudo.png", custom: { name: true, crest: true } }),
 }));
 import * as api from "@/app/api.js";
-import LoginPage from "./LoginPage.jsx";
+import LoginPage, { accessProblems } from "./LoginPage.jsx";
 
 const apiError = (message, status) => Object.assign(new Error(message), { status });
 const setup = () => {
@@ -29,6 +29,38 @@ const submit = async (name) => act(async () => fireEvent.click(submitButton(name
 beforeEach(() => vi.clearAllMocks());
 
 describe("LoginPage", () => {
+  it("ya no está el enlace roto «Volver a la web del club»", () => {
+    setup();
+    expect(screen.queryByText(/Volver a la web/)).toBeNull();
+  });
+
+  it("entrar sin escribir nada: avisa en cada campo, el foco va al primero y no llama al servidor", async () => {
+    setup();
+    await submit("Entrar");
+    expect(screen.getByText("Escribe tu usuario")).toBeTruthy();
+    expect(screen.getByText("Escribe tu contraseña")).toBeTruthy();
+    expect(document.activeElement).toBe(screen.getByLabelText("Usuario"));
+    expect(screen.getByLabelText("Usuario").getAttribute("aria-invalid")).toBe("true");
+    expect(api.loginWithPassword).not.toHaveBeenCalled();
+    // Al escribir, el aviso de ese campo se va.
+    type("Usuario", "ana");
+    expect(screen.queryByText("Escribe tu usuario")).toBeNull();
+  });
+
+  it("¿Has olvidado la contraseña?: explica que la da un administrador", () => {
+    setup();
+    expect(screen.getByText("¿Has olvidado la contraseña?")).toBeTruthy();
+    expect(screen.getByText(/contraseña temporal/)).toBeTruthy();
+  });
+
+  it("crear cuenta cuenta los pasos que vienen; desde Entrar se llega con «Crea tu cuenta»", () => {
+    setup();
+    fireEvent.click(screen.getByRole("button", { name: "Crea tu cuenta" }));
+    expect(screen.getByText("Así funciona")).toBeTruthy();
+    expect(screen.getByText(/El club te da acceso/)).toBeTruthy();
+    expect(screen.getByRole("tab", { name: "Crear cuenta" }).getAttribute("aria-selected")).toBe("true");
+  });
+
   it("se ve el club y la política de privacidad; ni Google ni la demo salen sin pedirlos", () => {
     setup();
     expect(screen.getByRole("heading", { level: 1 }).textContent).toBe("Club Prueba");
@@ -107,7 +139,8 @@ describe("LoginPage", () => {
       type("Usuario", user);
       type("Contraseña", pass);
       await submit("Crear cuenta");
-      expect(screen.getByRole("alert").textContent).toMatch(message);
+      // El aviso va junto a su campo (no en un aviso general).
+      expect(screen.getByText(message)).toBeTruthy();
     }
     expect(api.registerAccount).not.toHaveBeenCalled();
   });
@@ -133,5 +166,19 @@ describe("LoginPage", () => {
     type("Contraseña", "secreta-123");
     await submit("Crear cuenta");
     expect(screen.getByRole("alert").textContent).toMatch(/ya está en uso/);
+  });
+});
+
+describe("accessProblems", () => {
+  const base = { registering: true, name: "Ana Prueba", username: "ana.prueba", password: "secreta-123" };
+  it("sin problemas con datos buenos", () => {
+    expect(accessProblems(base)).toEqual({});
+  });
+  it("el usuario se compara sin espacios ni mayúsculas", () => {
+    expect(accessProblems({ ...base, username: " ANA.prueba " })).toEqual({});
+    expect(accessProblems({ ...base, username: "ana", password: "xxANAxxxx" }).password).toMatch(/no puede contener/);
+  });
+  it("para entrar solo pide que no estén vacíos", () => {
+    expect(accessProblems({ registering: false, name: "", username: "A B", password: "x" })).toEqual({});
   });
 });
