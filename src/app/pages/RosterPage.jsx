@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useId, useState } from "react";
 import { motion } from "framer-motion";
-import { Mail, Phone, UserPlus } from "lucide-react";
+import { LayoutGrid, Mail, Phone, UserPlus, Users } from "lucide-react";
 import { useSearchParams } from "react-router-dom";
 import { createPlayer, deletePlayer, listPlayers, listTeamFamily, listTeams, updatePlayer } from "@/app/api.js";
 import Avatar from "@/app/components/Avatar.jsx";
@@ -8,10 +8,30 @@ import CourtBoard from "@/app/components/CourtBoard.jsx";
 import RosterTabs from "@/app/components/board/RosterTabs.jsx";
 import PlayerDialog from "@/app/components/PlayerDialog.jsx";
 import PlayerProfileDialog from "@/app/components/PlayerProfileDialog.jsx";
-import { GroupPicker, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { GroupPicker, PositionTag, positionTone, RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { isStaff, POSITIONS } from "@/app/roles.js";
 import { isBeachTeam } from "@/app/teams.js";
-import { Notice } from "@/app/ui/index.js";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
+import { Button, cx, EmptyState, Notice, TabPanel, Tabs } from "@/app/ui/index.js";
+
+// En el ordenador (desde 1024 px) la pista y los jugadores van en dos columnas; en el móvil y la tableta, en dos
+// vistas para no tener que bajar por toda la pista, el banquillo y las gradas hasta llegar a la lista.
+const WIDE = "(min-width: 1024px)";
+
+const playersLabel = (count) => (count === 1 ? "1 jugador" : `${count} jugadores`);
+
+// El dorsal, grande y neutro; el color del club solo en una rayita debajo.
+function Dorsal({ number }) {
+  if (number === null || number === undefined) return null;
+  return (
+    <span className="flex shrink-0 flex-col items-center gap-1 pr-1">
+      <span className="font-display text-4xl font-extrabold leading-none tabular-nums text-ink">
+        <span className="sr-only">Dorsal </span>{number}
+      </span>
+      <span aria-hidden="true" className="h-1 w-5 rounded-full bg-club" />
+    </span>
+  );
+}
 
 function PlayerCardContent({ player }) {
   const preferred = player.preferred_positions.filter((position) => position !== player.position);
@@ -19,54 +39,107 @@ function PlayerCardContent({ player }) {
     <>
       <Avatar name={player.name} picture={player.picture} className="h-12 w-12 text-sm" />
       <span className="min-w-0 flex-1 text-left">
-        <span className="block break-words font-display text-base font-bold leading-tight">{player.name}</span>
-        <span className="mt-1 flex flex-wrap items-center gap-1">
+        <span className="block break-words font-display text-base font-bold leading-tight text-ink">{player.name}</span>
+        <span className="mt-1.5 flex flex-wrap items-center gap-1">
           <PositionTag position={player.position} />
           {preferred.map((position) => (
-            <span key={position} className="rounded-full px-2 py-0.5 text-[10px] font-semibold text-zinc-400 ring-1 ring-inset ring-white/15">
+            <span key={position} className="rounded-full px-2 py-0.5 text-xs font-semibold text-ink-muted ring-1 ring-inset ring-line">
               <span className="sr-only">También prefiere </span>{position}
             </span>
           ))}
         </span>
+        {/* El contacto solo llega del servidor a entrenadores y administradores. */}
         {player.phone && (
-          <span className="mt-1 flex items-center gap-1.5 text-xs text-zinc-300">
-            <Phone aria-hidden="true" className="h-3 w-3 shrink-0 text-zinc-500" />{player.phone}
+          <span className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-muted">
+            <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />{player.phone}
           </span>
         )}
         {player.email && (
-          <span className="mt-0.5 flex items-center gap-1.5 text-xs text-zinc-300">
-            <Mail aria-hidden="true" className="h-3 w-3 shrink-0 text-zinc-500" /><span className="min-w-0 break-words">{player.email}</span>
+          <span className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-muted">
+            <Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><span className="min-w-0 break-words">{player.email}</span>
           </span>
         )}
       </span>
-      {player.number !== null && (
-        <span className="shrink-0 pr-1 font-display text-4xl font-extrabold leading-none tabular-nums text-white/90">
-          <span className="sr-only">Dorsal </span>{player.number}
-        </span>
-      )}
+      <Dorsal number={player.number} />
     </>
   );
 }
 
+// Cuántos hay en cada puesto, encima de la lista: el número grande y el punto del color de la posición.
 function SquadSummary({ players }) {
   const counts = POSITIONS
     .map((position) => ({ position, count: players.filter((player) => player.position === position).length }))
     .filter(({ count }) => count > 0);
   if (counts.length === 0) return null;
   return (
-    <ul aria-label="Jugadores por posición" className="-mx-5 flex gap-2 overflow-x-auto px-5 [scrollbar-width:none] md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden">
+    <ul aria-label="Jugadores por posición" className="flex flex-wrap gap-1.5">
       {counts.map(({ position, count }) => (
-        <li key={position} className="flex shrink-0 items-center gap-2 rounded-full bg-panel py-1.5 pl-1.5 pr-4 ring-1 ring-inset ring-white/10">
-          <span className="flex h-8 min-w-8 items-center justify-center rounded-full bg-tnt px-2 font-display text-base font-bold tabular-nums text-onbrand">{count}</span>
-          <span className="text-sm font-semibold text-zinc-200">{position}</span>
+        <li key={position} className="flex items-center gap-1.5 rounded-control bg-raised py-1 pl-2.5 pr-3">
+          <span aria-hidden="true" className={cx("h-2 w-2 rounded-full", positionTone(position).dot)} />
+          <span className="font-display text-base font-extrabold leading-none tabular-nums text-ink">{count}</span>
+          <span className="text-sm font-semibold text-ink-muted">{position}</span>
         </li>
       ))}
     </ul>
   );
 }
 
-const CARD_CLASS =
-  "relative flex min-h-[4.5rem] w-full items-center gap-3 overflow-hidden rounded-2xl bg-panel py-2.5 pl-3 pr-3 ring-1 ring-white/10";
+function PlayerList({ players, teamId, canEdit, onOpen, onAdd }) {
+  return (
+    <section aria-labelledby="squad-title" className="space-y-3">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="squad-title" className="font-display text-lg font-extrabold leading-tight text-ink">Jugadores</h2>
+        <p className="text-xs font-semibold text-ink-muted">{playersLabel(players.length)}</p>
+      </div>
+      <SquadSummary players={players} />
+      {players.length === 0 ? (
+        <EmptyState action={canEdit && <Button icon={UserPlus} size="sm" onClick={onAdd}>Añadir jugador</Button>}>
+          {canEdit ? "Este equipo aún no tiene jugadores. Añade el primero." : "Este equipo aún no tiene jugadores."}
+        </EmptyState>
+      ) : (
+        <ul key={teamId} className="space-y-2" data-testid="roster-list">
+          {players.map((player, index) => (
+            <motion.li
+              key={player.id}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.3 }}
+            >
+              <button
+                type="button"
+                onClick={() => onOpen(player)}
+                aria-label={`Ver la ficha de ${player.name}`}
+                className={cx(
+                  "flex min-h-[4.75rem] w-full items-center gap-3 rounded-card bg-card px-3 py-3 shadow-card ring-1 ring-line transition",
+                  "hover:ring-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
+                )}
+              >
+                <PlayerCardContent player={player} />
+              </button>
+            </motion.li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+// Mientras carga: la forma de la lista, sin saltos al llegar los datos.
+function RosterLoading() {
+  return (
+    <div className="space-y-2" aria-hidden="true" data-testid="roster-loading">
+      {[0, 1, 2].map((index) => (
+        <div key={index} className="flex min-h-[4.75rem] items-center gap-3 rounded-card bg-card px-3 shadow-card ring-1 ring-line">
+          <span className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-raised" />
+          <span className="flex-1 space-y-2">
+            <span className="block h-3.5 w-2/3 animate-pulse rounded-full bg-raised" />
+            <span className="block h-3 w-1/4 animate-pulse rounded-full bg-raised" />
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function RosterPage({ user, onAccessLost }) {
   const [teams, setTeams] = useState(null);
@@ -74,9 +147,12 @@ export default function RosterPage({ user, onAccessLost }) {
   const [players, setPlayers] = useState(null);
   const [family, setFamily] = useState([]);
   const [error, setError] = useState("");
-  // `editing` solo para añadir un jugador nuevo; tocar a uno abre su ficha (`viewing`), que ve todo el club.
+  // `editing`: el formulario de añadir ({ player: null }) o editar ({ player }); `viewing`: la ficha abierta.
   const [editing, setEditing] = useState(null);
   const [viewing, setViewing] = useState(null);
+  const [view, setView] = useState("pista");
+  const viewsId = useId();
+  const wide = useMediaQuery(WIDE);
   const canEdit = isStaff(user);
   const [searchParams] = useSearchParams();
   const requestedTeam = searchParams.get("equipo") ?? user.team_id;
@@ -128,12 +204,6 @@ export default function RosterPage({ user, onAccessLost }) {
     };
   }, [teamId]);
 
-  const finishEditing = (nextTeamId) => {
-    setEditing(null);
-    if (nextTeamId === teamId) load(teamId);
-    else setTeamId(nextTeamId);
-  };
-
   // Un 401 o 403 al guardar significa que ha cambiado tu acceso; el resto se muestra en el formulario.
   const guarded = async (action) => {
     try {
@@ -145,10 +215,23 @@ export default function RosterPage({ user, onAccessLost }) {
   };
 
   const save = async (values) => {
-    const saved = await guarded(() =>
-      editing.player ? updatePlayer(editing.player.id, values) : createPlayer(values),
-    );
-    finishEditing(saved.team_id);
+    const editingPlayer = editing.player;
+    const saved = await guarded(() => (editingPlayer ? updatePlayer(editingPlayer.id, values) : createPlayer(values)));
+    setEditing(null);
+    if (saved.team_id === teamId) load(teamId);
+    else setTeamId(saved.team_id);
+    // Si se editó desde su ficha y sigue en este equipo, se vuelve a la ficha ya al día.
+    if (editingPlayer && saved.team_id === teamId) setViewing({ ...editingPlayer, ...saved });
+  };
+
+  // Editar desde la ficha: se cierra la ficha y se abre el formulario; al cancelar, se vuelve a la ficha.
+  const startEditing = () => {
+    setEditing({ player: viewing });
+    setViewing(null);
+  };
+  const cancelEditing = () => {
+    if (editing.player) setViewing(editing.player);
+    setEditing(null);
   };
 
   // La chapa se mueve al momento en pantalla; si el servidor no lo guarda, vuelve a su sitio.
@@ -179,89 +262,79 @@ export default function RosterPage({ user, onAccessLost }) {
     }
   };
 
+  // Quitar desde la ficha: si falla, el aviso sale en la propia ficha.
   const remove = async () => {
-    try {
-      await guarded(() => deletePlayer(viewing.id));
-      setViewing(null);
-      load(teamId);
-    } catch (requestError) {
-      setError(requestError.message);
-    }
+    await guarded(() => deletePlayer(viewing.id));
+    setViewing(null);
+    load(teamId);
   };
 
+  const openAdd = () => setEditing({ player: null });
+  const court = players && (
+    <CourtBoard players={players} family={family} canEdit={canEdit} beach={isBeachTeam(teamId)} onMove={moveOnCourt} onChangePosition={changePosition} />
+  );
+  const list = players && <PlayerList players={players} teamId={teamId} canEdit={canEdit} onOpen={setViewing} onAdd={openAdd} />;
+
   return (
-    <div className="space-y-6">
-      <RankingHero
-        stacked
-        title="Plantilla"
-        subtitle={team ? `${team.name}${players ? ` · ${players.length === 1 ? "1 jugador" : `${players.length} jugadores`}` : ""}` : undefined}
-      >
-        {canEdit && teams && (
-          <button
-            type="button"
-            onClick={() => setEditing({ player: null })}
-            className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-4 text-sm font-bold text-void hover:bg-zinc-200"
-          >
-            <UserPlus aria-hidden="true" className="h-4 w-4" />
-            Añadir
-          </button>
-        )}
+    <div className="space-y-5">
+      <RankingHero title="Plantilla" subtitle={team ? `${team.name}${players ? ` · ${playersLabel(players.length)}` : ""}` : undefined}>
+        {canEdit && teams && <Button icon={UserPlus} onClick={openAdd}>Añadir</Button>}
       </RankingHero>
 
       {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} />}
 
       {teams && <RosterTabs active="plantilla" teamId={teamId} />}
 
-      {players && <SquadSummary players={players} />}
-
       {error && <div className="sticky top-2 z-30 rounded-card bg-card"><Notice tone="error">{error}</Notice></div>}
-      {!error && (!teams || !players) && <p role="status" className="text-zinc-300">Cargando…</p>}
-
-      {players && (
-        <CourtBoard players={players} family={family} canEdit={canEdit} beach={isBeachTeam(teamId)} onMove={moveOnCourt} onChangePosition={changePosition} />
+      {!error && (!teams || !players) && (
+        <>
+          <p role="status" className="sr-only">Cargando la plantilla…</p>
+          <RosterLoading />
+        </>
       )}
 
-      {players && (
-        <section aria-labelledby="squad-title" className="space-y-3">
-          <h2 id="squad-title" className="font-display text-2xl font-bold">Jugadores</h2>
-          {players.length === 0 && (
-            <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">
-              {canEdit ? "Este equipo aún no tiene jugadores. Añade el primero." : "Este equipo aún no tiene jugadores."}
-            </p>
-          )}
-          <ul key={teamId} className="grid gap-1.5 md:grid-cols-2">
-            {players.map((player, index) => (
-              <motion.li
-                key={player.id}
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.3 }}
-              >
-                <button
-                  type="button"
-                  onClick={() => setViewing(player)}
-                  aria-label={`Ver la ficha de ${player.name}`}
-                  className={`${CARD_CLASS} hover:ring-white/25`}
-                >
-                  <PlayerCardContent player={player} />
-                </button>
-              </motion.li>
-            ))}
-          </ul>
-        </section>
+      {players && wide && (
+        <div className="grid grid-cols-2 items-start gap-5" data-testid="roster-columns">
+          {court}
+          {list}
+        </div>
+      )}
+
+      {players && !wide && (
+        <div className="space-y-4">
+          <Tabs
+            id={viewsId}
+            label="Ver la pista o la lista de jugadores"
+            value={view}
+            onChange={setView}
+            items={[
+              { id: "pista", label: "Pista", icon: LayoutGrid },
+              { id: "jugadores", label: "Jugadores", icon: Users, count: players.length },
+            ]}
+          />
+          <TabPanel tabsId={viewsId} tab="pista" value={view}>{court}</TabPanel>
+          <TabPanel tabsId={viewsId} tab="jugadores" value={view}>{list}</TabPanel>
+        </div>
       )}
 
       {editing && (
         <PlayerDialog
-          player={null}
+          player={editing.player}
           teams={teams}
           defaultTeamId={teamId}
           onSave={save}
-          onDelete={() => {}}
-          onClose={() => setEditing(null)}
+          onClose={cancelEditing}
         />
       )}
-      {viewing && <PlayerProfileDialog player={viewing} onClose={() => setViewing(null)} onDelete={canEdit ? remove : null} onError={handleError} />}
+      {viewing && (
+        <PlayerProfileDialog
+          player={viewing}
+          onClose={() => setViewing(null)}
+          onEdit={canEdit ? startEditing : null}
+          onDelete={canEdit ? remove : null}
+          onError={handleError}
+        />
+      )}
     </div>
   );
 }
