@@ -40,18 +40,19 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 
 Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4b3`: servidor 643. Con Notas: web 231, servidor 643.
 
-## Estado exacto (26-11-2026)
+## Estado exacto (26-11-2026, tarde)
 
-- Rama `claude/amazing-euler-emy9p1`, último commit del rediseño `f6d4a84`; último commit `163d4b3`. Todo subido,
-  sin cambios pendientes.
-- Hecho del plan: base visual (tokens, identidades, piezas comunes), marco (navegación) e Inicio.
-- Sin empezar: el bloque 3 de Inicio y las fases 2 a 12 de abajo.
-- La app publicada (Render, https://rotta-709u.onrender.com) sale de `main`: ahí no se ve el rediseño. Para verlo,
-  Marcos puede cambiar en Render (Settings > Branch) la rama a `claude/amazing-euler-emy9p1`.
-- Marcos entra como administrador con su cuenta `marcos098` (aprobada en Atlas a mano). Google no sale en la app
-  publicada porque falta `GOOGLE_CLIENT_ID` en Render.
+- **Publicado:** Marcos pidió publicar lo hecho. `main` se adelantó (sin mezcla, avance directo) hasta `3be2727`
+  (pizarra en escritorio). Render publica `main` solo: ahí ya se ve el rediseño hasta ese punto.
+- Lo que se haga después va solo a la rama `claude/amazing-euler-emy9p1` y no se publica hasta que Marcos lo pida
+  (entonces, otra vez `git push origin HEAD:main` si `main` no tiene nada nuevo).
+- Hecho del plan: base visual, marco, Inicio, Plantilla, Ranking, Notas, Eventos, Jugados, directo, Premios y tienda,
+  chat (estilo WhatsApp), Perfil (pestañas) y Pizarra. Más el móvil compacto (raíz de 15 px).
+- Marcos entra como administrador con su cuenta `marcos098`. Google no sale en la app publicada porque falta
+  `GOOGLE_CLIENT_ID` en Render.
 - Para retomar: «sigue el plan de `docs/rediseno-premium.md` en la rama `claude/amazing-euler-emy9p1`». Antes de
-  las capturas hay que arrancar la demo (`npm run demo`; en esta sesión se paró sola por tiempo).
+  las capturas hay que arrancar la demo (`npm run demo`; se para sola al rato) y crear los datos de prueba que hagan
+  falta (partido de hoy para el directo, mensajes del chat).
 
 ## Siguiente (por orden)
 
