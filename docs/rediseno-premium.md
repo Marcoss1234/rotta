@@ -35,6 +35,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Chat estilo WhatsApp (pedido por Marcos): burbujas con piquito en la primera de cada tanda, la hora y los ✓ dentro de la burbuja, fondo con dibujos suaves de voley (`chat-wallpaper`), la fecha en pastilla que se queda arriba al bajar, campo de escribir en pastilla con la foto dentro y botón redondo de enviar; la papelera sale al tocar el mensaje (o al pasar el ratón) en vez de una en cada mensaje |
 | (este) | Pizarra: lista con pantalla fija, «Nueva» al lado del título, tarjetas del tema y tres columnas en escritorio. Editor: en escritorio la cancha ocupa todo el alto y los controles van en una columna a la derecha (antes debajo, con la cancha pequeña y los botones estirados); móvil y tableta igual que antes. Sin el naranja ni los degradados del TNT; lo elegido (2D/3D, Dibujar/Jugada, tamaño de pista) con el estilo de la identidad. La cancha de la pizarra sigue realista, como estaba decidido |
 | (este) | Editor de la pizarra en escritorio: el panel de la derecha ordenado por partes con título (Dibujar/Jugada arriba; en Dibujar, «Herramientas» y «Añadir a la pista» con botones grandes en rejilla de dos; en Jugada, «Reproducir» con el play y la línea de tiempo, «Velocidad» y «Cambiar la jugada»). Antes eran las tiras del móvil amontonadas abajo. Móvil y tableta, igual |
+| (este) | Componentes sin degradados de marca: «Partido en directo» (Inicio y vista previa de Apariencia) en rojo liso de directo; aviso de notificaciones con el tono del club; premios, destacados del entreno y coins en dorado liso (`bg-gold/10`) con texto oscuro fijo sobre el dorado; botón de ayuda del chat en azul liso |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -65,7 +66,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 7. ~~Chat~~ (hecho).
 8. ~~Perfil, apariencia y configuración~~ (hecho; falta repasar la vista previa de Apariencia, que aún pinta un degradado en «Partido en directo»).
 9. ~~Pizarra y editor 3D~~ (hecho).
-10. **Siguiente paso:** Componentes y gráficas comunes (`ui/charts`, `Dialog` con hoja, `Segmented`, `ListRow`), según se necesiten.
+10. ~~Componentes~~ (degradados quitados). **Siguiente paso:** repasar Inicio (pantalla fija, bienvenida más pequeña), Notas (estado y progreso en un bloque) y Jugados (resumen en una tira).
+10b. Componentes y gráficas comunes (`ui/charts`, `Dialog` con hoja, `Segmented`, `ListRow`), según se necesiten.
 11. Revisión responsive y de accesibilidad (360, 390, tableta, escritorio; claro y oscuro).
 12. Limpieza: estilos y alias antiguos sin uso (`bg-panel`, `text-zinc-…`, `bg-tnt`, `text-ember`, `buildTheme`),
     colores fijos y documentación (`CLAUDE.md`).

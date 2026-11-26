@@ -59,7 +59,7 @@ export default function HelpCard({ help, mine, onChange, onAccessLost }) {
             aria-pressed={help.joined}
             onClick={toggle}
             className={`min-h-11 w-full rounded-full font-display text-base font-extrabold disabled:opacity-60 ${
-              help.joined ? "border border-white/30 text-white hover:bg-white/10" : "bg-gradient-to-r from-sky-500 to-sky-600 text-snow shadow-[0_4px_14px_rgba(14,165,233,0.35)]"
+              help.joined ? "border border-white/30 text-white hover:bg-white/10" : "bg-sky-600 text-snow"
             }`}
           >
             {help.joined ? "Ya no puedo ir" : `Voy · +${help.coins} coins`}

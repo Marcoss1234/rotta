@@ -17,14 +17,14 @@ export default function HonorsBanner({ honors }) {
   return (
     <section aria-label="Premios" className="space-y-2.5">
       {champion && (
-        <div className="relative flex items-center gap-3 overflow-hidden rounded-2xl bg-gradient-to-r from-amber-500/25 via-amber-400/10 to-panel p-3 ring-1 ring-amber-300/40">
+        <div className="relative flex items-center gap-3 overflow-hidden rounded-card bg-gold/10 p-3 ring-1 ring-inset ring-gold/40">
           <div aria-hidden="true" className="pointer-events-none absolute -left-6 top-0 h-full w-24 bg-amber-300/20 blur-2xl" />
           <span className="relative">
             <Avatar name={champion.name} picture={champion.picture} className="h-12 w-12 text-lg ring-2 ring-amber-300" />
             <Crown aria-hidden="true" className="absolute -top-3 left-1/2 h-5 w-5 -translate-x-1/2 fill-amber-300 text-amber-500" />
           </span>
           <div className="relative min-w-0 flex-1">
-            <p className="text-[11px] font-extrabold text-amber-200">
+            <p className="text-xs font-extrabold text-amber-200">
               {honors.month_title} de {monthName(champion.period)}
             </p>
             <p className="truncate font-display text-lg font-extrabold text-white">{champion.name}</p>
@@ -36,7 +36,7 @@ export default function HonorsBanner({ honors }) {
       )}
       {honors.week.length > 0 && (
         <div className="rounded-2xl bg-panel p-3 ring-1 ring-white/5">
-          <p className="text-[11px] font-extrabold text-zinc-400">Premios de la semana</p>
+          <p className="text-xs font-extrabold text-zinc-400">Premios de la semana</p>
           <ul className="mt-2 grid grid-cols-3 gap-2">
             {honors.week.map((entry) => {
               const medal = MEDAL[entry.place] ?? MEDAL[3];
@@ -44,7 +44,7 @@ export default function HonorsBanner({ honors }) {
                 <li key={entry.player_id} className="flex min-w-0 flex-col items-center gap-1 text-center">
                   <Avatar name={entry.name} picture={entry.picture} className={`h-10 w-10 text-sm ring-2 ${medal.ring}`} />
                   <span className="w-full truncate text-xs font-bold text-white">{entry.name.split(" ")[0]}</span>
-                  <span className={`flex items-center gap-1 text-[11px] font-extrabold ${medal.text}`}>
+                  <span className={`flex items-center gap-1 text-xs font-extrabold ${medal.text}`}>
                     {medal.label} · <Coins aria-hidden="true" className="h-3 w-3" />+{entry.coins}
                   </span>
                 </li>

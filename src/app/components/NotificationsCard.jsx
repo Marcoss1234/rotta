@@ -102,7 +102,7 @@ export default function NotificationsCard({ variant = "card" }) {
 
   if (banner) {
     return (
-      <aside aria-label="Activar notificaciones" className="relative rounded-2xl border border-tnt/60 bg-gradient-to-r from-tnt/25 to-panel p-4">
+      <aside aria-label="Activar notificaciones" className="ui-card relative rounded-card bg-club-soft p-4 ring-1 ring-inset ring-club-ui/40">
         <button
           type="button"
           onClick={() => {

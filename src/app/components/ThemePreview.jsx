@@ -82,7 +82,7 @@ export default function ThemePreview({ style, mode, brand, accent, compact = fal
         <div aria-hidden="true" className="h-1.5 rounded-full" style={{ background: fill }} />
         <span className="text-[11px] font-semibold" style={{ color: theme.accentText }}>REC · COL · LIB</span>
       </div>
-      <div className="px-2.5 py-1.5 text-center font-bold" style={{ background: `linear-gradient(90deg, #DC2626, ${theme.liveClub}, ${theme.liveAccent})`, color: "#FFFFFF", borderRadius: control }}>
+      <div className="px-2.5 py-1.5 text-center font-bold" style={{ background: "#DC2626", color: "#FFFFFF", borderRadius: control }}>
         Partido en directo
       </div>
     </div>

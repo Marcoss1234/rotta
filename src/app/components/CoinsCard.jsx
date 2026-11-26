@@ -28,7 +28,7 @@ export default function CoinsCard({ coins }) {
   if (!coins) return null;
   const amount = coins.balance.toLocaleString("es-ES");
   return (
-    <section aria-labelledby="coins-title" className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-400/[0.14] via-panel to-panel p-4 ring-1 ring-amber-300/25">
+    <section aria-labelledby="coins-title" className="relative overflow-hidden rounded-card bg-gold/10 p-4 ring-1 ring-inset ring-gold/30">
       <div aria-hidden="true" className="pointer-events-none absolute -right-8 -top-10 h-36 w-36 rounded-full bg-amber-300/20 blur-3xl" />
       <div className="relative flex items-center gap-3">
         <span aria-hidden="true" className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950 shadow-[0_4px_18px_rgba(245,197,66,0.45)]">
@@ -38,7 +38,7 @@ export default function CoinsCard({ coins }) {
           <h2 id="coins-title" className="text-xs font-extrabold text-amber-200/80">Club Coins</h2>
           <p className="font-display text-3xl font-extrabold leading-none tabular-nums text-white">{amount}</p>
         </div>
-        <Link to="/app/tienda" className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-gradient-to-r from-amber-300 to-amber-500 pl-3 pr-2 text-sm font-extrabold text-void shadow-[0_4px_14px_rgba(245,197,66,0.35)]">
+        <Link to="/app/tienda" className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-gold pl-3 pr-2 text-sm font-extrabold text-[#2A1A00]">
           <ShoppingBag aria-hidden="true" className="h-4 w-4" />
           Tienda
           <ChevronRight aria-hidden="true" className="h-4 w-4" />

@@ -54,17 +54,17 @@ export default function TrainingStars({ teamId, onAccessLost }) {
             ))}
           </span>
           <p className="min-w-0 flex-1 text-sm text-zinc-300">
-            <span className="block text-[11px] font-extrabold text-amber-200">Los 3 mejores del entreno {dayLabel(data.date)}</span>
+            <span className="block text-xs font-extrabold text-amber-200">Los 3 mejores del entreno {dayLabel(data.date)}</span>
             El entrenador aún no los ha elegido. Cada uno gana <span className="font-bold text-amber-200">+{data.coins} coins</span>.
           </p>
         </section>
       );
     }
     return (
-      <section aria-label="Destacados del entreno" className="flex items-center gap-3 rounded-2xl bg-gradient-to-r from-amber-400/15 to-panel p-3 ring-1 ring-amber-300/30">
+      <section aria-label="Destacados del entreno" className="flex items-center gap-3 rounded-card bg-gold/10 p-3 ring-1 ring-inset ring-gold/30">
         <Star aria-hidden="true" className="h-6 w-6 shrink-0 fill-amber-300 text-amber-300" />
         <div className="min-w-0 flex-1">
-          <p className="text-[11px] font-extrabold text-amber-200">Destacados del entreno {dayLabel(data.date)}</p>
+          <p className="text-xs font-extrabold text-amber-200">Destacados del entreno {dayLabel(data.date)}</p>
           <p className="truncate font-bold">{data.stars.map((person) => person.name.split(" ")[0]).join(", ")}</p>
         </div>
         <div className="flex -space-x-2">
@@ -98,7 +98,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
   };
 
   return (
-    <section aria-labelledby="stars-title" className="space-y-3 rounded-2xl bg-gradient-to-br from-amber-400/15 via-panel to-panel p-4 ring-1 ring-amber-300/30">
+    <section aria-labelledby="stars-title" className="space-y-3 rounded-card bg-gold/10 p-4 ring-1 ring-inset ring-gold/30">
       <div className="flex items-start gap-3">
         <Star aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 fill-amber-300 text-amber-300" />
         <div className="min-w-0 flex-1">
@@ -146,7 +146,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
           type="button"
           disabled={busy || !changed}
           onClick={save}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-300 to-amber-500 font-display text-base font-extrabold text-void disabled:opacity-70"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-gold font-display text-base font-extrabold text-[#2A1A00] disabled:opacity-70"
         >
           {!changed && saved ? (
             <>
