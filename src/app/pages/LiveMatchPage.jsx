@@ -79,7 +79,7 @@ function ScoreSide({ side, name, score, sets, serving, timeouts, canScore, onPoi
   const us = side === "us";
   const content = (
     <>
-      <span className="flex items-center gap-1.5 truncate text-xs font-extrabold text-white/85">
+      <span className="flex items-center gap-1.5 truncate text-xs font-extrabold opacity-90">
         {serving && <Ball className="live-serve h-4 w-4 shrink-0" />}
         <span className="truncate">{name}</span>
       </span>
@@ -89,21 +89,23 @@ function ScoreSide({ side, name, score, sets, serving, timeouts, canScore, onPoi
       <span className="flex items-center gap-2">
         <span className="flex gap-1" aria-label={`${sets} sets ganados`}>
           {[0, 1, 2].map((index) => (
-            <span key={index} className={`h-2 w-2 rounded-full ${index < sets ? (us ? "bg-white" : "bg-sky-200") : "bg-white/20"}`} />
+            <span key={index} className={`h-2 w-2 rounded-full ${index < sets ? "bg-current" : "bg-current opacity-25"}`} />
           ))}
         </span>
         {timeouts > 0 && (
-          <span className="flex items-center gap-0.5 text-[10px] font-bold text-white/70">
+          <span className="flex items-center gap-0.5 text-xs font-bold opacity-80">
             <Timer aria-hidden="true" className="h-3 w-3" />
             {timeouts}
           </span>
         )}
       </span>
-      {canScore && <span className="mt-1 rounded-full bg-black/25 px-3 py-0.5 text-[11px] font-extrabold">+1 punto</span>}
+      {canScore && <span className="mt-1 rounded-full bg-black/25 px-3 py-0.5 text-xs font-extrabold">+1 punto</span>}
     </>
   );
-  const look = `live-score relative flex min-h-[clamp(8rem,22vh,13rem)] min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-3xl px-2 py-3 text-white ring-1 ring-white/15 ${
-    us ? "bg-gradient-to-br from-tnt via-tnt to-tntdeep shadow-[0_10px_40px_rgba(255,56,0,0.35)] text-onbrand" : "bg-gradient-to-br from-sky-500 via-sky-700 to-slate-900 shadow-[0_10px_40px_rgba(14,165,233,0.25)] text-snow"
+  // Nosotros, con el color del club; el rival, con su azul fijo (color con significado). Sin degradados; la textura
+  // y el remate de las esquinas, de cada identidad (live-score en index.css).
+  const look = `live-score relative flex min-h-[clamp(7rem,20vh,12rem)] min-w-0 flex-col items-center justify-center gap-1 overflow-hidden rounded-card px-2 py-3 ring-1 ring-white/15 ${
+    us ? "bg-club text-on-club" : "bg-rival text-snow"
   }`;
   if (!canScore) return <div className={look}>{content}</div>;
   return (
@@ -141,10 +143,10 @@ function useCourtFit() {
     observer.observe(node);
     return () => observer.disconnect();
   }, [node]);
-  // Media pista con la red arriba. En el móvil llena el hueco aunque no tenga las medidas exactas.
+  // Media pista con la red arriba, siempre con sus medidas de verdad (nunca estirada): tan grande como quepa.
   const phone = box.width < 640;
-  const width = phone ? box.width : Math.min(box.width, box.height / HALF_RATIO);
-  const height = phone ? Math.min(box.height, width * 1.15) : width * HALF_RATIO;
+  const width = Math.min(box.width, box.height / HALF_RATIO);
+  const height = width * HALF_RATIO;
   return { ref, vertical: true, phone, width: Math.floor(width), height: Math.floor(height) };
 }
 
@@ -170,7 +172,7 @@ function CourtPlayer({ player, stats, mvp, spot, canScore, onOpen, compact = fal
           {player.picture ? <img src={player.picture} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" /> : initialsOf(player.name)}
         </span>
         {player.number !== null && player.number !== undefined && (
-          <span style={compact ? { fontSize: "min(5.6cqmin, 3cqw)", minWidth: "min(8cqmin, 4.4cqw)", padding: "0.6cqmin 1.1cqmin" } : { fontSize: "5.6cqmin", minWidth: "8cqmin", padding: "0.6cqmin 1.1cqmin" }} className="absolute -bottom-[10%] -right-[30%] rounded-full bg-tnt text-center font-extrabold leading-none text-onbrand">
+          <span style={compact ? { fontSize: "min(5.6cqmin, 3cqw)", minWidth: "min(8cqmin, 4.4cqw)", padding: "0.6cqmin 1.1cqmin" } : { fontSize: "5.6cqmin", minWidth: "8cqmin", padding: "0.6cqmin 1.1cqmin" }} className="absolute -bottom-[10%] -right-[30%] rounded-full bg-club text-center font-extrabold leading-none text-on-club">
             {player.number}
           </span>
         )}
@@ -212,7 +214,7 @@ function BenchPlayer({ player, stats, mvp, canScore, onOpen, dragProps = null, d
   const bad = stats?.bad ?? 0;
   const inner = (
     <>
-      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tnt text-xs font-extrabold text-onbrand">{player.number ?? initialsOf(player.name)}</span>
+      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-club text-xs font-extrabold text-on-club">{player.number ?? initialsOf(player.name)}</span>
       <span className="whitespace-nowrap text-xs font-bold">{firstName(player.name)}</span>
       {(good > 0 || bad > 0) && (
         <span className="text-[10px] font-extrabold tabular-nums">
@@ -245,7 +247,7 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
   const quick = POSITION_ACTIONS[player.position] ?? [];
   const noPointRole = player.position === "Líbero" || player.position === "Colocador";
   const plusOne = (point) =>
-    point && <span className={`rounded-full px-1.5 text-[10px] font-extrabold ${point === "us" ? "bg-tnt text-onbrand" : "bg-sky-600 text-snow"}`}>+1</span>;
+    point && <span className={`rounded-full px-1.5 text-[10px] font-extrabold ${point === "us" ? "bg-club text-on-club" : "bg-rival text-snow"}`}>+1</span>;
   const column = (result) => (
     <div className="space-y-1.5">
       <p className={`flex items-center justify-center gap-1 text-xs font-extrabold ${result === "good" ? "text-emerald-300" : "text-red-300"}`}>
@@ -330,13 +332,13 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
       onClick={(event) => {
         if (event.target === dialogRef.current) onClose();
       }}
-      className="m-auto max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-sm overflow-y-auto rounded-2xl border border-white/10 bg-surface p-3 font-body text-white backdrop:bg-black/70"
+      className="ui-sheet !mx-auto !mb-0 !mt-auto w-full max-w-lg rounded-t-card pb-[env(safe-area-inset-bottom)] md:!m-auto md:w-[calc(100%-1.5rem)] md:max-w-sm md:rounded-card md:pb-0 max-h-[88dvh] overflow-y-auto border border-white/10 bg-surface p-3 font-body text-white backdrop:bg-black/70"
     >
       <div className="mb-3 flex items-center gap-3">
-        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-tnt font-display text-lg font-extrabold text-onbrand">{player.number ?? "–"}</span>
+        <span className="flex h-10 w-10 items-center justify-center rounded-full bg-club font-display text-lg font-extrabold text-on-club">{player.number ?? "–"}</span>
         <span className="min-w-0 flex-1">
           <span id="player-sheet-title" className="block truncate font-display text-lg font-extrabold">{player.name}</span>
-          <span className="block text-xs text-zinc-400">«+1» suma el punto a Club (naranja) o a {opponent} (azul)</span>
+          <span className="block text-xs text-zinc-400">«+1» suma el punto a Club (su color) o a {opponent} (azul)</span>
         </span>
         <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10">
           <X aria-hidden="true" className="h-5 w-5" />
@@ -386,9 +388,9 @@ function HelpDialog({ scorer, onClose }) {
         event.preventDefault();
         onClose();
       }}
-      className="m-auto flex max-h-[calc(100dvh-1.5rem)] w-[calc(100%-1.5rem)] max-w-sm flex-col rounded-2xl border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
+      className="ui-sheet !mx-auto !mb-0 !mt-auto w-full max-w-lg rounded-t-card pb-[env(safe-area-inset-bottom)] md:!m-auto md:w-[calc(100%-1.5rem)] md:max-w-sm md:rounded-card md:pb-0 flex max-h-[88dvh] flex-col overflow-hidden border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
     >
-      <div className="flex items-center gap-2 bg-gradient-to-r from-red-600 via-live-club to-live-accent px-4 py-3 text-snow">
+      <div className="flex items-center gap-2 border-b border-white/10 px-4 py-3 text-white">
         <Info aria-hidden="true" className="h-6 w-6 shrink-0" />
         <h2 id="live-help-title" className="font-display text-xl font-extrabold leading-tight">
           Cómo funciona
@@ -397,7 +399,7 @@ function HelpDialog({ scorer, onClose }) {
       <ul className="min-h-0 flex-auto space-y-2.5 overflow-y-auto px-4 py-3">
         {tips.map(([Icon, title, text]) => (
           <li key={title} className="flex gap-2.5">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-tnt/15 text-tnt ring-1 ring-tnt/30">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-club-soft text-club-ui ring-1 ring-club-ui/30">
               <Icon aria-hidden="true" className="h-3.5 w-3.5" />
             </span>
             <span className="min-w-0">
@@ -408,7 +410,7 @@ function HelpDialog({ scorer, onClose }) {
         ))}
       </ul>
       <div className="p-3 pt-0">
-        <button type="button" onClick={onClose} className="min-h-12 w-full rounded-xl bg-tnt font-display text-base font-extrabold text-onbrand">
+        <button type="button" onClick={onClose} className="ui-btn-primary min-h-12 w-full rounded-control bg-club font-display text-base font-extrabold text-on-club">
           Entendido
         </button>
       </div>
@@ -440,9 +442,9 @@ function MvpDialog({ game, suggested, onFinish, onCancel, changing = false }) {
         event.preventDefault();
         onCancel();
       }}
-      className="m-auto flex max-h-[85dvh] w-[calc(100%-1.5rem)] max-w-sm flex-col rounded-2xl border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
+      className="ui-sheet !mx-auto !mb-0 !mt-auto w-full max-w-lg rounded-t-card pb-[env(safe-area-inset-bottom)] md:!m-auto md:w-[calc(100%-1.5rem)] md:max-w-sm md:rounded-card md:pb-0 flex max-h-[85dvh] flex-col overflow-hidden border border-white/10 bg-surface p-0 font-body text-white backdrop:bg-black/70"
     >
-      <div className="bg-gradient-to-br from-amber-400 via-amber-500 to-orange-600 p-4 text-void">
+      <div className="bg-gold p-4 text-void">
         <p className="flex items-center gap-2 font-display text-xl font-extrabold">
           <Trophy aria-hidden="true" className="h-6 w-6" />
           <span id="mvp-title">{changing ? "Cambiar el MVP" : "¿Quién ha sido el MVP?"}</span>
@@ -464,7 +466,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel, changing = false }) {
                 onClick={() => setChosen(player.player_id)}
                 className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left ${selected ? "bg-amber-400/15 ring-2 ring-amber-300" : "bg-panel ring-1 ring-white/10"}`}
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-tnt text-sm font-extrabold text-onbrand">{player.number ?? initialsOf(player.name)}</span>
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-club text-sm font-extrabold text-on-club">{player.number ?? initialsOf(player.name)}</span>
                 <span className="min-w-0 flex-1 truncate font-bold">{player.name}</span>
                 {player.player_id === suggested && <span className="shrink-0 rounded-full bg-amber-300/20 px-2 py-0.5 text-[10px] font-extrabold text-amber-200">Sugerido</span>}
                 <span className="shrink-0 text-xs font-extrabold tabular-nums">
@@ -479,7 +481,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel, changing = false }) {
         <button type="button" onClick={() => onFinish(null)} className="min-h-11 rounded-lg border border-white/25 text-sm font-semibold hover:bg-white/5">
           Sin MVP
         </button>
-        <button type="button" disabled={!chosen} onClick={() => onFinish(chosen)} className="min-h-11 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-sm font-extrabold text-void disabled:opacity-50">
+        <button type="button" disabled={!chosen} onClick={() => onFinish(chosen)} className="min-h-11 rounded-control bg-gold text-sm font-extrabold text-void disabled:opacity-50">
           Guardar MVP
         </button>
       </div>
@@ -610,7 +612,7 @@ export default function LiveMatchPage({ onAccessLost }) {
 
   if (!game) {
     return (
-      <section className="fixed inset-0 z-50 flex items-center justify-center bg-void md:left-60">
+      <section className="fixed inset-0 z-50 flex items-center justify-center bg-void md:left-[17rem]">
         <p role="status" className="text-zinc-300">{error || "Cargando el partido…"}</p>
       </section>
     );
@@ -639,7 +641,7 @@ export default function LiveMatchPage({ onAccessLost }) {
   const opponentShort = game.opponent.length > 14 ? `${game.opponent.slice(0, 13)}…` : game.opponent;
 
   return (
-    <section aria-label={`Partido contra ${game.opponent}`} className="force-dark live-screen fixed inset-0 z-50 flex flex-col gap-2 overflow-hidden px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-[calc(0.5rem+env(safe-area-inset-top))] md:left-60 md:px-5 md:pb-5">
+    <section aria-label={`Partido contra ${game.opponent}`} className="force-dark live-screen fixed inset-0 z-50 flex flex-col gap-2 overflow-hidden px-3 pb-[calc(0.5rem+env(safe-area-inset-bottom))] pt-[calc(0.5rem+env(safe-area-inset-top))] md:left-[17rem] md:px-5 md:pb-5">
       {/* Cabecera */}
       <header className="flex h-11 shrink-0 items-center gap-2">
         <button type="button" onClick={() => (window.history.length > 1 ? navigate(-1) : navigate("/app?pestana=partidos"))} aria-label="Volver" className="-ml-1 flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
@@ -734,7 +736,7 @@ export default function LiveMatchPage({ onAccessLost }) {
           style={{ left: drag.x, top: drag.y }}
           className="pointer-events-none fixed z-[60] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
         >
-          <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-tnt text-lg font-extrabold text-onbrand shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-white bg-club text-lg font-extrabold text-on-club shadow-[0_10px_30px_rgba(0,0,0,0.6)]">
             {drag.number ?? initialsOf(drag.name)}
           </span>
           <span className="mt-1 whitespace-nowrap rounded-md bg-black/85 px-1.5 text-xs font-bold text-white">{firstName(drag.name)}</span>
@@ -745,7 +747,7 @@ export default function LiveMatchPage({ onAccessLost }) {
         <button
           type="button"
           onClick={() => setHideReport(false)}
-          className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 font-display text-base font-extrabold text-void"
+          className="flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-control bg-gold font-display text-base font-extrabold text-void"
         >
           <Trophy aria-hidden="true" className="h-5 w-5" />
           Ver el informe del partido
@@ -753,7 +755,7 @@ export default function LiveMatchPage({ onAccessLost }) {
       )}
       {/* Sin empezar: el entrenador lo arranca con un botón (entrar ya no lo empieza). */}
       {notStarted && (
-        <div className="shrink-0 rounded-2xl bg-gradient-to-r from-amber-400/15 to-panel p-3 ring-1 ring-amber-300/30">
+        <div className="shrink-0 rounded-card bg-panel p-3 ring-1 ring-white/10">
           {game.can_start ? (
             <>
               <p className="text-sm text-zinc-200">El partido aún no ha empezado. Cuando empiece, dale al botón y se avisa al equipo.</p>
@@ -761,14 +763,14 @@ export default function LiveMatchPage({ onAccessLost }) {
                 type="button"
                 disabled={busy}
                 onClick={() => send(() => startLive(liveId))}
-                className="mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-red-600 via-live-club to-live-accent font-display text-lg font-extrabold text-snow shadow-[0_8px_24px_rgba(255,56,0,0.35)] disabled:opacity-70"
+                className="ui-btn-primary mt-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-club font-display text-lg font-extrabold text-on-club disabled:opacity-70"
               >
-                <Play aria-hidden="true" className="h-5 w-5 fill-white" />
+                <Play aria-hidden="true" className="h-5 w-5 fill-current" />
                 {busy ? "Empezando…" : "Empezar partido"}
               </button>
             </>
           ) : (
-            <p className="text-sm font-semibold text-amber-100">El partido aún no ha empezado. Cuando empiece, verás aquí el marcador punto a punto.</p>
+            <p className="text-sm font-semibold text-zinc-200">El partido aún no ha empezado. Cuando empiece, verás aquí el marcador punto a punto.</p>
           )}
         </div>
       )}
@@ -788,7 +790,7 @@ export default function LiveMatchPage({ onAccessLost }) {
       {game.sets.length > 0 && (
         <ol aria-label="Sets" style={{ gridArea: "sets" }} className="flex items-center justify-center gap-1.5">
           {game.sets.map((set, index) => (
-            <li key={index} className={`rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums ${set.us > set.them ? "bg-tnt/20 text-orange-200" : "bg-sky-500/15 text-sky-200"}`}>
+            <li key={index} className={`rounded-md px-2 py-0.5 text-xs font-extrabold tabular-nums ${set.us > set.them ? "bg-club/25 text-white" : "bg-rival/40 text-sky-100"}`}>
               {set.us}-{set.them}
             </li>
           ))}
@@ -812,7 +814,7 @@ export default function LiveMatchPage({ onAccessLost }) {
               >
                 {/* Solo nuestro campo: la pista entera, el doble de alta, y se ve la mitad de abajo (la red arriba). */}
                 <div className="absolute inset-x-0 bottom-0" style={{ height: "200%" }}>
-                  <CourtDrawing beach={isBeachTeam(game.team_id)} showZones={false} stretch />
+                  <CourtDrawing beach={isBeachTeam(game.team_id)} showZones={false} themed />
                 </div>
                 {game.lineup.slice(0, COURT_PLACES).map((player, index) => {
                   const spot = HALF_SPOTS[index];
@@ -862,7 +864,7 @@ export default function LiveMatchPage({ onAccessLost }) {
       {/* En pantallas anchas, debajo del marcador: las últimas jugadas. */}
       <ol aria-label="Últimas jugadas" style={{ gridArea: "feed" }} className="live-feed hidden min-h-0 flex-col justify-end gap-1 overflow-hidden md:flex">
         {[...game.events].reverse().slice(0, 10).map((event, index) => {
-          const tone = event.type === "stat" ? (event.result === "good" ? "border-emerald-400" : "border-red-400") : event.type === "timeout" ? "border-zinc-500" : event.side === "us" ? "border-tnt" : "border-sky-500";
+          const tone = event.type === "stat" ? (event.result === "good" ? "border-emerald-400" : "border-red-400") : event.type === "timeout" ? "border-zinc-500" : event.side === "us" ? "border-club-ui" : "border-sky-500";
           return (
             <li key={event.id} style={{ opacity: 1 - index * 0.08 }} className={`truncate rounded-r-lg border-l-4 bg-white/[0.04] px-3 py-1.5 text-sm font-semibold text-zinc-200 ${tone}`}>
               {describe(event, game.lineup, game.opponent)}
@@ -887,11 +889,11 @@ export default function LiveMatchPage({ onAccessLost }) {
       {/* Botones de equipo */}
       {canScore && live && (
         <div className="grid h-14 shrink-0 grid-cols-4 gap-1.5 md:h-16">
-          <button type="button" disabled={busy} onClick={() => stat({ result: "good" })} className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-gradient-to-b from-emerald-500/25 to-emerald-500/10 text-emerald-100 ring-1 ring-emerald-400/40">
+          <button type="button" disabled={busy} onClick={() => stat({ result: "good" })} className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-emerald-500/15 text-emerald-100 ring-1 ring-emerald-400/40">
             <Check aria-hidden="true" className="h-5 w-5" />
             <span className="text-[10px] font-extrabold">Equipo</span>
           </button>
-          <button type="button" disabled={busy} onClick={() => stat({ result: "bad" })} className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-gradient-to-b from-red-500/25 to-red-500/10 text-red-100 ring-1 ring-red-400/40">
+          <button type="button" disabled={busy} onClick={() => stat({ result: "bad" })} className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-red-500/15 text-red-100 ring-1 ring-red-400/40">
             <X aria-hidden="true" className="h-5 w-5" />
             <span className="text-[10px] font-extrabold">Equipo</span>
           </button>
@@ -943,8 +945,8 @@ export default function LiveMatchPage({ onAccessLost }) {
       </div>
 
       {banner && (
-        <div key={banner.key} aria-live="assertive" className="live-banner pointer-events-none absolute inset-x-6 top-1/3 z-20 rounded-3xl p-5 text-center shadow-2xl">
-          <div className={`absolute inset-0 rounded-3xl ${banner.ours ? "bg-gradient-to-br from-tnt to-tntdeep text-onbrand" : "bg-gradient-to-br from-sky-700 to-slate-900 text-snow"}`} />
+        <div key={banner.key} aria-live="assertive" className={`live-banner pointer-events-none absolute inset-x-6 top-1/3 z-20 rounded-3xl p-5 text-center shadow-2xl ${banner.ours ? "text-on-club" : "text-snow"}`}>
+          <div className={`absolute inset-0 rounded-3xl ${banner.ours ? "bg-club" : "bg-rival"}`} />
           <p className="relative font-display text-2xl font-extrabold">{banner.text}</p>
           <p className="relative mt-1 font-display text-4xl font-extrabold tabular-nums">{banner.score}</p>
         </div>

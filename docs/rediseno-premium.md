@@ -28,6 +28,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Móvil compacto (pedido por Marcos): en el móvil todo un poco más pequeño en la misma proporción que en el ordenador (raíz de 15 px en `html.app-shell` por debajo de 768 px; letra mínima 12 px con `text-xs`; campos de texto en 16 px; relleno de tarjetas 16 px; títulos de pantalla 28 px en el móvil). Afecta a todas las pantallas a la vez |
 | (este) | Plantilla en el móvil: pantalla fija; la cancha entera con sus medidas de verdad a la izquierda (tan alta como quepa, `CourtBoard fit`) y el banquillo a la derecha en una columna que se desliza hacia abajo; la lista completa de jugadores en hoja con el botón «Jugadores»; la explicación de la pista tras ⓘ. En móviles muy bajos (667 px) la tarjeta se desliza un poco para no montar las chapas. Tableta y escritorio, como estaban |
 | (este) | Cabecera más pequeña en el móvil: título de pantalla de 24 px, subtítulo de 12 px, menos espacio debajo; pastillas de elegir (equipo, filtros) y pestañas Plantilla/Pizarra algo más bajas. En escritorio, igual que antes |
+| (este) | Directo e informe: sin degradados ni el naranja del TNT (marcador con el color del club y el rival en su azul fijo `rival`; textura del marcador según la identidad); media pista con sus medidas de verdad y la pista de la identidad (`CourtDrawing themed`); ventanas del jugador, ayuda y MVP en hoja desde abajo en el móvil; «Empezar partido» como botón principal; el informe con verde/rojo de victoria y derrota. Arreglo: la pizarra, el directo y el informe ya no quedan debajo de la barra lateral en escritorio (`md:left-[17rem]`). Texto corregido: «+1» ya no dice «naranja» |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -52,9 +53,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 2. ~~Plantilla y fichas de jugadores~~ (hecho; la nota de la ficha y el suelo del 3D se ven en Ranking y componentes).
 3. ~~Ranking y Notas~~ (hecho).
 4. ~~Eventos y calendario~~ (hecho).
-5. Partidos jugados y marcador en directo: **Partidos jugados hecho**. **Siguiente paso:** el directo
-   (`LiveMatchPage`: siempre oscuro y a pantalla completa; sus ventanas en hoja desde abajo).
-6. Premios y tienda.
+5. ~~Partidos jugados y marcador en directo~~ (hecho).
+6. **Siguiente paso:** Premios y tienda.
 7. Chat.
 8. Perfil, apariencia y configuración (que se vean las diferencias entre identidades).
 9. Pizarra y editor 3D (solo el entorno; sin perder espacio ni precisión).
@@ -82,6 +82,8 @@ lista al otro).
 
 ## Pendiente aparte (backend, no se toca en el rediseño)
 
+- Directo: si se termina un partido con los sets empatados (por ejemplo, a mitad del primero), el informe dice
+  «Derrota» (cuenta como victoria solo si se ganan más sets). Es lógica, no diseño.
 - Privacidad de las notas: los compañeros ven el detalle por habilidad de cualquier jugador y de todos los
   equipos; la política habla de «nota media» (detalle en `docs/ranking-y-notas.md`).
 

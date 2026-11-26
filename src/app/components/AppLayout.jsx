@@ -206,6 +206,7 @@ export default function AppLayout({ isAdmin, user, children }) {
       {showHint && <MenuHint hidden={hiddenLabels} onOpen={openMenu} onDismiss={() => setHintDismissed(true)} />}
 
       {/* Escritorio: el club arriba, las secciones agrupadas y tu perfil abajo. */}
+      {/* Ancho 17rem: la pizarra, el directo y el informe empiezan justo después (md:left-[17rem]). */}
       <aside className="app-sidebar hidden w-[17rem] shrink-0 flex-col gap-7 px-4 py-6 md:sticky md:top-0 md:flex md:h-screen">
         <div className="flex items-center gap-3 px-2">
           <ClubCrest className="h-10 w-10 shrink-0" />

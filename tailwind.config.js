@@ -82,6 +82,8 @@ export default {
         // Advertencias (ui/Notice tone="warning"): ámbar, distinto del dorado de los coins.
         warning: themed("warning"),
         "warning-text": themed("warning-text"),
+        // Azul del rival en el directo (marcador, +1, sets): fijo, con significado; el blanco encima da 7:1.
+        rival: "#075985",
         // Rojo de hoja de calendario (DateBadge): igual en todos los temas.
         calendar: themed("calendar"),
         background: "hsl(var(--background))",

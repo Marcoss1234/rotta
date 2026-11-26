@@ -891,7 +891,7 @@ export default function BoardEditorPage({ onAccessLost }) {
   };
 
   return (
-    <section ref={sectionRef} aria-label={`Pizarra: ${board.name}`} className={`force-dark fixed inset-0 z-50 flex flex-col bg-void pt-[env(safe-area-inset-top)] ${presenting ? "" : "md:left-60"}`}>
+    <section ref={sectionRef} aria-label={`Pizarra: ${board.name}`} className={`force-dark fixed inset-0 z-50 flex flex-col bg-void pt-[env(safe-area-inset-top)] ${presenting ? "" : "md:left-[17rem]"}`}>
       <header className={`relative shrink-0 border-b border-white/10 bg-panel px-2 pb-2 pt-1.5 ${presenting ? "hidden" : ""}`}>
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-tnt via-ember to-transparent text-onbrand" />
         <div className="flex items-center gap-1">
