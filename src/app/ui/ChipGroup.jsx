@@ -74,7 +74,7 @@ export function ChipGroup({ options, value, onChange, label, multiple = false, s
             aria-pressed={selected}
             onClick={() => pick(option.value)}
             className={cx(
-              "inline-flex min-h-10 shrink-0 items-center gap-1.5 rounded-chip px-3.5 text-sm font-semibold transition-ui",
+              "inline-flex min-h-9 shrink-0 items-center gap-1.5 rounded-chip px-3 text-sm md:min-h-10 md:px-3.5 font-semibold transition-ui",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
               // Lo elegido, con la manera de cada identidad (ui-selected en index.css); el resto, con contorno.
               selected ? "ui-selected" : "text-ink-muted ring-1 ring-inset ring-line hover:text-ink hover:ring-control",

@@ -111,7 +111,7 @@ export default {
         // Escala de Premium deportivo: 12 · 14 · 16 · 20 · 24 (las de Tailwind: xs, sm, base, xl, 2xl) y estas tres.
         // xs: 12 px como mínimo también en el móvil compacto (allí 1 rem son 15 px).
         xs: ["max(0.75rem, 12px)", { lineHeight: "1rem" }],
-        title: ["1.75rem", { lineHeight: "1.05" }],
+        title: ["1.5rem", { lineHeight: "1.1" }],
         display: ["2.5rem", { lineHeight: "1" }],
         hero: ["4rem", { lineHeight: "0.9" }],
       },

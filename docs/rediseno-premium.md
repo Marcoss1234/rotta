@@ -27,6 +27,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Partidos jugados: pantalla fija en el móvil (cabecera con «Partidos» al lado, tipo de partido y resumen fijos; la lista se desliza por dentro); resultado y sets más compactos; MVP e informe en una misma franja; formulario de partido en hoja |
 | (este) | Móvil compacto (pedido por Marcos): en el móvil todo un poco más pequeño en la misma proporción que en el ordenador (raíz de 15 px en `html.app-shell` por debajo de 768 px; letra mínima 12 px con `text-xs`; campos de texto en 16 px; relleno de tarjetas 16 px; títulos de pantalla 28 px en el móvil). Afecta a todas las pantallas a la vez |
 | (este) | Plantilla en el móvil: pantalla fija; la cancha entera con sus medidas de verdad a la izquierda (tan alta como quepa, `CourtBoard fit`) y el banquillo a la derecha en una columna que se desliza hacia abajo; la lista completa de jugadores en hoja con el botón «Jugadores»; la explicación de la pista tras ⓘ. En móviles muy bajos (667 px) la tarjeta se desliza un poco para no montar las chapas. Tableta y escritorio, como estaban |
+| (este) | Cabecera más pequeña en el móvil: título de pantalla de 24 px, subtítulo de 12 px, menos espacio debajo; pastillas de elegir (equipo, filtros) y pestañas Plantilla/Pizarra algo más bajas. En escritorio, igual que antes |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 

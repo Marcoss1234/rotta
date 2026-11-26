@@ -412,12 +412,17 @@
   display: block;
   width: 1.5rem;
   height: 3px;
-  margin-bottom: 0.625rem;
+  margin-bottom: 0.375rem;
   background-color: rgb(var(--c-rotta-text));
 }
 :root[data-rotta="tinta"] .app-page-header {
-  padding-bottom: 1rem;
+  padding-bottom: 0.625rem;
   box-shadow: 0 1px 0 rgb(var(--c-line));
+}
+
+@media (min-width: 768px) {
+  :root[data-rotta="tinta"] .app-page-header { padding-bottom: 1rem; }
+  :root[data-rotta="lima"] .app-page-header h1::before { margin-bottom: 0.625rem; }
 }
 
 /* Hoja desde abajo (ui/Dialog placement sheet o auto): entra deslizándose. */

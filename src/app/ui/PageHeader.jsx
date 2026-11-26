@@ -9,10 +9,10 @@ import { cx } from "./cx.js";
 export function PageHeader({ title, subtitle, actions, stacked = false, className }) {
   return (
     // Los botones van al lado del título (no debajo) para que la cabecera ocupe una sola franja.
-    <header className={cx("app-page-header gap-x-3 gap-y-3", stacked ? "flex flex-col" : "grid grid-cols-[minmax(0,1fr)_auto] items-end justify-between", className)}>
+    <header className={cx("app-page-header gap-x-3 gap-y-2 md:gap-y-3", stacked ? "flex flex-col" : "grid grid-cols-[minmax(0,1fr)_auto] items-end justify-between", className)}>
       <div className="min-w-0">
         <h1 className="font-title text-title text-ink md:text-display">{title}</h1>
-        {subtitle && <p className="mt-1.5 text-sm text-ink-muted">{subtitle}</p>}
+        {subtitle && <p className="mt-0.5 text-xs text-ink-muted md:mt-1.5 md:text-sm">{subtitle}</p>}
       </div>
       {actions && <div className={stacked ? "flex min-h-11 items-center" : "shrink-0"}>{actions}</div>}
     </header>

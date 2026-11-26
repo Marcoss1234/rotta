@@ -299,9 +299,9 @@ export default function RosterPage({ user, onAccessLost }) {
   // Jugadores; debajo, la cancha entera ajustada al alto que queda (con el banquillo debajo) o la lista, que se
   // desliza por dentro. En escritorio, cancha y lista lado a lado.
   return (
-    <div className={phone ? "flex h-full min-h-0 flex-col gap-3" : "space-y-5"}>
+    <div className={phone ? "flex h-full min-h-0 flex-col gap-2.5" : "space-y-5"}>
       <RankingHero title="Plantilla" subtitle={team ? `${team.name}${players ? ` · ${playersLabel(players.length)}` : ""}` : undefined}>
-        {canEdit && teams && <Button icon={UserPlus} onClick={openAdd}>Añadir</Button>}
+        {canEdit && teams && <Button size="sm" icon={UserPlus} onClick={openAdd}>Añadir</Button>}
       </RankingHero>
 
       {teams && <RosterTabs active="plantilla" teamId={teamId} />}

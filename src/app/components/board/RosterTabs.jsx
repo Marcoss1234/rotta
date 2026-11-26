@@ -21,7 +21,7 @@ export default function RosterTabs({ active, teamId }) {
             to={teamId ? `${path}?equipo=${teamId}` : path}
             aria-current={current ? "page" : undefined}
             className={cx(
-              "-mb-px flex min-h-11 items-center gap-2 border-b-2 px-0.5 text-sm font-semibold transition",
+              "-mb-px flex min-h-10 items-center md:min-h-11 gap-2 border-b-2 px-0.5 text-sm font-semibold transition",
               "focus-visible:rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
               current ? "border-club-ui text-ink" : "border-transparent text-ink-muted hover:border-line hover:text-ink",
             )}
