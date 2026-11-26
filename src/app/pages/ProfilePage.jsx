@@ -1,5 +1,6 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, LogOut, Shirt, Shuffle, Sparkles, Trash2, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, CircleUser, IdCard, LogOut, Palette, Shirt, Shuffle, Sparkles, Trash2, UserCog, XCircle } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import { deleteAvatar, getCoins, getProfile, logout, saveCharacter, updateProfile, uploadAvatar } from "@/app/api.js";
 import { prepareAvatar } from "@/app/avatarImage.js";
 import CharacterEditor from "@/app/character/CharacterEditor.jsx";
@@ -15,7 +16,8 @@ import PasswordChangeForm from "@/app/components/PasswordChangeForm.jsx";
 import PasswordSetupForm from "@/app/components/PasswordSetupForm.jsx";
 import { fieldClass, fieldLabelClass } from "@/app/components/PasswordField.jsx";
 import { accountLabel, POSITIONS, roleLabel } from "@/app/roles.js";
-import { Notice } from "@/app/ui/index.js";
+import { Notice, PageHeader, TabPanel, Tabs } from "@/app/ui/index.js";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 
 const PREFERRED = POSITIONS.filter((position) => position !== "Sin definir");
 const MAX_PREFERRED = 3;
@@ -117,15 +119,14 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 
   return (
     // Mientras se edita, el personaje se queda arriba y más pequeño para ver cada cambio.
-    <section className={`overflow-hidden rounded-3xl bg-gradient-to-b from-tnt/30 via-surface to-void ring-1 ring-white/10 ${editing ? "sticky top-0 z-20 shadow-xl shadow-black/60" : "relative"}`} aria-label="Tu ficha">
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-10 mx-auto h-64 w-64 rounded-full bg-tnt/30 blur-3xl" />
+    <section className={`force-dark stage overflow-hidden rounded-card text-white ${editing ? "sticky top-0 z-20 shadow-overlay" : "relative"}`} aria-label="Tu ficha">
       {player?.number !== null && player?.number !== undefined && (
         <span aria-hidden="true" className="pointer-events-none absolute -right-3 top-6 select-none font-display text-[10rem] font-extrabold leading-none text-white/[0.07]">
           {player.number}
         </span>
       )}
 
-      <div className={`relative ${editing ? "h-[15rem] md:h-[19rem]" : "h-[22rem] md:h-[26rem]"}`}>
+      <div className={`relative ${editing ? "h-[14rem] md:h-[19rem]" : "h-[18rem] md:h-[24rem]"}`}>
         {with3D ? (
           <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-zinc-400">Cargando tu personaje…</p>}>
             <AvatarStage look={look} name={user.name.split(" ")[0]} number={player?.number} position={player?.position} heightCm={heightCm} crown={crown} playRef={playRef} focus={editing ? focus : null} />
@@ -144,7 +145,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 
       {/* Debajo del personaje, para no taparle las piernas. */}
       <div className={`relative px-4 pb-4 pt-3 ${editing ? "hidden" : ""}`}>
-          <h1 className="break-words font-display text-4xl font-extrabold leading-none tracking-tight">{user.name}</h1>
+          <h2 className="break-words font-title text-3xl leading-none">{user.name}</h2>
           <p className="mt-1.5 text-sm font-semibold text-white/85">
             {roleLabel(user.role)}{user.also_plays && user.role !== "jugador" ? " · también juega" : ""}
             {profile.team_name ? ` · ${shortTeam(profile.team_name)}` : ""}
@@ -159,11 +160,11 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
           )}
           {with3D && !editing && (
             <div className="pointer-events-auto mt-3 grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => playRef.current?.()} className="flex min-h-11 items-center justify-center gap-1.5 rounded-full border border-white/25 bg-black/30 text-sm font-bold backdrop-blur hover:bg-white/10">
+              <button type="button" onClick={() => playRef.current?.()} className="flex min-h-11 items-center justify-center gap-1.5 rounded-control border border-white/25 bg-black/30 text-sm font-bold backdrop-blur hover:bg-white/10">
                 <Sparkles aria-hidden="true" className="h-4 w-4" />
                 Celebrar
               </button>
-              <button type="button" onClick={onEdit} className="flex min-h-11 items-center justify-center gap-1.5 rounded-full bg-tnt text-sm font-bold text-onbrand">
+              <button type="button" onClick={onEdit} className="ui-btn-primary flex min-h-11 items-center justify-center gap-1.5 rounded-control bg-club text-sm font-bold text-on-club">
                 <Shirt aria-hidden="true" className="h-4 w-4" />
                 Editar personaje
               </button>
@@ -190,7 +191,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCancel, onSave, owned }) {
   const changed = !sameLook(draft, saved);
   return (
-    <section aria-labelledby="character-title" className="space-y-4 rounded-3xl border border-tnt/40 bg-panel p-4">
+    <section aria-labelledby="character-title" className="ui-card space-y-4 rounded-card bg-card p-card ring-2 ring-club-ui/40">
       <div className="flex items-center justify-between gap-3">
         <h2 id="character-title" className="font-display text-2xl font-bold">Tu personaje</h2>
         <button type="button" onClick={() => onChange(randomLook(draft))} className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
@@ -201,11 +202,11 @@ function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCan
       <p className="text-sm text-zinc-400">Es el mismo que sale en la pizarra cuando el entrenador prepara una jugada.</p>
       <CharacterEditor look={draft} onChange={onChange} onTabChange={onTabChange} owned={owned} />
       {error && <Notice tone="error">{error}</Notice>}
-      <div className="sticky bottom-0 z-30 grid grid-cols-2 gap-2 bg-panel pt-2">
-        <button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-full border border-white/30 font-semibold hover:bg-white/5 disabled:opacity-50">
+      <div className="sticky bottom-0 z-30 grid grid-cols-2 gap-2 bg-card pt-2">
+        <button type="button" disabled={busy} onClick={onCancel} className="min-h-12 rounded-control bg-raised font-semibold text-ink ring-1 ring-inset ring-control hover:bg-overlay disabled:opacity-50">
           Cancelar
         </button>
-        <button type="button" disabled={busy || !changed} onClick={onSave} className="min-h-12 rounded-full bg-tnt font-bold text-onbrand disabled:opacity-50">
+        <button type="button" disabled={busy || !changed} onClick={onSave} className="ui-btn-primary min-h-12 rounded-control bg-club font-bold text-on-club disabled:opacity-50">
           {busy ? "Guardando…" : "Guardar"}
         </button>
       </div>
@@ -224,8 +225,8 @@ function Stats({ profile }) {
   return (
     <dl className="grid grid-cols-2 gap-2 md:grid-cols-4">
       {tiles.map(({ label, value, small, icon: Icon }) => (
-        <div key={label} className="rounded-2xl bg-panel p-3">
-          <dt className="flex items-center gap-1 text-xs text-zinc-400">
+        <div key={label} className="ui-card rounded-card bg-card p-3">
+          <dt className="flex items-center gap-1 text-xs text-ink-muted">
             {Icon && <Icon aria-hidden="true" className="h-3.5 w-3.5" />}
             {label}
           </dt>
@@ -238,10 +239,10 @@ function Stats({ profile }) {
 
 function Card({ title, hint, children }) {
   return (
-    <section className="space-y-3 rounded-3xl bg-panel p-4">
+    <section className="ui-card space-y-3 rounded-card bg-card p-card">
       <div>
-        <h2 className="font-display text-lg font-bold">{title}</h2>
-        {hint && <p className="text-sm text-zinc-400">{hint}</p>}
+        <h2 className="font-title text-lg text-ink">{title}</h2>
+        {hint && <p className="text-sm text-ink-muted">{hint}</p>}
       </div>
       {children}
     </section>
@@ -323,6 +324,10 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
   const [characterBusy, setCharacterBusy] = useState(false);
   const [characterError, setCharacterError] = useState("");
   const [coins, setCoins] = useState(null);
+  // Secciones en pestañas (Premium deportivo, pantalla fija): en el ordenador la ficha va siempre a la izquierda.
+  const wide = useMediaQuery("(min-width: 1024px)");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabsId = "perfil";
 
   const handleError = useCallback((requestError, show) => {
     if (requestError.status === 401 || requestError.status === 403) {
@@ -425,8 +430,22 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
   const inputDisabled = saving;
   const look = savedLook(profile);
 
-  return (
-    <div className="space-y-6">
+  const tabs = [
+    ...(wide ? [] : [{ id: "ficha", label: "Ficha", icon: IdCard }]),
+    { id: "datos", label: "Datos", icon: UserCog },
+    { id: "apariencia", label: "Apariencia", icon: Palette },
+    { id: "cuenta", label: "Cuenta", icon: CircleUser },
+  ];
+  const requestedTab = searchParams.get("seccion");
+  const tab = tabs.some((item) => item.id === requestedTab) ? requestedTab : tabs[0].id;
+  const chooseTab = (id) => {
+    const next = new URLSearchParams(searchParams);
+    next.set("seccion", id);
+    setSearchParams(next, { replace: true });
+  };
+
+  const ficha = (
+    <div className="space-y-3">
       <Hero
         profile={profile}
         look={draft ?? look}
@@ -463,6 +482,21 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
 
       {player && <Stats profile={profile} />}
 
+    </div>
+  );
+
+  // Pantalla fija en el móvil (Premium deportivo): arriba el título y las pestañas (Ficha, Datos, Apariencia,
+  // Cuenta); cada una se desliza por dentro. En escritorio: tu ficha fija a la izquierda y las pestañas a la derecha.
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
+      <PageHeader title="Perfil" subtitle={profile.user.name} />
+      <div className="flex min-h-0 flex-1 flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
+      {wide && <div className="lg:sticky lg:top-8">{ficha}</div>}
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+        <Tabs id={tabsId} label="Secciones del perfil" value={tab} onChange={chooseTab} items={tabs} className="shrink-0 [&>button]:px-1.5 [&>button]:text-xs min-[400px]:[&>button]:text-sm" />
+        <div className="-mx-gutter min-h-0 flex-1 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:overflow-visible md:px-0" data-testid="profile-scroll">
+          {!wide && <TabPanel tabsId={tabsId} tab="ficha" value={tab}>{ficha}</TabPanel>}
+          <TabPanel tabsId={tabsId} tab="datos" value={tab}>
       <form onSubmit={save} className="space-y-4">
         <Card title="Sobre ti">
           <div>
@@ -530,7 +564,11 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
         )}
       </form>
 
-      <ThemeSettingsCard isAdmin={user.role === "admin"} />
+          </TabPanel>
+          <TabPanel tabsId={tabsId} tab="apariencia" value={tab}>
+            <ThemeSettingsCard isAdmin={user.role === "admin"} />
+          </TabPanel>
+          <TabPanel tabsId={tabsId} tab="cuenta" value={tab} className="space-y-4">
 
       <NotificationsCard />
 
@@ -589,6 +627,10 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
           Cerrar sesión
         </button>
       </Card>
+          </TabPanel>
+        </div>
+      </div>
+      </div>
     </div>
   );
 }
