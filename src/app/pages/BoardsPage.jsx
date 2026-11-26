@@ -5,10 +5,10 @@ import { createBoard, deleteBoard, listBoards, listTeams } from "@/app/api.js";
 import ConfirmDialog from "@/app/components/board/ConfirmDialog.jsx";
 import BoardScene, { CourtFrame } from "@/app/components/board/BoardScene.jsx";
 import RosterTabs from "@/app/components/board/RosterTabs.jsx";
-import { GroupPicker, RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
 import { boardKindLabel, emptyBoard, loadClubPlayers } from "@/app/boards.js";
 import { isBeachTeam } from "@/app/teams.js";
-import { Notice } from "@/app/ui/index.js";
+import { Button, Notice, PageHeader } from "@/app/ui/index.js";
 
 // "Hoy", "Ayer", "Hace 3 días" o la fecha.
 function updatedLabel(iso) {
@@ -35,7 +35,7 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
       <button
         type="button"
         onClick={onOpen}
-        className="group flex w-full items-stretch gap-3 overflow-hidden rounded-2xl border border-white/5 bg-gradient-to-br from-white/[0.06] to-panel p-2.5 text-left transition-colors hover:border-white/25"
+        className="ui-card group flex w-full items-stretch gap-3 overflow-hidden rounded-card bg-card p-2.5 text-left transition-ui hover:ring-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text"
       >
         <span className="relative w-20 shrink-0">
           <CourtFrame half={board.court === "half"} beach={beach} className="w-20 shadow-[0_6px_18px_rgba(0,0,0,0.5)]">
@@ -43,15 +43,15 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
           </CourtFrame>
           {recording && (
             <span aria-hidden="true" className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-tnt shadow-[0_4px_14px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-110 text-onbrand">
-                <Play className="h-4 w-4 translate-x-px fill-white text-white" />
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-club text-on-club shadow-[0_4px_14px_rgba(0,0,0,0.6)] transition-transform group-hover:scale-110">
+                <Play className="h-4 w-4 translate-x-px fill-current" />
               </span>
             </span>
           )}
         </span>
         <span className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 py-0.5 pr-10">
-          <span className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold">
-            <span className="text-ember">{boardKindLabel(board.kind)}</span>
+          <span className="flex flex-wrap items-center gap-1.5 text-xs font-bold">
+            <span className="text-club-ui">{boardKindLabel(board.kind)}</span>
             {board.private && (
               <span className="flex items-center gap-1 rounded bg-sky-400/15 px-1.5 py-px text-sky-300">
                 <Lock aria-hidden="true" className="h-2.5 w-2.5" />
@@ -64,13 +64,13 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
               <span className="rounded bg-white/10 px-1.5 py-px text-zinc-300">Borrador</span>
             ))}
           </span>
-          <span className="block break-words font-display text-lg font-extrabold leading-tight">{board.name}</span>
-          <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-zinc-400">
+          <span className="block break-words font-title text-base leading-tight text-ink">{board.name}</span>
+          <span className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-semibold text-ink-muted">
             {recording ? (
-              <span className="flex items-center gap-1 text-zinc-200">
+              <span className="flex items-center gap-1 text-ink">
                 <Play aria-hidden="true" className="h-3 w-3 fill-current" />
                 {seconds(recording.duration_ms)}
-                {touches > 0 && <span className="text-zinc-400">· {touches} {touches === 1 ? "toque" : "toques"}</span>}
+                {touches > 0 && <span className="text-ink-muted">· {touches} {touches === 1 ? "toque" : "toques"}</span>}
               </span>
             ) : (
               <span>Sin jugada grabada</span>
@@ -197,34 +197,35 @@ export default function BoardsPage({ user, onAccessLost }) {
   const duplicate = (board) =>
     create({ team_id: board.team_id, name: `${board.name} (copia)`.slice(0, 60), kind: board.kind, court: board.court, published: false, steps: board.steps, recording: board.recording });
 
+  // Pantalla fija en el móvil (Premium deportivo): cabecera (con «Nueva» al lado del título), Plantilla/Pizarra y el
+  // equipo arriba; las jugadas se deslizan por dentro. En escritorio, a todo el ancho y en tres columnas.
   return (
-    <div className="space-y-6">
-      <RankingHero stacked title="Pizarra" subtitle={team?.name}>
-        {data?.can_create && (
-          <button type="button" disabled={busy} onClick={() => create(emptyBoard(teamId))} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-white px-3 text-sm font-extrabold text-void hover:bg-zinc-200 disabled:opacity-60">
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            Nueva
-          </button>
-        )}
-      </RankingHero>
+    <div className="flex h-full min-h-0 flex-col gap-2.5 md:h-auto md:gap-4">
+      <PageHeader
+        title="Pizarra"
+        subtitle={team?.name}
+        actions={data?.can_create && <Button size="sm" icon={Plus} disabled={busy} onClick={() => create(emptyBoard(teamId))}>Nueva</Button>}
+      />
 
       <RosterTabs active="pizarra" teamId={teamId} />
 
       {teams && <GroupPicker groups={teams} groupId={teamId} onChange={(id) => setSearchParams({ equipo: id }, { replace: true })} />}
 
       {error && <Notice tone="error">{error}</Notice>}
-      {!error && !data && <p role="status" className="text-zinc-300">Cargando…</p>}
+      {!error && !data && <p role="status" className="text-ink-muted">Cargando…</p>}
+
+      <div className="-mx-gutter min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:overflow-visible md:px-0" data-testid="boards-scroll">
 
       {data?.boards.length === 0 && (
-        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-panel px-4 py-8 text-center">
-          <p className="font-display text-xl font-extrabold">{data.can_edit ? "Todavía no hay jugadas" : "Aún no hay jugadas"}</p>
-          <p className="max-w-xs text-sm text-zinc-400">
+        <div className="flex flex-col items-center gap-3 rounded-card border border-dashed border-line bg-raised px-4 py-8 text-center">
+          <p className="font-title text-xl text-ink">{data.can_edit ? "Todavía no hay jugadas" : "Aún no hay jugadas"}</p>
+          <p className="max-w-xs text-sm text-ink-muted">
             {data.can_edit
               ? "Coloca a tus jugadores, dibuja la jugada o créala paso a paso, y publícala para que la vea el equipo."
               : "Cuando el entrenador publique una jugada, aparecerá aquí. Mientras, puedes hacerte las tuyas: solo las ves tú."}
           </p>
           {data.can_create && (
-            <button type="button" disabled={busy} onClick={() => create(emptyBoard(teamId))} className="flex min-h-11 items-center gap-1.5 rounded-full bg-tnt px-4 text-sm font-extrabold text-onbrand disabled:opacity-60">
+            <button type="button" disabled={busy} onClick={() => create(emptyBoard(teamId))} className="ui-btn-primary flex min-h-11 items-center gap-1.5 rounded-control bg-club px-4 text-sm font-extrabold text-on-club disabled:opacity-60">
               <Plus aria-hidden="true" className="h-4 w-4" />
               Crear la primera jugada
             </button>
@@ -242,13 +243,13 @@ export default function BoardsPage({ user, onAccessLost }) {
           .map(([key, title, list], _index, groups) => (
             <section key={key} aria-label={title} className="space-y-2">
               {groups.length > 1 && (
-                <h2 className="flex items-center gap-2 px-1 font-display text-sm font-extrabold text-zinc-300">
+                <h2 className="flex items-center gap-2 px-1 font-title text-sm text-ink-muted">
                   {key === "mine" && <Lock aria-hidden="true" className="h-3.5 w-3.5 text-sky-300" />}
                   {title}
                   {key === "mine" && <span className="font-body text-xs font-semibold normal-case not-italic tracking-normal text-zinc-500">· solo las ves tú</span>}
                 </h2>
               )}
-              <ul className="stagger-in grid gap-2.5 sm:grid-cols-2">
+              <ul className="stagger-in grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
                 {list.map((board) => (
                   <BoardCard
                     key={board.id}
@@ -266,6 +267,7 @@ export default function BoardsPage({ user, onAccessLost }) {
               </ul>
             </section>
           ))}
+      </div>
       {deleting && (
         <ConfirmDialog
           message={`¿Seguro que quieres borrar «${deleting.name}»? No se puede recuperar.`}

@@ -130,12 +130,12 @@ function VideoDialog({ video, onClose }) {
       <video src={video.url} controls playsInline className="mx-auto mt-3 max-h-[50dvh] rounded-lg bg-black" />
       <div className={`mt-4 grid gap-2 ${canShare ? "grid-cols-2" : "grid-cols-1"}`}>
         {canShare && (
-          <button type="button" onClick={share} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-tnt text-sm font-bold text-onbrand">
+          <button type="button" onClick={share} className="flex min-h-11 items-center justify-center gap-1.5 rounded-lg bg-club text-sm font-bold text-on-club">
             <Share2 aria-hidden="true" className="h-4 w-4" />
             Compartir
           </button>
         )}
-        <a href={video.url} download={video.name} className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-bold ${canShare ? "border border-white/30 text-white" : "bg-tnt text-onbrand"}`}>
+        <a href={video.url} download={video.name} className={`flex min-h-11 items-center justify-center gap-1.5 rounded-lg text-sm font-bold ${canShare ? "border border-white/30 text-white" : "bg-club text-on-club"}`}>
           <Download aria-hidden="true" className="h-4 w-4" />
           Descargar
         </a>
@@ -184,11 +184,11 @@ function MenuItem({ icon: Icon, label, hint = null, danger = false, disabled = f
 
 const headerIconClass = "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-void text-zinc-200 hover:text-white disabled:opacity-40";
 const chipClass = "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-zinc-100 hover:bg-white/10";
-const segmentClass = (on) => `min-h-9 rounded-md px-3 text-xs font-extrabold ${on ? "bg-white text-void" : "text-zinc-300 hover:text-white"}`;
+const segmentClass = (on) => `min-h-9 rounded-md px-3 text-xs font-extrabold ${on ? "ui-selected" : "text-zinc-300 hover:text-white"}`;
 
 // Botón de una opción entre dos (Se queda / Vuelve a la fila…).
 const choiceClass = (on) =>
-  `flex min-h-9 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-extrabold ${on ? "bg-tnt text-onbrand" : "text-zinc-300"}`;
+  `flex min-h-9 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-extrabold ${on ? "bg-club text-on-club" : "text-zinc-300"}`;
 
 export default function BoardEditorPage({ onAccessLost }) {
   const { boardId } = useParams();
@@ -891,9 +891,10 @@ export default function BoardEditorPage({ onAccessLost }) {
   };
 
   return (
-    <section ref={sectionRef} aria-label={`Pizarra: ${board.name}`} className={`force-dark fixed inset-0 z-50 flex flex-col bg-void pt-[env(safe-area-inset-top)] ${presenting ? "" : "md:left-[17rem]"}`}>
-      <header className={`relative shrink-0 border-b border-white/10 bg-panel px-2 pb-2 pt-1.5 ${presenting ? "hidden" : ""}`}>
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-tnt via-ember to-transparent text-onbrand" />
+    <section ref={sectionRef} aria-label={`Pizarra: ${board.name}`} className={`force-dark fixed inset-0 z-50 flex flex-col bg-void pt-[env(safe-area-inset-top)] ${presenting ? "" : "md:left-[17rem] lg:grid lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-[auto_minmax(0,1fr)]"}`}>
+      {/* Escritorio: la cabecera arriba, la cancha a la izquierda con todo el alto y los controles en una columna a la
+          derecha (antes iban debajo y la cancha quedaba pequeña). En el móvil, todo en columna como siempre. */}
+      <header className={`relative shrink-0 border-b border-white/10 bg-panel px-2 pb-2 pt-1.5 lg:col-span-2 ${presenting ? "hidden" : ""}`}>
         <div className="flex items-center gap-1">
           <button type="button" onClick={goBack} aria-label="Volver a la pizarra" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-200 hover:bg-white/10">
             <ArrowLeft aria-hidden="true" className="h-5 w-5" />
@@ -919,7 +920,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                 aria-pressed={board.published}
                 onClick={() => changeBoard({ published: !board.published })}
                 className={`flex min-h-10 shrink-0 items-center gap-1 rounded-full px-3 text-xs font-extrabold ${
-                  board.published ? "border border-emerald-400/50 bg-emerald-400/10 text-emerald-300" : "bg-tnt text-onbrand"
+                  board.published ? "border border-emerald-400/50 bg-emerald-400/10 text-emerald-300" : "ui-btn-primary bg-club text-on-club"
                 }`}
               >
                 {board.published && <Check aria-hidden="true" className="h-3.5 w-3.5" />}
@@ -977,7 +978,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         </div>
       </header>
 
-      <div ref={courtBox} className="relative flex min-h-0 flex-1 items-center justify-center bg-[radial-gradient(ellipse_at_center,rgba(255,56,0,0.10),transparent_65%)] p-3">
+      <div ref={courtBox} className={`relative flex min-h-0 flex-1 items-center justify-center bg-[radial-gradient(ellipse_at_center,rgb(var(--c-club-ui)/0.10),transparent_65%)] p-3 ${presenting ? "" : "lg:row-start-2"}`}>
         {view3d && HAS_WEBGL && (
           <Suspense fallback={<p role="status" className="text-sm text-zinc-300">Cargando 3D…</p>}>
             <Viewer3D
@@ -1088,10 +1089,11 @@ export default function BoardEditorPage({ onAccessLost }) {
         )}
       </div>
 
+      <div className={`flex shrink-0 flex-col ${presenting ? "" : "lg:row-start-2 lg:min-h-0 lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/10 lg:bg-panel [&_.overflow-x-auto]:lg:flex-wrap"}`} data-testid="board-controls">
       {planner && (
         <div className="shrink-0 border-t border-white/10 bg-panel px-2 pb-[env(safe-area-inset-bottom)] pt-2">
           <p aria-live="polite" className="px-1 text-sm font-bold text-white">
-            <span className="mr-1.5 rounded-full bg-tnt px-2 py-0.5 text-[11px] font-extrabold text-onbrand">Paso {planner.steps.length + 1}</span>
+            <span className="mr-1.5 rounded-full bg-club px-2 py-0.5 text-xs font-extrabold text-on-club">Paso {planner.steps.length + 1}</span>
             {plannerStage === "player" && (planner.steps.length === 0 ? "Toca al jugador que tiene el balón" : "¿Quién juega ahora? Tócalo")}
             {plannerStage === "action" && "Elige qué hace"}
             {plannerStage === "target" && "Toca en la pista dónde manda el balón"}
@@ -1127,7 +1129,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             </div>
           )}
           {repeated && (
-            <button type="button" onClick={repeatPlan} className="mx-1 mt-2 flex min-h-11 w-[calc(100%-0.5rem)] items-center justify-center gap-1.5 rounded-full border border-tnt bg-tnt/15 text-xs font-extrabold text-white">
+            <button type="button" onClick={repeatPlan} className="mx-1 mt-2 flex min-h-11 w-[calc(100%-0.5rem)] items-center justify-center gap-1.5 rounded-full border border-club-ui bg-club/15 text-xs font-extrabold text-white">
               <Repeat aria-hidden="true" className="h-4 w-4" />
               Repetir hasta que pasen todos
             </button>
@@ -1145,7 +1147,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               type="button"
               onClick={() => finishPlanner(false)}
               disabled={planner.steps.length === 0}
-              className="ml-auto flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-tnt px-4 text-xs font-extrabold text-onbrand disabled:opacity-40"
+              className="ml-auto flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-club px-4 text-xs font-extrabold text-on-club disabled:opacity-40"
             >
               <Check aria-hidden="true" className="h-4 w-4" />
               Crear jugada
@@ -1164,7 +1166,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               aria-selected={shownMode === id}
               onClick={() => chooseMode(id)}
               className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-extrabold ${
-                shownMode === id ? "bg-white text-void" : "text-zinc-300 hover:bg-white/5"
+                shownMode === id ? "ui-selected" : "text-zinc-300 hover:bg-white/5"
               }`}
             >
               <Icon aria-hidden="true" className="h-4 w-4" />
@@ -1203,7 +1205,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             )}
             {tool === "move" && !selectedId && (
               <>
-                <button type="button" onClick={() => setAddingPlayers(true)} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-tnt px-3.5 text-xs font-extrabold text-onbrand shadow-[0_4px_14px_rgba(255,56,0,0.35)]">
+                <button type="button" onClick={() => setAddingPlayers(true)} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-club px-3.5 text-xs font-extrabold text-on-club">
                   <UserPlus aria-hidden="true" className="h-4 w-4" />
                   Jugadores
                 </button>
@@ -1216,7 +1218,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   Fila
                 </button>
                 <button type="button" onClick={() => addElement(rivalToken(rivals))} className={chipClass}>
-                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-tnt ring-1 ring-white text-onbrand" />
+                  <span aria-hidden="true" className="h-3 w-3 rounded-full bg-club ring-1 ring-white" />
                   Rival
                 </button>
                 <button type="button" onClick={() => addElement(newBall(balls))} className={chipClass}>
@@ -1236,7 +1238,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   <button type="button" onClick={() => setMenu(menu === "lineup" ? null : "lineup")} aria-expanded={menu === "lineup"} className={chipClass}>
                     <Users aria-hidden="true" className="h-4 w-4" />
                     Alineación
-                    {lineups?.length ? <span className="rounded-full bg-tnt px-1.5 text-[10px] font-extrabold text-onbrand">{lineups.length}</span> : null}
+                    {lineups?.length ? <span className="rounded-full bg-club px-1.5 text-xs font-extrabold text-on-club">{lineups.length}</span> : null}
                     <ChevronDown aria-hidden="true" className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -1251,7 +1253,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             {tool === "arrow" && (
               <div role="group" aria-label="Tipo de flecha" className="flex gap-1.5">
                 {[["move", "Movimiento"], ["pass", "Pase / balón"]].map(([value, label]) => (
-                  <button key={value} type="button" aria-pressed={arrowStyle === value} onClick={() => setArrowStyle(value)} className={`${chipClass} ${arrowStyle === value ? "border-tnt bg-tnt text-onbrand" : ""}`}>
+                  <button key={value} type="button" aria-pressed={arrowStyle === value} onClick={() => setArrowStyle(value)} className={`${chipClass} ${arrowStyle === value ? "border-club-ui bg-club text-on-club" : ""}`}>
                     {label}
                   </button>
                 ))}
@@ -1280,7 +1282,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   }}
                   className={`group flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold ${tool === id ? "text-white" : "text-zinc-500 hover:text-white"}`}
                 >
-                  <span className={`flex h-7 w-11 items-center justify-center rounded-full ${tool === id ? "bg-tnt/20 text-tnt" : ""}`}>
+                  <span className={`flex h-7 w-11 items-center justify-center rounded-full ${tool === id ? "bg-club/20 text-club-ui" : ""}`}>
                     <Icon aria-hidden="true" className="h-5 w-5" />
                   </span>
                   {label}
@@ -1298,8 +1300,9 @@ export default function BoardEditorPage({ onAccessLost }) {
           </div>
         </footer>
       )}
+      </div>
       {menu === "lineup" && (
-        <Popover onClose={closeMenu} label="Alineación" className="bottom-[calc(8.5rem+env(safe-area-inset-bottom))] left-2">
+        <Popover onClose={closeMenu} label="Alineación" className="bottom-[calc(8.5rem+env(safe-area-inset-bottom))] left-2 lg:left-auto lg:right-2">
           <MenuItem icon={ListOrdered} label="Mis alineaciones" hint={lineups?.length ? `${lineups.length} guardadas` : "Todavía no hay ninguna"} onClick={fromMenu(() => setShowingLineups(true))} />
           <MenuItem icon={BookmarkPlus} label="Guardar esta alineación" hint={homeOnCourt === 0 ? "Pon antes a tus jugadores en la pista" : null} disabled={homeOnCourt === 0} onClick={fromMenu(() => setNamingLineup(true))} />
           <MenuItem icon={RotateCw} label="Rotar mi equipo" onClick={fromMenu(() => rotate("home"))} />
