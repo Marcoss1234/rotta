@@ -495,7 +495,10 @@
 :root[data-rotta="tinta"] .court-line { stroke: rgb(var(--c-stage-ink) / 0.45); stroke-width: 0.5; }
 :root[data-rotta="tinta"] .court-chip { border-width: 1.5px; border-color: rgb(var(--c-stage-ink) / 0.65); }
 /* Vóley playa: arena, en cualquier identidad. */
+/* (Con :root[data-rotta] delante para ganar al suelo de cada identidad.) */
+:root[data-rotta] .going-court-beach .court-floor,
 .going-court-beach .court-floor { fill: rgb(232 207 149 / 0.22); }
+:root[data-rotta] .going-court-beach .court-line,
 .going-court-beach .court-line { stroke: rgb(var(--c-stage-ink) / 0.7); }
 
 /* Transiciones con el ritmo de cada identidad; sin movimiento si la persona lo pide. */

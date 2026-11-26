@@ -394,7 +394,7 @@ function startsInText(ms) {
 
 // Día y hora en grande, con cuánto falta. La hora es el número protagonista del escenario (letra de marcador de la
 // identidad). La pista con quien va se pone aparte (GoingCourt), al lado en escritorio y debajo en el móvil.
-function EventWhen({ iso, time, until, spoken, subtitle, titleId, aside = null, startsIn = null, before = null }) {
+function EventWhen({ iso, time, until, spoken, subtitle, titleId, aside = null, startsIn = null, before = null, place = null }) {
   const day = dayText(iso);
   const short = String(time ?? "").length <= 5;
   return (
@@ -419,6 +419,7 @@ function EventWhen({ iso, time, until, spoken, subtitle, titleId, aside = null, 
             {time}
           </p>
           {(until || subtitle) && <p className="mt-2 text-sm font-medium text-ink-muted">{until ? `Hasta las ${until}` : subtitle}</p>}
+          {place}
         </div>
         {aside}
       </div>
@@ -523,8 +524,15 @@ function TrainingCard({
       Editar horario
     </button>
   );
+  // El sitio, en una línea debajo de la hora (antes era un bloque al final del escenario).
+  const place = hasVenue ? (
+    <EventPlace compact place={TRAINING_VENUE_ADDRESS} url={TRAINING_VENUE_URL} />
+  ) : (
+    <p className="mt-1 text-sm text-ink-muted">Consulta el lugar y las plazas con el club antes de ir.</p>
+  );
   const when = training.known ? (
     <EventWhen
+      place={place}
       iso={training.date}
       time={training.start}
       until={training.end}
@@ -534,7 +542,7 @@ function TrainingCard({
       aside={helpButton}
     />
   ) : (
-    <EventWhen iso={training.date} time={training.title} spoken="" subtitle={training.detail} titleId="training-title" aside={helpButton} />
+    <EventWhen iso={training.date} time={training.title} spoken="" subtitle={training.detail} titleId="training-title" aside={helpButton} place={place} />
   );
 
   // El escenario de Inicio (Premium deportivo). En el móvil, por orden: la hora, Voy / No voy, la pista con quien
@@ -572,13 +580,6 @@ function TrainingCard({
             />
           </div>
         )}
-        <div className="lg:col-start-1">
-          {hasVenue ? (
-            <EventPlace place={TRAINING_VENUE_ADDRESS} url={TRAINING_VENUE_URL} />
-          ) : (
-            <p className="rounded-inner bg-ink/[0.06] p-3 text-sm text-ink-muted">Consulta el lugar y las plazas con el club antes de ir.</p>
-          )}
-        </div>
       </div>
     </Stage>
   );
@@ -670,6 +671,7 @@ function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onE
             startsIn={startsInText(matchStart(match) - Date.now())}
             titleId={titleId}
             before={<Versus teamName={teamName || "Nosotros"} opponent={match.opponent} />}
+            place={match.location ? <EventPlace compact place={placeInfo(match.location).label} url={placeInfo(match.location).url} /> : null}
           />
         </div>
         <div className={`empty:hidden ${left}`}><LiveMatchButton match={match} onError={onError} /></div>
@@ -689,10 +691,9 @@ function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onE
           <GoingCourt teamId={match.team_id} people={match.going} currentUserId={currentUserId} />
           <WhoIsGoing lists={match} currentUserId={currentUserId} />
         </div>
-        {(match.location || match.notes) && (
-          <div className={`space-y-3 ${left}`}>
-            {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
-            {match.notes && <MatchNotes notes={match.notes} />}
+        {match.notes && (
+          <div className={left}>
+            <MatchNotes notes={match.notes} />
           </div>
         )}
       </div>

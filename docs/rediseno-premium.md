@@ -18,6 +18,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | `600aa28` | Inicio 2·b: composición nueva (saludo y coins, escenario del entreno con la pista, tus números, próximo partido, escritorio en dos columnas) |
 | `f6d4a84` | Inicio 2·c: pestaña Partidos con el mismo lenguaje y ajustes |
 
+| (este) | Inicio 3: sitio en una línea bajo la hora (entreno y partido), arena en la pista de playa; revisado con familia, entrenador sin ficha, playa, 360 px y tableta |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -38,8 +39,7 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 
 ## Siguiente (por orden)
 
-1. **Siguiente paso:** Inicio, bloque 3: revisar familia, entrenador sin ficha, vóley playa, 360 px y tableta;
-   compactar.
+1. ~~Inicio, bloque 3~~ (hecho).
 2. Plantilla y fichas de jugadores.
 3. Ranking y Notas (ver `docs/ranking-y-notas.md`: «Nota global», dorado solo ≥85, Tu ficha arriba y al
    final, equipo por defecto sin `startsWith("escuela")`).

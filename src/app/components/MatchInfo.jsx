@@ -24,10 +24,25 @@ export function DateBadge({ iso }) {
 
 // Dónde: la dirección y un botón para abrir el mapa. Va dentro de una tarjeta: fondo de relleno del tema y el
 // icono en el segundo color del club (ajustado para verse).
-export function EventPlace({ place, url }) {
+// compact: en una sola línea, sin recuadro (debajo de la hora en el escenario de Inicio).
+export function EventPlace({ place, url, compact = false }) {
+  if (compact) {
+    return (
+      <p className="flex min-w-0 items-center gap-1.5 text-sm text-ink-muted">
+        <MapPin aria-hidden="true" className="h-4 w-4 shrink-0" />
+        <span className="min-w-0 truncate">{place}</span>
+        {url && (
+          <a href={url} target="_blank" rel="noopener noreferrer" className="ml-1 inline-flex min-h-11 shrink-0 items-center gap-1 rounded-control px-2 font-semibold text-ink underline-offset-2 transition-ui hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text">
+            <Navigation aria-hidden="true" className="h-3.5 w-3.5" />
+            Cómo llegar
+          </a>
+        )}
+      </p>
+    );
+  }
   return (
     <div className="flex items-center gap-3 rounded-field bg-raised p-2 pl-3">
-      <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-accent-ui" />
+      <MapPin aria-hidden="true" className="h-4 w-4 shrink-0 text-ink-muted" />
       <p className="min-w-0 flex-1 text-sm text-ink">{place}</p>
       {url && (
         <LinkButton href={url} target="_blank" rel="noopener noreferrer" size="sm" icon={Navigation}>
