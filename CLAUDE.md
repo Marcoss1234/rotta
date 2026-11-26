@@ -33,8 +33,17 @@ Rotta es la versión general de la app del C.V. TNT Almería, para venderla a ot
 
 - Rediseño Premium deportivo (26-11-2026, rama `claude/amazing-euler-emy9p1`, publicado en `main`): plan y estado en `docs/rediseno-premium.md`. Tres identidades (Lima, Naranja, Tinta) con piezas comunes en `src/app/ui` (`PageHeader`, `Dialog` con `placement="auto"`, `Tabs`, `ChipGroup`, `Stage`...). Normas: pantalla fija en el móvil (la página no se desplaza; lo largo, por dentro), móvil compacto (raíz de 15 px, letra mínima 12 px), sin degradados de marca, no estirar pistas ni dibujos, no gastar franjas en cosas pequeñas (saludo, coins y título de la pantalla van en la barra de arriba; `src/app/coins.js`). Cada bloque se publica también en `main`.
 
+- Limpieza de estilos (26-11-2026): reemplazados alias antiguos de Tailwind:
+  - `bg-panel` (45 ref.) → `bg-card` (componentes nuevos de tarjeta)
+  - `text-zinc-*` (245 ref.) → variables del tema: `text-ink`, `text-ink-muted`, `text-white/*`
+  - `bg-tnt` (34 ref.) → `bg-brand` (color principal del club)
+  - `text-ember` (12 ref.) → `text-club-ui` (texto del club)
+  
+  Variables CSS antiguas (`--c-tnt`, `--c-ember`, `--c-panel`...) se mantienen en useTheme.js para compatibilidad con Tailwind config, pero no se usan directamente en HTML.
+
 ## Siguiente
-Fase 4 (pantalla para dar de alta clubs y editar sus equipos; hoy se hace con `tools/crear-club.py` y `tools/estructura-club.py`).
+- Fase 11: Revisar responsive en dispositivos reales (360, 390, tableta, escritorio; claro/oscuro)
+- Fase 4: pantalla para dar de alta clubs y editar sus equipos (hoy se hace con `tools/crear-club.py` y `tools/estructura-club.py`)
 
 ## Probar
 - Tests: `cd backend && python -m pytest -q` (616 pasan). Web: `npm run build`.
