@@ -29,6 +29,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Plantilla en el móvil: pantalla fija; la cancha entera con sus medidas de verdad a la izquierda (tan alta como quepa, `CourtBoard fit`) y el banquillo a la derecha en una columna que se desliza hacia abajo; la lista completa de jugadores en hoja con el botón «Jugadores»; la explicación de la pista tras ⓘ. En móviles muy bajos (667 px) la tarjeta se desliza un poco para no montar las chapas. Tableta y escritorio, como estaban |
 | (este) | Cabecera más pequeña en el móvil: título de pantalla de 24 px, subtítulo de 12 px, menos espacio debajo; pastillas de elegir (equipo, filtros) y pestañas Plantilla/Pizarra algo más bajas. En escritorio, igual que antes |
 | (este) | Directo e informe: sin degradados ni el naranja del TNT (marcador con el color del club y el rival en su azul fijo `rival`; textura del marcador según la identidad); media pista con sus medidas de verdad y la pista de la identidad (`CourtDrawing themed`); ventanas del jugador, ayuda y MVP en hoja desde abajo en el móvil; «Empezar partido» como botón principal; el informe con verde/rojo de victoria y derrota. Arreglo: la pizarra, el directo y el informe ya no quedan debajo de la barra lateral en escritorio (`md:left-[17rem]`). Texto corregido: «+1» ya no dice «naranja» |
+| (este) | Premios y tienda: pantalla fija en el móvil; escaparates en el escenario oscuro de Rotta (sin el degradado ámbar del TNT); escritorio en dos columnas. Premios: «Volver al ranking» (flecha) y «Tienda» al lado del título; premios en tarjetas del tema. Tienda: categorías como pastillas de la identidad; artículos con la selección del club; «Puesto» pasa a la línea de estado; la barra de abajo junta lo que te pruebas y comprar/ponértelo (antes «Probándote» iba encima del personaje); comprar en dorado sólido con texto oscuro fijo. Arreglo: la barra de comprar ya no se mete bajo la barra lateral |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -54,8 +55,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 3. ~~Ranking y Notas~~ (hecho).
 4. ~~Eventos y calendario~~ (hecho).
 5. ~~Partidos jugados y marcador en directo~~ (hecho).
-6. **Siguiente paso:** Premios y tienda.
-7. Chat.
+6. ~~Premios y tienda~~ (hecho).
+7. **Siguiente paso:** Chat.
 8. Perfil, apariencia y configuración (que se vean las diferencias entre identidades).
 9. Pizarra y editor 3D (solo el entorno; sin perder espacio ni precisión).
 10. Componentes y gráficas comunes (`ui/charts`, `Dialog` con hoja, `Segmented`, `ListRow`), según se necesiten.
@@ -69,6 +70,11 @@ abre en hoja desde abajo. Hecho en Ranking, Notas, Eventos, Partidos jugados y P
 a todas las pantallas nuevas. Cómo se hace: la página es `flex h-full min-h-0 flex-col md:h-auto`; lo fijo va arriba y
 la zona que se desliza es `min-h-0 flex-1 overflow-y-auto overscroll-contain` (en escritorio, `md:overflow-visible`);
 la ruta se añade a `WIDE_PATHS` en `AppLayout.jsx` si tiene distribución de escritorio propia.
+
+**Norma (26-11-2026, pedida por Marcos): reordenar, no solo repintar.** En cada pantalla, decidir primero qué es lo
+más importante, qué va junto y qué sobra arriba, y mover las piezas a donde queden mejor ordenadas. Al terminar las
+pantallas, repasar las ya hechas con esta idea (ideas apuntadas: resumen de Jugados en una tira, estado y progreso de
+Notas en un solo bloque con la semana, bienvenida de Inicio más pequeña o más abajo).
 
 Principio en todas: diseño compacto (menos scroll y espacio vacío, filas en vez de tarjetas grandes, columnas en
 escritorio) sin quitar información.

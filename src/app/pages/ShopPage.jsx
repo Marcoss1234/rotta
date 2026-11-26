@@ -174,28 +174,31 @@ export default function ShopPage({ onAccessLost }) {
 
   const missing = selected && !selected.owned ? Math.max(0, selected.price - shop.balance) : 0;
 
+  // Pantalla fija en el móvil (Premium deportivo): arriba el escaparate con tu personaje (siempre a la vista) y las
+  // categorías; los artículos se deslizan por dentro y el botón de comprar o ponértelo queda abajo, fijo. En
+  // escritorio: el escaparate a la izquierda y los artículos a la derecha.
   return (
-    <div className="space-y-6 pb-24">
-      {/* Escaparate: tu personaje probándose lo que eliges. */}
-      <section className="sticky top-0 z-20 overflow-hidden rounded-3xl bg-gradient-to-b from-amber-950 via-surface to-void ring-1 ring-amber-300/25 shadow-xl shadow-black/60">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-6 mx-auto h-48 w-48 rounded-full bg-amber-400/25 blur-3xl" />
-        <div className="relative flex items-center justify-between gap-2 p-3">
+    <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
+      {/* Escaparate: tu personaje probándose lo que eliges, en el escenario oscuro de Rotta. */}
+      <section className="force-dark stage relative shrink-0 overflow-hidden rounded-card text-white lg:sticky lg:top-8">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-6 mx-auto h-40 w-40 rounded-full bg-gold/15 blur-3xl" />
+        <div className="relative flex items-center justify-between gap-2 p-2 md:p-3">
           <button type="button" onClick={() => navigate(-1)} aria-label="Volver" className="flex h-10 w-10 items-center justify-center rounded-lg hover:bg-white/10">
             <ArrowLeft aria-hidden="true" className="h-5 w-5" />
           </button>
-          <h1 className="flex items-center gap-2 font-display text-2xl font-extrabold">
-            <ShoppingBag aria-hidden="true" className="h-6 w-6 text-amber-300" />
+          <h1 className="flex items-center gap-2 font-title text-xl md:text-2xl">
+            <ShoppingBag aria-hidden="true" className="h-6 w-6 text-gold" />
             Tienda
           </h1>
           <span className="relative flex items-center gap-1.5 rounded-full bg-black/40 py-1 pl-1 pr-3 text-sm font-extrabold ring-1 ring-amber-300/50">
-            <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950">
+            <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-gold text-[#2A1A00]">
               <Coins className="h-4 w-4" />
             </span>
             <span className="tabular-nums">{shop.balance.toLocaleString("es-ES")}</span>
             {burst && <CoinBurst burst={burst} />}
           </span>
         </div>
-        <div className="relative h-56 md:h-72">
+        <div className="relative h-48 md:h-72 lg:h-[26rem]">
           {with3D && selected?.category === "efectos" ? (
             <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-zinc-400">Preparando la pista…</p>}>
               <ShopActionStage key={selected.id.split(":")[0]} item={selected} look={preview} profile={profile} />
@@ -207,15 +210,11 @@ export default function ShopPage({ onAccessLost }) {
           ) : (
             <p className="flex h-full items-center justify-center text-sm text-zinc-400">Tu móvil no puede mostrar el personaje en 3D.</p>
           )}
-          {selected && (
-            <p className="pointer-events-none absolute inset-x-0 bottom-2 text-center text-xs font-bold text-amber-200/90">
-              Probándote: {selected.name}
-            </p>
-          )}
         </div>
       </section>
 
-      <div role="tablist" aria-label="Qué quieres ver" className="-mx-1 flex gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex min-h-0 flex-1 flex-col gap-3">
+      <div role="tablist" aria-label="Qué quieres ver" className="-mx-gutter flex shrink-0 gap-1.5 overflow-x-auto px-gutter [scrollbar-width:none] md:mx-0 md:px-0 [&::-webkit-scrollbar]:hidden">
         {CATEGORIES.map((item) => (
           <button
             key={item.id}
@@ -223,13 +222,14 @@ export default function ShopPage({ onAccessLost }) {
             role="tab"
             aria-selected={category === item.id}
             onClick={() => setCategory(item.id)}
-            className={`min-h-11 shrink-0 rounded-full px-4 text-sm font-extrabold ${category === item.id ? "bg-amber-400 text-void" : "bg-white/5 text-zinc-300 hover:bg-white/10"}`}
+            className={`min-h-9 shrink-0 rounded-chip px-3.5 text-sm font-semibold transition-ui focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text md:min-h-10 ${category === item.id ? "ui-selected" : "text-ink-muted ring-1 ring-inset ring-line hover:text-ink hover:ring-control"}`}
           >
             {item.label}
           </button>
         ))}
       </div>
 
+      <div className="-mx-gutter min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:overflow-visible md:px-0" data-testid="shop-scroll">
       <ul className="stagger-in grid grid-cols-2 gap-2.5 sm:grid-cols-3">
         {items.map((item) => {
           const chosen = selectedId === item.id;
@@ -245,20 +245,19 @@ export default function ShopPage({ onAccessLost }) {
                   setMessage("");
                   setError("");
                 }}
-                className={`relative flex h-full w-full flex-col items-center gap-2 rounded-2xl p-3 text-center transition ${
-                  chosen ? "bg-amber-400/15 ring-2 ring-amber-300" : "bg-panel ring-1 ring-white/10 hover:ring-white/25"
+                className={`ui-card relative flex h-full w-full flex-col items-center gap-2 rounded-card p-3 text-center transition-ui focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text ${
+                  chosen ? "bg-club-soft ring-2 ring-club-ui" : "bg-card hover:ring-control"
                 }`}
               >
-                {worn && <span className="absolute left-2 top-2 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-extrabold text-snow">Puesto</span>}
-                <ItemArt item={item} />
-                <span className="text-sm font-bold leading-tight">{item.name}</span>
+                                <ItemArt item={item} />
+                <span className="text-sm font-bold leading-tight text-ink">{item.name}</span>
                 {item.owned ? (
-                  <span className="flex items-center gap-1 text-xs font-extrabold text-emerald-300">
+                  <span className="flex items-center gap-1 text-xs font-extrabold text-voy-text">
                     <Check aria-hidden="true" className="h-3.5 w-3.5" />
-                    Tuyo
+                    {worn ? "Tuyo · Puesto" : "Tuyo"}
                   </span>
                 ) : (
-                  <span className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-extrabold tabular-nums ${affordable ? "bg-amber-400/15 text-amber-200" : "bg-white/5 text-zinc-400"}`}>
+                  <span className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-sm font-extrabold tabular-nums ${affordable ? "bg-gold/15 text-gold-text" : "bg-raised text-ink-muted"}`}>
                     {!affordable && <Lock aria-hidden="true" className="h-3 w-3" />}
                     <Coins aria-hidden="true" className="h-3.5 w-3.5" />
                     {item.price.toLocaleString("es-ES")}
@@ -273,17 +272,23 @@ export default function ShopPage({ onAccessLost }) {
       {(message || error) && (
         <Notice tone={error ? "error" : "success"}>{error || message}</Notice>
       )}
+      </div>
 
-      {/* Lo que puedes hacer con lo elegido. */}
+      {/* Lo que puedes hacer con lo elegido: abajo, siempre a mano (en el ordenador, pegado al final al bajar). */}
       {selected && (
-        <div className="fixed inset-x-3 bottom-[calc(4.6rem+env(safe-area-inset-bottom))] z-30 md:left-[calc(15rem+1.5rem)] md:right-6 md:bottom-6">
-          <div className="mx-auto max-w-3xl">
+        <div className="ui-card flex shrink-0 items-center gap-3 rounded-card bg-card p-2 pl-3 md:sticky md:bottom-6 md:z-30">
+          {/* Lo que te estás probando (antes iba encima del personaje y no se leía). */}
+          <p className="min-w-0 flex-1 text-xs text-ink-muted">
+            Probándote
+            <span className="block truncate text-sm font-bold text-ink">{selected.name}</span>
+          </p>
+          <div className="w-[58%] shrink-0">
             {!selected.owned ? (
               <button
                 type="button"
                 disabled={busy || missing > 0}
                 onClick={buy}
-                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 font-display text-lg font-extrabold text-void shadow-[0_10px_30px_rgba(245,158,11,0.45)] disabled:from-zinc-700 disabled:via-zinc-700 disabled:to-zinc-700 disabled:text-zinc-300 disabled:shadow-none"
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-gold px-3 font-display text-base font-extrabold text-[#2A1A00] disabled:bg-raised disabled:text-ink-muted disabled:ring-1 disabled:ring-inset disabled:ring-line"
               >
                 {missing > 0 ? (
                   <>
@@ -298,7 +303,7 @@ export default function ShopPage({ onAccessLost }) {
                 )}
               </button>
             ) : isWorn(look, selected) ? (
-              <p className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500/20 font-display text-lg font-extrabold text-emerald-200 ring-1 ring-emerald-400/40">
+              <p className="flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-voy/10 px-3 font-display text-base font-extrabold text-voy-text ring-1 ring-inset ring-voy/30">
                 <Check aria-hidden="true" className="h-5 w-5" />
                 Lo llevas puesto
               </p>
@@ -307,7 +312,7 @@ export default function ShopPage({ onAccessLost }) {
                 type="button"
                 disabled={busy}
                 onClick={wear}
-                className="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-tnt font-display text-lg font-extrabold text-onbrand shadow-[0_10px_30px_rgba(255,56,0,0.4)] disabled:opacity-60"
+                className="ui-btn-primary flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-club px-3 font-display text-base font-extrabold text-on-club disabled:opacity-60"
               >
                 <Sparkles aria-hidden="true" className="h-5 w-5" />
                 {busy ? "Poniéndotelo…" : "Ponérmelo"}
@@ -316,6 +321,7 @@ export default function ShopPage({ onAccessLost }) {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }
