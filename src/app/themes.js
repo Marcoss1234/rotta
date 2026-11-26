@@ -51,7 +51,7 @@ export const THEMES = {
       overlay: "#1E2720", hair: "none", shadow: "none", overlayShadow: "0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 48px -16px rgb(0 0 0 / 0.7)", cardBorder: "line",
     },
     light: {
-      bg: "#F1F4EC", surface: "#FFFFFF", raised: "#E8ECE0", line: "#D3DAC7", control: "#848F78", text: "#11160F", muted: "#5A6553", rotta: "#C7F23A", rottaText: "#4B6A00",
+      bg: "#F1F4EC", surface: "#FFFFFF", raised: "#E8ECE0", line: "#D3DAC7", control: "#7F8973", text: "#11160F", muted: "#5A6553", rotta: "#C7F23A", rottaText: "#4B6A00",
       overlay: "#FFFFFF", hair: "none", shadow: "0 1px 0 rgb(17 22 15 / 0.08)", overlayShadow: "0 0 0 1px rgb(17 22 15 / 0.08), 0 24px 48px -20px rgb(17 22 15 / 0.3)", cardBorder: "line",
     },
   },
@@ -75,7 +75,7 @@ export const THEMES = {
       overlay: "#2A201A", hair: "rgb(255 255 255 / 0.04)", shadow: "0 18px 40px -22px rgb(0 0 0 / 0.8)", overlayShadow: "0 28px 56px -18px rgb(0 0 0 / 0.8)", cardBorder: "none",
     },
     light: {
-      bg: "#F6F2EE", surface: "#FFFFFF", raised: "#EFE8E1", line: "#E5DAD0", control: "#9A8574", text: "#1D140E", muted: "#6D5C4F", rotta: "#F25C05", rottaText: "#B03F00",
+      bg: "#F6F2EE", surface: "#FFFFFF", raised: "#EFE8E1", line: "#E5DAD0", control: "#94806F", text: "#1D140E", muted: "#6D5C4F", rotta: "#F25C05", rottaText: "#B03F00",
       overlay: "#FFFFFF", hair: "none", shadow: "0 2px 4px rgb(60 30 10 / 0.05), 0 18px 40px -20px rgb(60 30 10 / 0.28)", overlayShadow: "0 4px 8px rgb(60 30 10 / 0.06), 0 32px 64px -24px rgb(60 30 10 / 0.35)", cardBorder: "none",
     },
   },

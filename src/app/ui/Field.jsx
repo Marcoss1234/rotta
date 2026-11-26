@@ -2,11 +2,12 @@ import { forwardRef } from "react";
 import { ChevronDown } from "lucide-react";
 import { cx } from "./cx.js";
 
-// Campos de formulario. El fondo es el de la pantalla (canvas) para que se vean sobre una tarjeta; el borde
-// tiene 3:1 en todos los temas (control); al escribir, el borde pasa al color de Rotta (el del foco).
+// Campos de formulario. El fondo es el relleno del tema (raised): se distingue de la tarjeta también en claro; el
+// borde tiene 3:1 en todos los temas (control), sobre la tarjeta y sobre el relleno; al escribir, el borde pasa al
+// color de Rotta (el del foco).
 // Las esquinas siguen al tema pero nunca son de pastilla (un cuadro de texto redondo no se lee bien).
 const CONTROL =
-  "w-full rounded-field bg-canvas px-3.5 text-base text-ink ring-1 ring-inset ring-control placeholder:text-ink-muted " +
+  "w-full rounded-field bg-raised px-3.5 text-base text-ink ring-1 ring-inset ring-control placeholder:text-ink-muted transition-ui " +
   "focus:outline-none focus:ring-2 focus:ring-rotta-text disabled:cursor-not-allowed disabled:opacity-60 " +
   "aria-[invalid=true]:ring-2 aria-[invalid=true]:ring-danger-text";
 

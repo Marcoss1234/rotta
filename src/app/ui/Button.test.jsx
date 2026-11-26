@@ -45,6 +45,35 @@ describe("Button", () => {
     expect(button.getAttribute("title")).toBe("Añadir evento");
   });
 
+  it("el principal lleva la línea de luz; el secundario va relleno, con su borde de 3:1, y con menos protagonismo", () => {
+    render(<><Button>Guardar</Button><Button variant="secondary">Cancelar</Button></>);
+    const primary = screen.getByRole("button", { name: "Guardar" });
+    const secondary = screen.getByRole("button", { name: "Cancelar" });
+    expect(primary.className).toContain("ui-btn-primary");
+    expect(secondary.className).toContain("bg-raised");
+    expect(secondary.className).toContain("ring-control");
+    expect(secondary.className).not.toContain("bg-club");
+  });
+
+  it("on-stage: para dentro del escenario, con el texto del escenario", () => {
+    render(<Button variant="on-stage">No voy</Button>);
+    const button = screen.getByRole("button", { name: "No voy" });
+    expect(button.className).toContain("text-stage-ink");
+    expect(button.className).not.toContain("bg-club");
+  });
+
+  it("los tamaños: 40, 44 y 52 px de alto como mínimo (táctil)", () => {
+    render(<><Button size="sm">S</Button><Button>M</Button><Button size="lg">L</Button></>);
+    expect(screen.getByRole("button", { name: "S" }).className).toContain("min-h-10");
+    expect(screen.getByRole("button", { name: "M" }).className).toContain("min-h-11");
+    expect(screen.getByRole("button", { name: "L" }).className).toContain("min-h-[3.25rem]");
+  });
+
+  it("las transiciones siguen el ritmo de la identidad", () => {
+    render(<Button>Guardar</Button>);
+    expect(screen.getByRole("button", { name: "Guardar" }).className).toContain("transition-ui");
+  });
+
   it("LinkButton es un enlace de verdad", () => {
     render(<LinkButton href="https://maps.example/x" target="_blank" rel="noopener noreferrer">Cómo llegar</LinkButton>);
     const link = screen.getByRole("link", { name: "Cómo llegar" });

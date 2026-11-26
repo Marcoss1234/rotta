@@ -256,6 +256,10 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
   const textChange = colorDistance(brand, clubText);
   const clubLabel = textChange > TOO_CHANGED ? base.text : clubText;
   const clubUi = colorless ? base.text : readableOnAll(brand, [...grounds, clubSoft, ...[base.surface, base.bg].map((ground) => mix(ground, base.text, TRACK))], 3);
+  // Borde del botón principal (ui/Button): si el color del club no se distingue de la tarjeta, del fondo o del
+  // relleno (un club blanco en claro, uno casi negro en oscuro), el botón lleva borde en clubUi; si se distingue,
+  // el borde es el propio color del club y no se nota.
+  const clubEdge = grounds.every((ground) => contrast(brand, ground) >= 3) ? brand : clubUi;
 
   const yields = !colorless && colorDistance(brand, base.rotta) < SIMILAR_COLORS;
   const rotta = yields ? brand : base.rotta;
@@ -311,6 +315,7 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
     clubLabel,
     clubUi,
     clubSoft,
+    clubEdge,
     rotta,
     onRotta: textOn(rotta),
     rottaText,
@@ -355,12 +360,18 @@ export function themeContrastChecks(theme) {
     ["Enlace de Rotta sobre relleno", theme.rottaText, theme.raised, 4.5],
     ["Texto sobre insignia de Rotta", theme.onRotta, theme.rotta, 4.5],
     ["Texto del botón del club", theme.onClub, theme.club, 4.5],
+    // El botón principal se distingue de lo que tiene alrededor (con su borde si hace falta).
+    ["Botón principal sobre tarjeta", theme.clubEdge, theme.surface, 3],
+    ["Botón principal sobre fondo", theme.clubEdge, theme.bg, 3],
+    ["Botón principal sobre relleno", theme.clubEdge, theme.raised, 3],
     ["Texto en color del club sobre tarjeta", theme.clubLabel, theme.surface, 4.5],
     ["Texto en color del club sobre fondo", theme.clubLabel, theme.bg, 4.5],
     ["Seleccionado: texto sobre su fondo", theme.text, theme.clubSoft, 4.5],
     ["Seleccionado: icono sobre su fondo", theme.clubUi, theme.clubSoft, 3],
     ["Indicador del club sobre tarjeta", theme.clubUi, theme.surface, 3],
     ["Indicador del club sobre fondo", theme.clubUi, theme.bg, 3],
+    // Las pestañas (ui/Tabs) van sobre el relleno: lo elegido tiene que distinguirse también ahí.
+    ["Indicador del club sobre relleno", theme.clubUi, theme.raised, 3],
     ["Borde de campo sobre tarjeta", theme.control, theme.surface, 3],
     ["Borde de campo sobre fondo", theme.control, theme.bg, 3],
     ["Foco del teclado sobre fondo", theme.focus, theme.bg, 3],
@@ -416,6 +427,8 @@ export function themeContrastChecks(theme) {
     ["Texto secundario sobre ventana", theme.muted, theme.overlay, 4.5],
     ["Foco del teclado sobre ventana", theme.focus, theme.overlay, 3],
     ["Borde de campo sobre ventana", theme.control, theme.overlay, 3],
+    // Los campos y el botón secundario van rellenos del tono «raised»: su borde también se distingue de ese relleno.
+    ["Borde de campo sobre su relleno", theme.control, theme.raised, 3],
     // Tarjetas que se separan solo con el borde (Lima, sin sombra): que no se fundan con el fondo.
     ...(theme.cardBorder === "line" && theme.depth === "plana"
       ? [["Borde de tarjeta sobre el fondo", theme.line, theme.bg, 1.25], ["Borde de tarjeta sobre la tarjeta", theme.line, theme.surface, 1.25]]

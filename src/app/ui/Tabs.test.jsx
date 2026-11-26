@@ -32,6 +32,18 @@ describe("Tabs", () => {
     expect(tab("Partidos").tabIndex).toBe(-1);
   });
 
+  it("la elegida lleva la manera de marcar de la identidad (ui-selected), 44 px de alto y su contador marcado", () => {
+    render(<Group label="Qué ver" />);
+    expect(tab("Entrenamientos").className).toContain("ui-selected");
+    expect(tab("Entrenamientos").className).toContain("min-h-11");
+    expect(tab("Partidos").className).not.toContain("ui-selected");
+    // El contador lleva ui-count: en Naranja, dentro de lo elegido, cambia a los colores que se leen sobre el club.
+    expect(within(tab("Partidos")).getByText("2").className).toContain("ui-count");
+    fireEvent.click(tab("Partidos"));
+    expect(tab("Partidos").className).toContain("ui-selected");
+    expect(tab("Entrenamientos").className).not.toContain("ui-selected");
+  });
+
   it("con un clic cambia de pestaña y de panel", () => {
     const onChange = vi.fn();
     render(<Group label="Qué ver" onChange={onChange} />);

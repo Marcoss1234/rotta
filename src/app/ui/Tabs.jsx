@@ -56,15 +56,16 @@ export function Tabs({ id, items, value, onChange, label, hasPanels = true, clas
             onClick={() => onChange(itemId)}
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cx(
-              "flex min-h-10 flex-1 items-center justify-center gap-2 rounded-control px-3 text-sm font-semibold transition",
+              "flex min-h-11 flex-1 items-center justify-center gap-2 rounded-control px-3 text-sm font-semibold transition-ui",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
               "disabled:cursor-not-allowed disabled:opacity-50",
-              selected ? "bg-card text-ink shadow-card ring-1 ring-inset ring-control" : "text-ink-muted hover:text-ink",
+              // Lo elegido, con la manera de cada identidad (ui-selected en index.css).
+              selected ? "ui-selected" : "text-ink-muted hover:text-ink",
             )}
           >
-            {Icon && <Icon aria-hidden="true" className={cx("h-4 w-4", selected && "text-club-ui")} />}
+            {Icon && <Icon aria-hidden="true" className={cx("h-4 w-4", selected && "ui-selected-icon text-club-ui")} />}
             {text}
-            {count != null && <span className="rounded-full bg-club px-1.5 text-xs font-bold leading-5 text-on-club">{count}</span>}
+            {count != null && <span className="ui-count rounded-full bg-club px-1.5 text-xs font-bold leading-5 text-on-club">{count}</span>}
           </button>
         );
       })}

@@ -27,7 +27,7 @@ export function Notice({ tone = "info", inline = false, announce = true, size = 
   return (
     <Tag
       role={announce ? role : undefined}
-      className={cx("flex items-start font-semibold", size === "sm" ? "gap-1.5 text-xs" : "gap-2 text-sm", inline ? inlineClass : cx("rounded-card p-3", box), className)}
+      className={cx("flex items-start font-semibold", size === "sm" ? "gap-1.5 text-xs" : "gap-2 text-sm", inline ? inlineClass : cx("rounded-inner p-3", box), className)}
     >
       <Icon aria-hidden="true" className={cx("shrink-0", size === "sm" ? "mt-px h-3.5 w-3.5" : "mt-0.5 h-4 w-4")} />
       <Body className="min-w-0">{children}</Body>
@@ -38,7 +38,7 @@ export function Notice({ tone = "info", inline = false, announce = true, size = 
 /** Cuando una lista está vacía: una frase que diga qué saldrá aquí (y, si hace falta, una acción). */
 export function EmptyState({ children, action, className }) {
   return (
-    <div className={cx("flex flex-col items-start gap-3 rounded-card bg-raised p-4 text-sm text-ink-muted", className)}>
+    <div className={cx("flex flex-col items-start gap-3 rounded-inner bg-raised p-4 text-sm text-ink-muted", className)}>
       <p>{children}</p>
       {action}
     </div>

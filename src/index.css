@@ -44,6 +44,8 @@
   --c-club-text-dark: 168 128 244;
   --c-club-label-dark: 168 128 244;
   --c-club-soft-dark: 33 31 74;
+  --c-club-edge: 124 58 237;
+  --c-club-edge-dark: 124 58 237;
   --c-rotta-dark: 143 168 255;
   --c-rotta-text-dark: 167 186 255;
   --c-on-rotta-dark: 15 17 21;
@@ -141,6 +143,7 @@
   --c-club-text: var(--c-club-text-dark);
   --c-club-label: var(--c-club-label-dark);
   --c-club-soft: var(--c-club-soft-dark);
+  --c-club-edge: var(--c-club-edge-dark);
   --c-rotta: var(--c-rotta-dark);
   --c-rotta-text: var(--c-rotta-text-dark);
   --c-on-rotta: var(--c-on-rotta-dark);
@@ -207,6 +210,57 @@
     radial-gradient(110% 90% at 90% -10%, rgb(var(--c-glow-club) / var(--glow)), transparent 62%),
     radial-gradient(70% 70% at 0% 110%, rgb(var(--c-glow-rotta) / var(--glow-rotta)), transparent 70%);
   border: 1px solid rgb(var(--c-stage-line));
+}
+
+/* ---------- Piezas comunes (src/app/ui) con la personalidad de cada identidad ----------
+   En @layer components: una clase de Tailwind en la pantalla (p. ej. un margen o un color) puede ajustarlas. */
+@layer components {
+  /* Tarjeta: línea de luz arriba (Tinta y Naranja en oscuro), borde (Lima y Tinta) y sombra (Naranja, Tinta en
+     claro, la línea de Lima en claro). Todo sale de themes.js: --hair, --card-border y --shadow-depth. */
+  .ui-card {
+    box-shadow: inset 0 1px 0 var(--hair), 0 0 0 1px var(--card-border), var(--shadow-depth);
+  }
+  .ui-card-interactive:hover {
+    box-shadow: inset 0 1px 0 var(--hair), 0 0 0 1px rgb(var(--c-control)), var(--shadow-depth);
+  }
+
+  /* Botón principal: una línea de luz arriba y un borde que calcula theme.js (clubEdge): con un club normal es su
+     mismo color y no se nota; con un club blanco en claro o casi negro en oscuro es lo que separa el botón de la
+     tarjeta. Sobre el escenario, el borde es stageEdge. */
+  .ui-btn-primary {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 1px rgb(var(--c-club-edge));
+  }
+  .stage .ui-btn-primary {
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.16), 0 0 0 1px rgb(var(--c-stage-edge));
+  }
+
+  /* Lo elegido (pestañas y chips). Tinta: tono suave del club con contorno. Lima: tono suave con una raya abajo.
+     Naranja: el color del club entero. Los contrastes los comprueba theme.js (texto e indicador sobre club-soft,
+     texto sobre el club). */
+  .ui-selected {
+    background-color: rgb(var(--c-club-soft));
+    color: rgb(var(--c-white));
+    box-shadow: inset 0 0 0 1px rgb(var(--c-club-ui));
+  }
+  :root[data-rotta="lima"] .ui-selected {
+    box-shadow: inset 0 -2px 0 rgb(var(--c-club-ui)), inset 0 0 0 1px rgb(var(--c-line));
+  }
+  /* El contorno en club-ui (el club ajustado a 3:1 sobre el fondo): con un club normal no se ve, porque es casi su
+     mismo color; con un club casi negro en oscuro (o casi blanco en claro) es lo que marca que está elegido. */
+  :root[data-rotta="naranja"] .ui-selected {
+    background-color: rgb(var(--c-club));
+    color: rgb(var(--c-on-club));
+    box-shadow: inset 0 0 0 1px rgb(var(--c-club-ui));
+  }
+  /* En Naranja, dentro de lo elegido todo va en el color que se lee sobre el club (el icono y los contadores). */
+  :root[data-rotta="naranja"] .ui-selected .ui-selected-icon,
+  :root[data-rotta="naranja"] .ui-selected .ui-count-quiet {
+    color: inherit;
+  }
+  :root[data-rotta="naranja"] .ui-selected .ui-count {
+    background-color: rgb(var(--c-on-club));
+    color: rgb(var(--c-club));
+  }
 }
 
 /* Transiciones con el ritmo de cada identidad; sin movimiento si la persona lo pide. */

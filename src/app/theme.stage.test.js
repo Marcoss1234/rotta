@@ -96,3 +96,17 @@ describe("el segundo color del club no cambia nada del escenario", () => {
     }
   });
 });
+
+describe("botón principal fuera del escenario", () => {
+  it.each(STYLES)("%s: un club blanco en claro y uno casi negro en oscuro llevan borde; uno normal no lo necesita", (style) => {
+    const white = buildRottaTheme(style, "light", "#FFFFFF");
+    const black = buildRottaTheme(style, "dark", "#0B0C0F");
+    for (const theme of [white, black]) {
+      expect(theme.clubEdge).not.toBe(theme.club);
+      for (const ground of [theme.surface, theme.bg, theme.raised]) expect(contrast(theme.clubEdge, ground)).toBeGreaterThanOrEqual(3);
+    }
+    // Un color que ya se distingue no cambia: morado en claro, rojo en oscuro.
+    expect(buildRottaTheme(style, "light", "#7C3AED").clubEdge).toBe("#7C3AED");
+    expect(buildRottaTheme(style, "dark", "#E11D2E").clubEdge).toBe("#E11D2E");
+  });
+});

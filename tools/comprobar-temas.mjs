@@ -79,6 +79,7 @@ const raw = (theme) => ({
   accentUi: theme.accent,
   liveClub: theme.club,
   liveAccent: theme.accent,
+  clubEdge: theme.club,
   glowClub: theme.club,
   clubOnStage: theme.club,
   stageEdge: theme.club,

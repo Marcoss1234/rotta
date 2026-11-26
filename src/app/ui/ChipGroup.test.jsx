@@ -46,6 +46,17 @@ describe("ChipGroup", () => {
     expect(pressed("Colocador")).toBe("false");
   });
 
+  it("lo elegido se marca con la manera de cada identidad (ui-selected) y lo demás con contorno", () => {
+    render(<Controlled initial="central" />);
+    expect(chip("Central").className).toContain("ui-selected");
+    expect(chip("Central").className).toContain("rounded-chip");
+    expect(chip("Colocador").className).not.toContain("ui-selected");
+    expect(chip("Colocador").className).toContain("ring-line");
+    fireEvent.click(chip("Colocador"));
+    expect(chip("Colocador").className).toContain("ui-selected");
+    expect(chip("Central").className).not.toContain("ui-selected");
+  });
+
   it("enseña el contador de cada opción", () => {
     render(<Controlled initial="central" />);
     expect(chip("Central").textContent).toBe("Central2");

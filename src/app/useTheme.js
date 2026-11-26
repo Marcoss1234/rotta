@@ -48,13 +48,13 @@ const PAINTED_KEY = "rotta-pintado";
 // Lo que depende del color del club, en el modo de la persona y en oscuro (para la pista, la pizarra y el
 // directo, que van siempre en oscuro: index.css cambia unas por otras dentro de .force-dark).
 const CLUB_VARIABLES = {
-  "club": "club", "club-ui": "clubUi", "club-text": "clubText", "club-label": "clubLabel", "club-soft": "clubSoft", "on-club": "onClub",
+  "club": "club", "club-edge": "clubEdge", "club-ui": "clubUi", "club-text": "clubText", "club-label": "clubLabel", "club-soft": "clubSoft", "on-club": "onClub",
   "rotta": "rotta", "rotta-text": "rottaText", "on-rotta": "onRotta", "stripe": "stripe", "accent-ui": "accentUi",
   "live-club": "liveClub", "live-accent": "liveAccent",
   // Escenario (Premium deportivo): iguales en claro y en oscuro, porque el escenario siempre es oscuro.
   "glow-club": "glowClub", "glow-rotta": "glowRotta", "club-on-stage": "clubOnStage", "rotta-on-stage": "rottaOnStage", "stage-edge": "stageEdge",
 };
-const DARK_VARIABLES = ["club-ui", "club-text", "club-label", "club-soft", "rotta", "rotta-text", "on-rotta", "accent-ui"];
+const DARK_VARIABLES = ["club-edge", "club-ui", "club-text", "club-label", "club-soft", "rotta", "rotta-text", "on-rotta", "accent-ui"];
 
 function applyRottaTheme(root, club, mode) {
   const style = resolveStyle(club.style);
