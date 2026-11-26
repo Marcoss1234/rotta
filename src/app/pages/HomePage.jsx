@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { greeting, publishCoins } from "@/app/coins.js";
 import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, UserPlus, X, Zap } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -43,11 +44,6 @@ import ClubCrest from "@/app/components/ClubCrest.jsx";
 const STORAGE_KEY = "tnt-equipo-visto";
 
 // "Buenos días", "Buenas tardes" o "Buenas noches", según la hora.
-function greeting(hour = new Date().getHours()) {
-  if (hour >= 6 && hour < 14) return "Buenos días";
-  if (hour >= 14 && hour < 21) return "Buenas tardes";
-  return "Buenas noches";
-}
 
 function readStoredTeam() {
   try {
@@ -932,7 +928,8 @@ function firstTab(training, matches, now = Date.now()) {
 // Cabecera de Inicio: el saludo con tu nombre y tus coins. Sin la tarjeta de color: el protagonista es el escenario.
 function HomeHeader({ user, coins, shownCoins, coinBurst }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+    // Solo en escritorio: en el móvil, el saludo y las coins van en la barra de arriba (una franja menos).
+    <header className="hidden flex-wrap items-end justify-between gap-x-4 gap-y-3 md:flex">
       <div className="min-w-0">
         <p className="text-sm font-semibold text-ink-muted">{greeting()},</p>
         <h1 className="break-words font-title text-title text-ink md:text-display">{user.name.split(" ")[0]}</h1>
@@ -1040,6 +1037,10 @@ export default function HomePage({ user, onAccessLost }) {
   // Al entrar, el saldo cuenta desde 0; luego, desde el que había.
   const shownCoins = useCountUp(coins ? coins.balance : null);
   const [coinBurst, setCoinBurst] = useState(null);
+  // La barra de arriba del móvil enseña las coins: se le avisa de cada cambio.
+  useEffect(() => {
+    publishCoins(coins);
+  }, [coins]);
   const [askingHelp, setAskingHelp] = useState(false);
   // Al cambiar de equipo por un partido recién guardado, se sigue en la pestaña de partidos.
   const stayOnMatches = useRef(false);

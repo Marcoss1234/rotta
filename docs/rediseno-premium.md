@@ -38,6 +38,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Componentes sin degradados de marca: «Partido en directo» (Inicio y vista previa de Apariencia) en rojo liso de directo; aviso de notificaciones con el tono del club; premios, destacados del entreno y coins en dorado liso (`bg-gold/10`) con texto oscuro fijo sobre el dorado; botón de ayuda del chat en azul liso |
 | (este) | Inicio con pantalla fija en el móvil: saludo con coins y equipo fijos; lo demás se desliza con las pestañas Entrenamientos/Partidos pegadas arriba al bajar; orden nuevo: avisos de acceso, directo y la agenda primero, y los avisos de instalar, notificaciones y la bienvenida al final (antes empujaban el entreno). Escritorio igual |
 | (este) | Repaso: Notas con la semana, su estado, el progreso y «Publicar» en un solo bloque en el móvil; Jugados con el resumen en una sola tira (cada dato con su ancho) |
+| (este) | Barra de arriba del móvil: en Inicio, el saludo («Buenas tardes, Carmen») en lugar del nombre del club; las coins (moneda y número, con la corona si la tienes) junto a tu foto en todas las pantallas, al día con Inicio y la tienda (`src/app/coins.js`). Inicio ya no tiene la franja del saludo en el móvil |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -80,6 +81,12 @@ abre en hoja desde abajo. Hecho en todas las pantallas (Inicio incluido) (fase d
 a todas las pantallas nuevas. Cómo se hace: la página es `flex h-full min-h-0 flex-col md:h-auto`; lo fijo va arriba y
 la zona que se desliza es `min-h-0 flex-1 overflow-y-auto overscroll-contain` (en escritorio, `md:overflow-visible`);
 la ruta se añade a `WIDE_PATHS` en `AppLayout.jsx` si tiene distribución de escritorio propia.
+
+**Norma (26-11-2026, pedida por Marcos): no gastar franjas en cosas pequeñas.** Si algo ocupa una fila entera y cabe
+más pequeño en otro sitio (como el saludo y las coins, ahora en la barra de arriba), se mueve.
+
+**Norma (26-11-2026, pedida por Marcos): publicar cada cambio.** Cada bloque terminado se sube también a `main`
+(`git push origin HEAD:main`) para que Render lo publique.
 
 **Norma (26-11-2026, pedida por Marcos): reordenar, no solo repintar.** En cada pantalla, decidir primero qué es lo
 más importante, qué va junto y qué sobra arriba, y mover las piezas a donde queden mejor ordenadas. Al terminar las

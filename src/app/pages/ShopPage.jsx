@@ -5,6 +5,7 @@ import { buyShopItem, getProfile, getShop, saveCharacter } from "@/app/api.js";
 import { lookFromSeed, normalizeLook } from "@/app/character/looks.js";
 import CoinBurst from "@/app/components/CoinBurst.jsx";
 import { Notice } from "@/app/ui/index.js";
+import { publishCoins } from "@/app/coins.js";
 
 const AvatarStage = lazy(() => import("@/app/character/AvatarStage.jsx"));
 // Los efectos se enseñan con tu personaje haciendo el gesto en la pista 3D, como en la pizarra.
@@ -148,6 +149,7 @@ export default function ShopPage({ onAccessLost }) {
     try {
       const result = await buyShopItem(selected.id);
       setShop((current) => ({ balance: result.balance, items: current.items.map((item) => (item.id === selected.id ? { ...item, owned: true } : item)) }));
+      publishCoins({ balance: result.balance });
       setBurst({ amount: -selected.price, status: "buy", key: Date.now() });
       setMessage(`¡${selected.name} ya es tuyo!`);
     } catch (requestError) {

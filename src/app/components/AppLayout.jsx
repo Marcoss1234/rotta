@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CalendarDays, CircleUser, ClipboardList, History, House, Menu, MessagesSquare, Presentation, ShoppingBag, Trophy, UserCog, UserPlus, Users } from "lucide-react";
+import { CalendarDays, CircleUser, Coins, Crown, ClipboardList, History, House, Menu, MessagesSquare, Presentation, ShoppingBag, Trophy, UserCog, UserPlus, Users } from "lucide-react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { listChatChannels } from "@/app/api.js";
 import Avatar from "@/app/components/Avatar.jsx";
@@ -11,6 +11,7 @@ import ClubCrest from "@/app/components/ClubCrest.jsx";
 import { useClubIdentity } from "@/app/clubIdentity.js";
 import { useWelcomeVisible } from "@/app/welcome.js";
 import { roleLabel } from "@/app/roles.js";
+import { greeting, useCoins } from "@/app/coins.js";
 
 const UNREAD_POLL_MS = 30000;
 const CHAT_PATH = "/app/chat";
@@ -136,6 +137,8 @@ export default function AppLayout({ isAdmin, user, children }) {
   const items = navItems(isAdmin, user, pathname);
   const unread = useUnreadChat(pathname);
   const club = useClubIdentity();
+  // Las coins, en la barra de arriba del móvil (las familias no tienen).
+  const coins = useCoins();
   const mainRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -257,9 +260,31 @@ export default function AppLayout({ isAdmin, user, children }) {
 
       {/* Móvil: el club arriba, compacto (no en la pizarra ni en el directo, que ocupan toda la pantalla). */}
       {!immersive && (
-        <header className="app-topbar flex shrink-0 items-center gap-3 px-gutter pb-2 pt-[calc(0.75rem+env(safe-area-inset-top))] md:hidden">
+        <header className="app-topbar flex shrink-0 items-center gap-2.5 px-gutter pb-2 pt-[calc(0.75rem+env(safe-area-inset-top))] md:hidden">
           <ClubCrest className="h-8 w-8 shrink-0" rottaClassName="rounded-[30%] object-cover" />
-          <span className="min-w-0 flex-1 truncate font-title text-base leading-tight text-ink">{club.name}</span>
+          {/* En Inicio, el saludo en lugar del nombre del club (antes era otra franja entera debajo). */}
+          {pathname === "/app" ? (
+            <span className="min-w-0 flex-1 leading-tight">
+              <span className="block truncate text-xs text-ink-muted">{greeting()},</span>
+              <span className="block truncate font-title text-base text-ink">{user.name.split(" ")[0]}</span>
+            </span>
+          ) : (
+            <span className="min-w-0 flex-1 truncate font-title text-base leading-tight text-ink">{club.name}</span>
+          )}
+          {coins && (
+            <Link
+              key={coins.balance}
+              to="/app/tienda"
+              aria-label={`Tienes ${coins.balance} Club Coins. Ir a la tienda`}
+              className="coin-pill-pop flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-raised py-1 pl-1 pr-2.5 ring-1 ring-inset ring-line transition-ui hover:bg-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text"
+            >
+              <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center rounded-full bg-gold text-[#2A1A00]">
+                <Coins className="h-3.5 w-3.5" />
+              </span>
+              <span className="font-score text-base leading-none text-ink">{coins.balance.toLocaleString("es-ES")}</span>
+              {coins.crown && <Crown aria-hidden="true" className="h-3.5 w-3.5 fill-gold text-gold-text" />}
+            </Link>
+          )}
           <Link to="/app/perfil" aria-label="Tu perfil" className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text">
             <Avatar name={user.name} picture={user.picture} className="h-9 w-9 text-xs" />
           </Link>
