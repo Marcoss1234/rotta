@@ -420,6 +420,76 @@
   box-shadow: 0 1px 0 rgb(var(--c-line));
 }
 
+/* ---------- Escenario (ui/Stage): el adorno de cada identidad, muy suave ---------- */
+.stage-decoration svg {
+  position: absolute;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+}
+:root[data-rotta="lima"] .stage-deco-lineas,
+:root[data-rotta="naranja"] .stage-deco-balon,
+:root[data-rotta="tinta"] .stage-deco-acta {
+  display: block;
+}
+
+/* ---------- Pista de quien va (components/GoingCourt.jsx): siempre oscura, con el carácter de la identidad ----------
+   No es la pista de Plantilla ni la pizarra: solo enseña quién va. Suelo y líneas en los colores del escenario. */
+.going-court {
+  background-color: rgb(var(--c-stage));
+  box-shadow: inset 0 0 0 1px rgb(var(--c-stage-line));
+}
+.court-floor { fill: rgb(var(--c-stage-ink) / 0.05); }
+.court-front { fill: rgb(var(--c-stage-ink) / 0.035); }
+.court-line { fill: none; stroke: rgb(var(--c-stage-ink) / 0.55); stroke-width: 0.8; }
+.court-net { stroke: rgb(var(--c-stage-ink) / 0.9); stroke-width: 1.4; stroke-linecap: round; }
+.court-post { fill: rgb(var(--c-stage-ink)); }
+.court-chip {
+  border-radius: 999px;
+  border: 2px solid rgb(var(--c-stage-ink) / 0.85);
+  background-color: rgb(var(--c-stage));
+  box-shadow: 0 2px 6px rgb(0 0 0 / 0.45);
+}
+/* La tuya, con el aro del color del club (ya legible sobre el escenario) y un halo suave. */
+/* (Con :root[data-rotta] delante para ganar a los aros de cada identidad, que van más abajo.) */
+:root[data-rotta] .court-chip.court-chip-mine,
+.court-chip.court-chip-mine {
+  border-color: rgb(var(--c-club-on-stage));
+  box-shadow: 0 0 0 3px rgb(var(--c-glow-club) / 0.45), 0 2px 6px rgb(0 0 0 / 0.45);
+}
+.court-name {
+  border-radius: 999px;
+  background-color: rgb(var(--c-stage) / 0.85);
+  color: rgb(var(--c-stage-ink));
+}
+.court-number {
+  border-radius: 999px;
+  background-color: rgb(var(--c-stage-ink));
+  color: rgb(var(--c-stage));
+}
+/* Lima, pista técnica: suelo con un toque de su color, líneas finas y nítidas, chapas casi cuadradas. */
+:root[data-rotta="lima"] .court-floor { fill: rgb(var(--c-glow-rotta) / 0.07); }
+:root[data-rotta="lima"] .court-front { fill: rgb(var(--c-glow-rotta) / 0.06); }
+:root[data-rotta="lima"] .court-line { stroke: rgb(var(--c-stage-ink) / 0.7); stroke-width: 0.6; }
+:root[data-rotta="lima"] .court-chip,
+:root[data-rotta="lima"] .court-name,
+:root[data-rotta="lima"] .court-number { border-radius: 28%; }
+:root[data-rotta="lima"] .court-chip { border-width: 1.5px; }
+/* Naranja, pabellón: suelo cálido (su color, oscurecido para el escenario), líneas redondeadas, aro grueso. */
+:root[data-rotta="naranja"] .court-floor { fill: rgb(var(--c-glow-rotta) / 0.2); }
+:root[data-rotta="naranja"] .court-front { fill: rgb(var(--c-glow-rotta) / 0.14); }
+:root[data-rotta="naranja"] .court-line { stroke: rgb(var(--c-stage-ink) / 0.75); stroke-width: 1.1; stroke-linecap: round; }
+:root[data-rotta="naranja"] .court-chip { border-width: 3px; }
+/* Tinta, acta: suelo casi invisible y líneas muy finas; chapas con aro fino. */
+:root[data-rotta="tinta"] .court-floor { fill: rgb(var(--c-stage-ink) / 0.035); }
+:root[data-rotta="tinta"] .court-line { stroke: rgb(var(--c-stage-ink) / 0.45); stroke-width: 0.5; }
+:root[data-rotta="tinta"] .court-chip { border-width: 1.5px; border-color: rgb(var(--c-stage-ink) / 0.65); }
+/* Vóley playa: arena, en cualquier identidad. */
+.going-court-beach .court-floor { fill: rgb(232 207 149 / 0.22); }
+.going-court-beach .court-line { stroke: rgb(var(--c-stage-ink) / 0.7); }
+
 /* Transiciones con el ritmo de cada identidad; sin movimiento si la persona lo pide. */
 .transition-ui {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;

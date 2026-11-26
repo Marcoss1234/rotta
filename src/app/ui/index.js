@@ -9,4 +9,6 @@ export { PasswordInput } from "./PasswordInput.jsx";
 export { Dialog } from "./Dialog.jsx";
 export { Notice, EmptyState, Badge } from "./Notice.jsx";
 export { PageHeader } from "./PageHeader.jsx";
+export { Stage } from "./Stage.jsx";
+export { StatTile } from "./StatTile.jsx";
 export { cx } from "./cx.js";
