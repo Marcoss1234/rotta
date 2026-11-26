@@ -31,6 +31,8 @@ Rotta es la versión general de la app del C.V. TNT Almería, para venderla a ot
 
 - Cuenta de administrador con usuario y contraseña (para entrar desde el móvil sin Google): `python tools/crear-admin.py usuario "Nombre" [--club codigo]`. Crea una contraseña temporal (se enseña una vez, caduca en 48 h, la app pide cambiarla). Tests en `backend/tests/test_crear_admin.py`.
 
+- Rediseño Premium deportivo (26-11-2026, rama `claude/amazing-euler-emy9p1`, publicado en `main`): plan y estado en `docs/rediseno-premium.md`. Tres identidades (Lima, Naranja, Tinta) con piezas comunes en `src/app/ui` (`PageHeader`, `Dialog` con `placement="auto"`, `Tabs`, `ChipGroup`, `Stage`...). Normas: pantalla fija en el móvil (la página no se desplaza; lo largo, por dentro), móvil compacto (raíz de 15 px, letra mínima 12 px), sin degradados de marca, no estirar pistas ni dibujos, no gastar franjas en cosas pequeñas (saludo, coins y título de la pantalla van en la barra de arriba; `src/app/coins.js`). Cada bloque se publica también en `main`.
+
 ## Siguiente
 Fase 4 (pantalla para dar de alta clubs y editar sus equipos; hoy se hace con `tools/crear-club.py` y `tools/estructura-club.py`).
 
