@@ -49,7 +49,7 @@ function ModePicker() {
           role="radio"
           aria-checked={choice === id}
           onClick={() => chooseMode(id)}
-          className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-bold transition-colors ${choice === id ? "bg-brand text-onbrand" : "bg-void/60 text-white/80 hover:text-white"}`}
+          className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-bold transition-colors ${choice === id ? "bg-tnt text-onbrand" : "bg-void/60 text-zinc-300 hover:text-white"}`}
         >
           <Icon aria-hidden="true" className="h-4 w-4" />
           {label}
@@ -87,8 +87,8 @@ function StylePicker({ club, onPick }) {
                   {theme.name}
                   {active && <Check aria-hidden="true" className="h-4 w-4 shrink-0 text-tnt" />}
                 </span>
-                <span className="text-xs font-semibold text-white/80">{theme.description}</span>
-                <span className="text-xs text-ink-muted">{theme.traits.join(" · ")}</span>
+                <span className="text-xs font-semibold text-zinc-300">{theme.description}</span>
+                <span className="text-xs text-zinc-400">{theme.traits.join(" · ")}</span>
               </span>
             </button>
           );
@@ -137,7 +137,7 @@ function ClubColors() {
     <div className="space-y-5 border-t border-white/10 pt-4">
       <div>
         <h3 className="text-base font-extrabold">Apariencia del club</h3>
-        <p className="text-xs text-ink-muted">Solo administradores. Lo que elijas aquí lo ve todo el club; cada persona sigue eligiendo arriba si la ve en claro u oscuro.</p>
+        <p className="text-xs text-zinc-400">Solo administradores. Lo que elijas aquí lo ve todo el club; cada persona sigue eligiendo arriba si la ve en claro u oscuro.</p>
       </div>
 
       <StylePicker club={club} onPick={pick} />
@@ -173,8 +173,8 @@ function ClubColors() {
             <label key={key} className="flex items-center gap-3 rounded-xl bg-void/60 p-2.5">
               <input type="color" value={club[key]} onChange={(event) => pick({ [key]: event.target.value.toUpperCase() })} className="h-10 w-12 shrink-0 cursor-pointer rounded-md border border-white/15 bg-transparent p-0.5" />
               <span className="min-w-0">
-                <span className="block text-xs font-bold">{label} <span className="font-mono font-semibold text-ink-muted">{club[key].toUpperCase()}</span></span>
-                <span className="block text-xs text-ink-muted">{help}</span>
+                <span className="block text-xs font-bold">{label} <span className="font-mono font-semibold text-zinc-400">{club[key].toUpperCase()}</span></span>
+                <span className="block text-xs text-zinc-400">{help}</span>
               </span>
             </label>
           ))}
@@ -183,7 +183,7 @@ function ClubColors() {
 
       <fieldset className="space-y-2">
         <legend className="text-sm font-extrabold">Modo del club</legend>
-        <p className="text-xs text-ink-muted">El que ve quien tiene «Del club» elegido. Quien elige claro, oscuro o auto sigue con lo suyo.</p>
+        <p className="text-xs text-zinc-400">El que ve quien tiene «Del club» elegido. Quien elige claro, oscuro o auto sigue con lo suyo.</p>
         <div role="radiogroup" aria-label="Modo del club" className="flex gap-1">
           {[["dark", "Oscuro"], ["light", "Claro"]].map(([value, label]) => (
             <button
@@ -192,7 +192,7 @@ function ClubColors() {
               role="radio"
               aria-checked={club.mode === value}
               onClick={() => pick({ mode: value })}
-              className={`min-h-10 rounded-md px-3 text-xs font-bold ${club.mode === value ? "bg-brand text-onbrand" : "text-white/80 ring-1 ring-white/15"}`}
+              className={`min-h-10 rounded-md px-3 text-xs font-bold ${club.mode === value ? "bg-tnt text-onbrand" : "text-zinc-300 ring-1 ring-white/15"}`}
             >
               {label}
             </button>
@@ -205,9 +205,9 @@ function ClubColors() {
         <div className="grid gap-2 min-[480px]:grid-cols-2">
           {["light", "dark"].map((mode) => (
             <figure key={mode} className="space-y-1">
-              <figcaption className="flex items-center gap-1.5 text-xs font-bold text-white/80">
+              <figcaption className="flex items-center gap-1.5 text-xs font-bold text-zinc-300">
                 {mode === "light" ? "Claro" : "Oscuro"}
-                {club.mode === mode && <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-white/80">del club</span>}
+                {club.mode === mode && <span className="rounded-full bg-white/10 px-1.5 py-0.5 text-[11px] font-semibold text-zinc-300">del club</span>}
               </figcaption>
               <div className="overflow-hidden rounded-2xl ring-1 ring-white/10">
                 <ThemePreview style={club.style} mode={mode} brand={club.brand} accent={club.accent} />
@@ -228,10 +228,10 @@ function ClubColors() {
       {message && <Notice tone="success" inline>{message}</Notice>}
       {changed && (
         <div className="grid grid-cols-2 gap-2">
-          <button type="button" onClick={() => previewClub(saved)} className="min-h-11 rounded-full text-sm font-bold text-white/60 ring-1 ring-white/15 hover:bg-white/5">
+          <button type="button" onClick={() => previewClub(saved)} className="min-h-11 rounded-full text-sm font-bold text-zinc-200 ring-1 ring-white/15 hover:bg-white/5">
             Deshacer
           </button>
-          <button type="button" disabled={busy} onClick={save} className="min-h-11 rounded-full bg-brand text-sm font-bold text-onbrand disabled:opacity-60">
+          <button type="button" disabled={busy} onClick={save} className="min-h-11 rounded-full bg-tnt text-sm font-bold text-onbrand disabled:opacity-60">
             {busy ? "Guardando…" : "Guardar para todos"}
           </button>
         </div>
@@ -242,10 +242,10 @@ function ClubColors() {
 
 export default function ThemeSettingsCard({ isAdmin }) {
   return (
-    <section aria-labelledby="theme-title" className="space-y-3 rounded-3xl bg-card p-4">
+    <section aria-labelledby="theme-title" className="space-y-3 rounded-3xl bg-panel p-4">
       <div>
         <h2 id="theme-title" className="font-display text-xl font-extrabold">Apariencia</h2>
-        <p className="text-sm text-ink-muted">Solo para ti, en este móvil: «Del club» usa el modo que recomienda tu club; «Auto» sigue a tu móvil.</p>
+        <p className="text-sm text-zinc-400">Solo para ti, en este móvil: «Del club» usa el modo que recomienda tu club; «Auto» sigue a tu móvil.</p>
       </div>
       <ModePicker />
       {isAdmin && <ClubIdentitySettings />}

@@ -76,10 +76,10 @@ function RenameForm({ lineup, onRename, onDone }) {
           }}
           className="min-h-11 min-w-0 flex-1 rounded-lg border border-white/25 bg-void px-3 text-base text-white focus:border-white focus:outline-none"
         />
-        <button type="submit" disabled={busy || !name.trim()} aria-label="Guardar nombre" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-brand text-onbrand disabled:opacity-50">
+        <button type="submit" disabled={busy || !name.trim()} aria-label="Guardar nombre" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-tnt text-onbrand disabled:opacity-50">
           <Check aria-hidden="true" className="h-5 w-5" />
         </button>
-        <button type="button" disabled={busy} onClick={onDone} aria-label="Cancelar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/20 text-white/60">
+        <button type="button" disabled={busy} onClick={onDone} aria-label="Cancelar" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-white/20 text-zinc-200">
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
       </div>
@@ -107,7 +107,7 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
         event.preventDefault();
         onClose();
       }}
-      className="m-auto max-h-[85vh] w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-white/15 bg-card p-0 font-body text-white backdrop:bg-black/70"
+      className="m-auto max-h-[85vh] w-[calc(100%-2rem)] max-w-sm overflow-hidden rounded-2xl border border-white/15 bg-panel p-0 font-body text-white backdrop:bg-black/70"
     >
       <div className="flex max-h-[85vh] flex-col">
         <div className="relative shrink-0 border-b border-white/10 px-4 pb-3 pt-4">
@@ -115,7 +115,7 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
           <div className="flex items-start justify-between gap-2">
             <div>
               <h2 id="lineups-title" className="font-display text-xl font-extrabold">Alineaciones</h2>
-              <p className="text-xs text-ink-muted">Toca una para ponerla en la pista. Se puede deshacer.</p>
+              <p className="text-xs text-zinc-400">Toca una para ponerla en la pista. Se puede deshacer.</p>
             </div>
             <button type="button" onClick={onClose} aria-label="Cerrar" className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10">
               <X aria-hidden="true" className="h-5 w-5" />
@@ -125,9 +125,9 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
 
         <div className="min-h-0 overflow-y-auto p-3">
           {error && <Notice tone="error" className="mb-2">{error}</Notice>}
-          {lineups === null && !error && <p role="status" className="p-2 text-sm text-white/80">Cargando…</p>}
+          {lineups === null && !error && <p role="status" className="p-2 text-sm text-zinc-300">Cargando…</p>}
           {lineups?.length === 0 && (
-            <p className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-white/80">
+            <p className="rounded-xl border border-dashed border-white/15 p-4 text-center text-sm text-zinc-300">
               Aún no hay ninguna.<br />Coloca a los jugadores y pulsa <span className="font-bold text-white">Guardar alineación</span>.
             </p>
           )}
@@ -158,18 +158,18 @@ export default function LineupsDialog({ lineups, error, onApply, onRename, onDel
                       <button type="button" onClick={() => onApply(lineup)} className="group flex min-w-0 flex-1 items-center gap-3 rounded-l-xl p-2 text-left hover:bg-white/5">
                         <MiniCourt tokens={lineup.tokens} />
                         <span className="min-w-0 flex-1">
-                          <span className="block break-words font-bold leading-tight group-hover:text-club-ui">{lineup.name}</span>
-                          <span className="mt-0.5 block text-[11px] font-semibold text-ink">
+                          <span className="block break-words font-bold leading-tight group-hover:text-ember">{lineup.name}</span>
+                          <span className="mt-0.5 block text-[11px] font-semibold text-zinc-500">
                             {lineup.tokens.length} {lineup.tokens.length === 1 ? "jugador" : "jugadores"} · {savedOn(lineup.created_at)}
                           </span>
-                          <span className="mt-0.5 line-clamp-2 block text-xs text-white/80">{lineup.tokens.map((token) => token.name || token.label).join(", ")}</span>
+                          <span className="mt-0.5 line-clamp-2 block text-xs text-zinc-300">{lineup.tokens.map((token) => token.name || token.label).join(", ")}</span>
                         </span>
                       </button>
                       <div className="flex shrink-0 flex-col justify-center border-l border-white/5">
-                        <button type="button" onClick={() => setRenamingId(lineup.id)} aria-label={`Cambiar el nombre de ${lineup.name}`} className="flex h-11 w-11 items-center justify-center text-ink-muted hover:bg-white/5 hover:text-white">
+                        <button type="button" onClick={() => setRenamingId(lineup.id)} aria-label={`Cambiar el nombre de ${lineup.name}`} className="flex h-11 w-11 items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-white">
                           <Pencil aria-hidden="true" className="h-4 w-4" />
                         </button>
-                        <button type="button" onClick={() => setConfirmingId(lineup.id)} aria-label={`Borrar ${lineup.name}`} className="flex h-11 w-11 items-center justify-center text-ink-muted hover:bg-white/5 hover:text-red-200">
+                        <button type="button" onClick={() => setConfirmingId(lineup.id)} aria-label={`Borrar ${lineup.name}`} className="flex h-11 w-11 items-center justify-center text-zinc-400 hover:bg-white/5 hover:text-red-200">
                           <Trash2 aria-hidden="true" className="h-4 w-4" />
                         </button>
                       </div>

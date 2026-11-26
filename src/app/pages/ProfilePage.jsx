@@ -91,7 +91,7 @@ function PhotoButton({ user, onPhoto, photoBusy }) {
         onClick={() => inputRef.current.click()}
         disabled={photoBusy}
         aria-label={user.picture ? "Cambiar foto de perfil" : "Poner foto de perfil"}
-        className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-white text-ink shadow-lg hover:bg-zinc-200 disabled:opacity-60"
+        className="absolute -bottom-2 -right-2 flex h-9 w-9 items-center justify-center rounded-full bg-white text-zinc-900 shadow-lg hover:bg-zinc-200 disabled:opacity-60"
       >
         <Camera aria-hidden="true" className="h-4 w-4" />
       </button>
@@ -128,7 +128,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 
       <div className={`relative ${editing ? "h-[14rem] md:h-[19rem]" : "h-[18rem] md:h-[24rem]"}`}>
         {with3D ? (
-          <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-ink-muted">Cargando tu personaje…</p>}>
+          <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-zinc-400">Cargando tu personaje…</p>}>
             <AvatarStage look={look} name={user.name.split(" ")[0]} number={player?.number} position={player?.position} heightCm={heightCm} crown={crown} playRef={playRef} focus={editing ? focus : null} />
           </Suspense>
         ) : (
@@ -139,7 +139,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
 
         <div className={`pointer-events-none absolute inset-x-0 top-0 flex items-start justify-between gap-3 p-4 ${editing ? "hidden" : ""}`}>
           <PhotoButton user={user} onPhoto={onPhoto} photoBusy={photoBusy} />
-          {with3D && <p className="rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold text-white/60">Tócalo o gíralo</p>}
+          {with3D && <p className="rounded-full bg-black/50 px-2.5 py-1 text-[11px] font-semibold text-zinc-200">Tócalo o gíralo</p>}
         </div>
       </div>
 
@@ -177,7 +177,7 @@ function Hero({ profile, look, heightCm, crown, editing, focus, onEdit, onPhoto,
           {photoBusy && <p role="status">Subiendo foto…</p>}
           {photoError && <p role="alert" className="rounded bg-black/40 px-2 py-1 font-semibold">{photoError}</p>}
           {user.has_custom_picture && !photoBusy && (
-            <button type="button" onClick={onRemovePhoto} className="flex min-h-11 items-center gap-1.5 font-semibold text-white/80 underline-offset-4 hover:underline">
+            <button type="button" onClick={onRemovePhoto} className="flex min-h-11 items-center gap-1.5 font-semibold text-zinc-300 underline-offset-4 hover:underline">
               <Trash2 aria-hidden="true" className="h-4 w-4" />
               Quitar foto
             </button>
@@ -199,7 +199,7 @@ function CharacterCard({ draft, saved, busy, error, onChange, onTabChange, onCan
           Al azar
         </button>
       </div>
-      <p className="text-sm text-ink-muted">Es el mismo que sale en la pizarra cuando el entrenador prepara una jugada.</p>
+      <p className="text-sm text-zinc-400">Es el mismo que sale en la pizarra cuando el entrenador prepara una jugada.</p>
       <CharacterEditor look={draft} onChange={onChange} onTabChange={onTabChange} owned={owned} />
       {error && <Notice tone="error">{error}</Notice>}
       <div className="sticky bottom-0 z-30 grid grid-cols-2 gap-2 bg-card pt-2">
@@ -258,7 +258,7 @@ function PreferredPositions({ value, onChange }) {
   return (
     <fieldset>
       <legend className={fieldLabelClass}>Posiciones preferidas</legend>
-      <p className="mb-2 text-xs text-ink-muted">Hasta {MAX_PREFERRED}, en orden. Toca la primera que prefieras.</p>
+      <p className="mb-2 text-xs text-zinc-400">Hasta {MAX_PREFERRED}, en orden. Toca la primera que prefieras.</p>
       <div className="flex flex-wrap gap-2">
         {PREFERRED.map((position) => {
           const order = value.indexOf(position);
@@ -271,7 +271,7 @@ function PreferredPositions({ value, onChange }) {
               disabled={!selected && value.length >= MAX_PREFERRED}
               onClick={() => toggle(position)}
               className={`flex min-h-11 items-center gap-2 rounded-full border px-4 text-sm font-semibold disabled:opacity-40 ${
-                selected ? "border-tnt bg-brand text-onbrand" : "border-white/20 text-white/60 hover:bg-white/5"
+                selected ? "border-tnt bg-tnt text-onbrand" : "border-white/20 text-zinc-200 hover:bg-white/5"
               }`}
             >
               {selected && (
@@ -299,7 +299,7 @@ function HandPicker({ value, onChange }) {
             type="button"
             aria-pressed={value === hand.value}
             onClick={() => onChange(value === hand.value ? null : hand.value)}
-            className={`min-h-10 rounded-md text-sm font-semibold ${value === hand.value ? "bg-white text-ink" : "text-white/80 hover:text-white"}`}
+            className={`min-h-10 rounded-md text-sm font-semibold ${value === hand.value ? "bg-white text-zinc-900" : "text-zinc-300 hover:text-white"}`}
           >
             {hand.label}
           </button>
@@ -421,7 +421,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
     return (
       <div className="space-y-4">
         <h1 className="font-display text-3xl font-extrabold">Perfil</h1>
-        {error ? <Notice tone="error" inline>{error}</Notice> : <p role="status" className="text-white/80">Cargando…</p>}
+        {error ? <Notice tone="error" inline>{error}</Notice> : <p role="status" className="text-zinc-300">Cargando…</p>}
       </div>
     );
   }
@@ -502,13 +502,13 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
           <div>
             <label htmlFor="profile-name" className={fieldLabelClass}>Nombre</label>
             <input id="profile-name" value={form.name} onChange={(event) => set("name")(event.target.value)} autoComplete="name" maxLength={120} disabled={inputDisabled} className={fieldClass} />
-            <p className="mt-1 text-xs text-ink-muted">Es el nombre que ve todo el club. Los mensajes ya enviados conservan el anterior.</p>
+            <p className="mt-1 text-xs text-zinc-400">Es el nombre que ve todo el club. Los mensajes ya enviados conservan el anterior.</p>
           </div>
           {player && (
             <div>
               <label htmlFor="profile-phone" className={fieldLabelClass}>Teléfono</label>
               <input id="profile-phone" type="tel" value={form.phone} onChange={(event) => set("phone")(event.target.value)} autoComplete="tel" maxLength={30} disabled={inputDisabled} className={fieldClass} />
-              <p className="mt-1 text-xs text-ink-muted">Opcional. Solo lo ven entrenadores y administradores.</p>
+              <p className="mt-1 text-xs text-zinc-400">Opcional. Solo lo ven entrenadores y administradores.</p>
             </div>
           )}
         </Card>
@@ -530,7 +530,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
               />
             </div>
           ) : (
-            <p className="text-sm text-ink-muted">El dorsal aparecerá cuando estés en una plantilla.</p>
+            <p className="text-sm text-zinc-400">El dorsal aparecerá cuando estés en una plantilla.</p>
           )}
           <div>
             <label htmlFor="profile-height" className={fieldLabelClass}>Estatura (cm)</label>
@@ -546,7 +546,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
               disabled={inputDisabled}
               className={`${fieldClass} max-w-28 font-display text-xl font-bold`}
             />
-            <p className="mt-1 text-xs text-ink-muted">Tu personaje sale con esta altura, a escala con la red y los demás en la pizarra.</p>
+            <p className="mt-1 text-xs text-zinc-400">Tu personaje sale con esta altura, a escala con la red y los demás en la pizarra.</p>
           </div>
           <PreferredPositions value={form.preferred} onChange={set("preferred")} />
           <HandPicker value={form.hand} onChange={set("hand")} />
@@ -557,7 +557,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
 
         {(dirty || saving) && (
           <div className="sticky bottom-0 z-30 md:bottom-4">
-            <button type="submit" disabled={saving} className="min-h-12 w-full rounded-full bg-brand font-bold text-onbrand shadow-xl shadow-black/50 disabled:opacity-60">
+            <button type="submit" disabled={saving} className="min-h-12 w-full rounded-full bg-tnt font-bold text-onbrand shadow-xl shadow-black/50 disabled:opacity-60">
               {saving ? "Guardando…" : "Guardar cambios"}
             </button>
           </div>
@@ -579,17 +579,17 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
       <Card title="Cuenta">
         <dl className="space-y-1 text-sm">
           <div className="flex justify-between gap-3">
-            <dt className="text-ink-muted">{user.email ? "Correo" : "Usuario"}</dt>
+            <dt className="text-zinc-400">{user.email ? "Correo" : "Usuario"}</dt>
             <dd className="min-w-0 break-words text-right font-semibold">{accountLabel(user)}</dd>
           </div>
           <div className="flex justify-between gap-3">
-            <dt className="text-ink-muted">Acceso con</dt>
+            <dt className="text-zinc-400">Acceso con</dt>
             <dd className="font-semibold">{user.has_password ? "Usuario y contraseña" : "Google"}</dd>
           </div>
         </dl>
         {user.has_password && (
           <details className="group border-t border-white/10 pt-2">
-            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-white/60">Cambiar contraseña</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-zinc-200">Cambiar contraseña</summary>
             <div className="pt-2">
               <PasswordChangeForm
                 onChanged={(updated) => {
@@ -602,9 +602,9 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
         )}
         {!user.has_password && (
           <details className="group border-t border-white/10 pt-2" open>
-            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-white/60">Entrar sin Google</summary>
+            <summary className="flex min-h-11 cursor-pointer items-center text-sm font-semibold text-zinc-200">Entrar sin Google</summary>
             <div className="space-y-3 pt-2">
-              <p className="text-sm leading-relaxed text-white/80">
+              <p className="text-sm leading-relaxed text-zinc-300">
                 Crea un usuario y una contraseña para entrar desde la app como todos. Sigues siendo la misma cuenta, con tus permisos.
               </p>
               <PasswordSetupForm

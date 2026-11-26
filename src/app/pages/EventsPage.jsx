@@ -62,7 +62,7 @@ function DayCell({ iso, items, selected, onSelect }) {
       className={cx(
         "flex min-h-12 min-w-0 flex-col gap-1 rounded-field p-1 text-left transition md:min-h-24 md:gap-0.5 md:p-1.5 xl:min-h-28",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
-        selected ? "bg-club-soft ring-2 ring-club-ui" : items.length ? "bg-card ring-1 ring-line hover:ring-control" : "ring-1 ring-line/60 hover:ring-line",
+        selected ? "bg-club-soft ring-2 ring-club-ui" : items.length ? "bg-panel ring-1 ring-line hover:ring-control" : "ring-1 ring-line/60 hover:ring-line",
       )}
     >
       <span className={cx("flex h-6 w-6 items-center justify-center rounded-full font-display text-sm font-extrabold", today ? "bg-club text-on-club" : items.length ? "text-ink" : "text-ink-muted")}>

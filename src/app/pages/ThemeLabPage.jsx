@@ -31,7 +31,7 @@ function Swatch({ palette, active, onPick }) {
       type="button"
       onClick={() => onPick(palette)}
       aria-pressed={active}
-      className={`flex min-h-12 items-center gap-2.5 rounded-xl border px-2.5 py-2 text-left text-sm font-semibold transition ${active ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-ink hover:border-zinc-400"}`}
+      className={`flex min-h-12 items-center gap-2.5 rounded-xl border px-2.5 py-2 text-left text-sm font-semibold transition ${active ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-800 hover:border-zinc-400"}`}
     >
       <span className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-1 ring-black/10" style={{ background: preview.bg }}>
         <span className="absolute inset-y-0 right-0 w-1/2" style={{ background: palette.brand }} />
@@ -110,7 +110,7 @@ function PhonePreview({ theme }) {
             <div className="mt-2 flex items-center gap-3">
               <div className="w-14 shrink-0 overflow-hidden rounded-xl bg-white text-center shadow-sm ring-1 ring-black/10">
                 <span className="block bg-[var(--calendar)] py-0.5 text-[10px] font-extrabold text-white">Nov</span>
-                <span className="block pb-1 pt-0.5 font-display text-2xl font-extrabold leading-none text-ink">12</span>
+                <span className="block pb-1 pt-0.5 font-display text-2xl font-extrabold leading-none text-zinc-900">12</span>
               </div>
               <div className="min-w-0 flex-1">
                 <p className="font-display text-xl font-extrabold leading-tight">20:45 – 22:15</p>
@@ -147,7 +147,7 @@ function PhonePreview({ theme }) {
                   <PersonDot name={entry.name} size={entry.place === 1 ? "h-11 w-11" : "h-9 w-9"} ring="ring-transparent" />
                   <span className="text-xs font-bold">{entry.name}</span>
                   <div className={`flex w-full items-start justify-center rounded-t-lg pt-0.5 ${entry.height}`} style={{ background: `linear-gradient(180deg, ${entry.crown}, ${entry.crown}99)` }}>
-                    <span className="font-display text-base font-extrabold leading-none text-ink">{entry.score}</span>
+                    <span className="font-display text-base font-extrabold leading-none text-zinc-900">{entry.score}</span>
                   </div>
                 </li>
               ))}
@@ -212,13 +212,13 @@ export default function ThemeLabPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-100 font-body text-ink">
+    <div className="min-h-screen bg-zinc-100 font-body text-zinc-900">
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-6 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-start lg:py-10">
         <div className="space-y-5">
           <header>
-            <p className="text-xs font-extrabold text-ink">Rotta · prueba de temas</p>
+            <p className="text-xs font-extrabold text-zinc-500">Rotta · prueba de temas</p>
             <h1 className="mt-1 font-display text-3xl font-extrabold leading-tight md:text-4xl">Los colores de tu club</h1>
-            <p className="mt-1 max-w-prose text-sm text-ink">
+            <p className="mt-1 max-w-prose text-sm text-zinc-600">
               El club elige sus dos colores una vez y toda la app se tiñe. Cada persona elige si la ve en claro u oscuro.
               Verde, dorado y rojo significan lo mismo en todos los clubs: vas, coins y mensajes nuevos.
             </p>
@@ -241,7 +241,7 @@ export default function ThemeLabPage() {
                   <input type="color" value={value} onChange={pickCustom(setter)} className="h-11 w-14 cursor-pointer rounded-lg border border-zinc-300 bg-white p-1" />
                   <span className="leading-tight">
                     {label}
-                    <span className="block font-mono text-[11px] text-ink">{value}</span>
+                    <span className="block font-mono text-[11px] text-zinc-500">{value}</span>
                   </span>
                 </label>
               ))}
@@ -256,7 +256,7 @@ export default function ThemeLabPage() {
                       setCustomMode(value);
                       setPaletteId("custom");
                     }}
-                    className={`min-h-11 rounded-lg px-3 text-sm font-semibold ${customMode === value ? "bg-zinc-900 text-white" : "bg-zinc-100 text-ink hover:bg-zinc-200"}`}
+                    className={`min-h-11 rounded-lg px-3 text-sm font-semibold ${customMode === value ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"}`}
                   >
                     {label}
                   </button>
@@ -264,7 +264,7 @@ export default function ThemeLabPage() {
               </div>
             </div>
             {paletteId === "custom" && (
-              <p className="text-xs text-ink">
+              <p className="text-xs text-zinc-600">
                 Contraste con el fondo: {contrast(theme.brand, theme.surface).toFixed(1).replace(".", ",")}
                 {theme.warnings.length > 0 ? ` · ${theme.warnings[0]}` : " · Se lee bien."}
               </p>
@@ -281,14 +281,14 @@ export default function ThemeLabPage() {
                   role="radio"
                   aria-checked={modeChoice === id}
                   onClick={() => setModeChoice(id)}
-                  className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-bold ${modeChoice === id ? "bg-zinc-900 text-white" : "bg-white text-ink ring-1 ring-zinc-200 hover:ring-zinc-400"}`}
+                  className={`flex min-h-12 flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-bold ${modeChoice === id ? "bg-zinc-900 text-white" : "bg-white text-zinc-700 ring-1 ring-zinc-200 hover:ring-zinc-400"}`}
                 >
                   <Icon aria-hidden="true" className="h-4 w-4" />
                   {label}
                 </button>
               ))}
             </div>
-            <p className="text-xs text-ink">"Del club" usa el fondo de la paleta; "Auto" sigue al móvil.</p>
+            <p className="text-xs text-zinc-500">"Del club" usa el fondo de la paleta; "Auto" sigue al móvil.</p>
           </section>
         </div>
 

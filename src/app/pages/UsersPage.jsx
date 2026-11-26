@@ -10,7 +10,7 @@ import { Notice } from "@/app/ui/index.js";
 const ALL = "todos";
 const NO_TEAM = "sin-equipo";
 const fieldClass =
-  "min-h-11 w-full rounded-lg border border-white/20 bg-card px-3 text-sm text-white placeholder-zinc-400 focus:border-white focus:outline-none";
+  "min-h-11 w-full rounded-lg border border-white/20 bg-panel px-3 text-sm text-white placeholder-zinc-400 focus:border-white focus:outline-none";
 
 const normalize = (text) => text.normalize("NFD").replace(/[̀-ͯ]/g, "").toLocaleLowerCase("es");
 const byName = (a, b) => a.name.localeCompare(b.name, "es");
@@ -26,10 +26,10 @@ function UserRow({ user, isSelf, detail, onOpen }) {
       >
         <Avatar name={user.name} picture={user.picture} className="h-8 w-8 text-xs" />
         <span className="min-w-0 flex-1 truncate font-semibold">
-          {user.name}{isSelf && <span className="font-normal text-ink-muted"> (tú)</span>}
+          {user.name}{isSelf && <span className="font-normal text-zinc-400"> (tú)</span>}
         </span>
-        <span className="shrink-0 text-sm text-ink-muted">{detail}</span>
-        <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-ink" />
+        <span className="shrink-0 text-sm text-zinc-400">{detail}</span>
+        <ChevronRight aria-hidden="true" className="h-4 w-4 shrink-0 text-zinc-500" />
       </button>
     </li>
   );
@@ -122,7 +122,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
     return (
       <div className="space-y-4">
         <h1 className="font-display text-3xl font-extrabold">Usuarios</h1>
-        {error ? <Notice tone="error" inline>{error}</Notice> : <p role="status" className="text-white/80">Cargando…</p>}
+        {error ? <Notice tone="error" inline>{error}</Notice> : <p role="status" className="text-zinc-300">Cargando…</p>}
       </div>
     );
   }
@@ -131,13 +131,13 @@ export default function UsersPage({ currentUser, onAccessLost }) {
     <div className="space-y-6">
       <header className="flex items-baseline justify-between gap-3">
         <h1 className="font-display text-3xl font-extrabold">Usuarios</h1>
-        <p className="text-sm text-ink-muted">{memberCount === 1 ? "1 miembro" : `${memberCount} miembros`}</p>
+        <p className="text-sm text-zinc-400">{memberCount === 1 ? "1 miembro" : `${memberCount} miembros`}</p>
       </header>
 
       {error && <Notice tone="error">{error}</Notice>}
 
       {pending.length > 0 && (
-        <section aria-labelledby="pending-title" className="overflow-hidden rounded-3xl bg-card ring-2 ring-tnt" data-testid="users-pending">
+        <section aria-labelledby="pending-title" className="overflow-hidden rounded-3xl bg-panel ring-2 ring-tnt" data-testid="users-pending">
           <h2 id="pending-title" className="px-3 pt-3 text-sm font-bold">Esperando acceso · {pending.length}</h2>
           <ul className="mt-1 divide-y divide-white/10">
             {pending.map((user) => (
@@ -150,7 +150,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       <div className="space-y-2">
         <div className="relative">
           <label htmlFor="users-search" className="sr-only">Buscar por nombre, correo o usuario</label>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-ink-muted" />
+          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-zinc-400" />
           <input
             id="users-search"
             type="search"
@@ -181,7 +181,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       </div>
 
       {groups.map((group) => (
-        <section key={group.id} aria-labelledby={`group-${group.id}`} className="overflow-hidden rounded-3xl bg-card ring-1 ring-white/10" data-testid="users-group">
+        <section key={group.id} aria-labelledby={`group-${group.id}`} className="overflow-hidden rounded-3xl bg-panel ring-1 ring-white/10" data-testid="users-group">
           <h2 id={`group-${group.id}`} className="border-b border-white/10 px-4 py-3 font-display text-base font-bold">
             {group.name} · {group.users.length}
           </h2>
@@ -190,9 +190,9 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       ))}
 
       {families.length > 0 && (
-        <section aria-labelledby="group-familias" className="mt-8 overflow-hidden rounded-3xl bg-card ring-1 ring-white/10" data-testid="users-families">
+        <section aria-labelledby="group-familias" className="mt-8 overflow-hidden rounded-3xl bg-panel ring-1 ring-white/10" data-testid="users-families">
           <h2 id="group-familias" className="flex items-center gap-2 border-b border-white/10 px-4 py-3 font-display text-base font-bold">
-            <HeartHandshake aria-hidden="true" className="h-4 w-4 text-ink-muted" />
+            <HeartHandshake aria-hidden="true" className="h-4 w-4 text-zinc-400" />
             Familias · {families.length}
           </h2>
           <ul className="divide-y divide-white/10">
@@ -204,7 +204,7 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       )}
 
       {groups.length === 0 && families.length === 0 && (
-        <div className="rounded-3xl bg-card p-4 text-sm text-white/80">
+        <div className="rounded-3xl bg-panel p-4 text-sm text-zinc-300">
           <p>{filtering ? "No hay nadie con esos filtros." : "Todavía no hay miembros."}</p>
           {filtering && (
             <button type="button" onClick={clearFilters} className="mt-2 min-h-11 font-semibold text-white underline underline-offset-4">
@@ -215,8 +215,8 @@ export default function UsersPage({ currentUser, onAccessLost }) {
       )}
 
       {rejected.length > 0 && (
-        <details className="overflow-hidden rounded-xl bg-card" data-testid="users-rejected">
-          <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-bold text-white/60">Sin acceso · {rejected.length}</summary>
+        <details className="overflow-hidden rounded-xl bg-panel" data-testid="users-rejected">
+          <summary className="flex min-h-11 cursor-pointer items-center px-3 text-sm font-bold text-zinc-200">Sin acceso · {rejected.length}</summary>
           <ul className="divide-y divide-white/10 border-t border-white/10">
             {rejected.map((user) => (
               <UserRow key={user.id} user={user} detail="Revisar" onOpen={setSelected} />

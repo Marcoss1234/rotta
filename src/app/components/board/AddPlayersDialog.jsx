@@ -19,15 +19,15 @@ function PlayerRow({ player, placed, checked, onToggle }) {
     <li>
       <label className={`flex min-h-12 items-center gap-2.5 rounded-lg px-2 py-1 ${placed ? "opacity-45" : "cursor-pointer hover:bg-white/5"}`}>
         <input type="checkbox" checked={checked || placed} disabled={placed} onChange={onToggle} className="peer sr-only" />
-        <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white ${checked || placed ? "border-tnt bg-brand text-onbrand" : "border-white/30"}`}>
+        <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border-2 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white ${checked || placed ? "border-tnt bg-tnt text-onbrand" : "border-white/30"}`}>
           {(checked || placed) && <Check className="h-4 w-4 text-white" strokeWidth={3} />}
         </span>
         <Avatar name={player.name} picture={player.picture} className="h-9 w-9 text-xs" />
         <span className="min-w-0 flex-1 break-words text-sm font-bold">{player.name}</span>
         {placed ? (
-          <span className="shrink-0 text-[11px] font-semibold text-ink-muted">En la pista</span>
+          <span className="shrink-0 text-[11px] font-semibold text-zinc-400">En la pista</span>
         ) : (
-          player.number !== null && <span className="shrink-0 font-display text-lg font-extrabold text-club-ui"><span className="sr-only">Dorsal </span>{player.number}</span>
+          player.number !== null && <span className="shrink-0 font-display text-lg font-extrabold text-ember"><span className="sr-only">Dorsal </span>{player.number}</span>
         )}
       </label>
     </li>
@@ -43,21 +43,21 @@ function TeamSection({ team, players, placedIds, selected, onToggle, onToggleMan
   return (
     <details open={defaultOpen} className="group rounded-xl bg-void/60">
       <summary className="flex min-h-12 cursor-pointer list-none items-center gap-2 px-3 [&::-webkit-details-marker]:hidden">
-        <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-ink-muted transition-transform group-open:rotate-180" />
+        <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-zinc-400 transition-transform group-open:rotate-180" />
         <span className="min-w-0 flex-1 truncate font-display text-base font-extrabold">{team.name.replace(/^Club /, "")}</span>
-        {chosen > 0 && <span className="rounded-full bg-brand px-2 py-0.5 text-xs font-bold text-onbrand">{chosen}</span>}
-        <span className="text-xs font-semibold text-ink-muted">{players.length}</span>
+        {chosen > 0 && <span className="rounded-full bg-tnt px-2 py-0.5 text-xs font-bold text-onbrand">{chosen}</span>}
+        <span className="text-xs font-semibold text-zinc-400">{players.length}</span>
       </summary>
       <div className="px-1 pb-2">
-        {players.length === 0 && <p className="px-2 pb-1 text-sm text-ink-muted">Este equipo aún no tiene jugadores.</p>}
+        {players.length === 0 && <p className="px-2 pb-1 text-sm text-zinc-400">Este equipo aún no tiene jugadores.</p>}
         {free.length > 0 && (
-          <button type="button" onClick={() => onToggleMany(free, !allChosen)} className="mb-1 ml-2 min-h-11 text-xs font-bold text-club-ui">
+          <button type="button" onClick={() => onToggleMany(free, !allChosen)} className="mb-1 ml-2 min-h-11 text-xs font-bold text-ember">
             {allChosen ? "Quitar selección" : "Seleccionar todos"}
           </button>
         )}
         {groups.map((group) => (
           <section key={group.position} aria-label={group.position}>
-            <h4 className="px-2 pb-0.5 pt-1.5 text-[11px] font-bold text-ink-muted">{group.position}</h4>
+            <h4 className="px-2 pb-0.5 pt-1.5 text-[11px] font-bold text-zinc-400">{group.position}</h4>
             <ul>
               {group.players.map((player) => (
                 <PlayerRow key={player.id} player={player} placed={placedIds.has(player.id)} checked={selected.has(player.id)} onToggle={() => onToggle(player)} />
@@ -107,7 +107,7 @@ export default function AddPlayersDialog({ teams, players, boardTeamId, placedId
         event.preventDefault();
         onClose();
       }}
-      className="m-auto flex max-h-[88dvh] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden rounded-2xl border border-white/15 bg-card p-0 font-body text-white backdrop:bg-black/80"
+      className="m-auto flex max-h-[88dvh] w-[calc(100%-2rem)] max-w-md flex-col overflow-hidden rounded-2xl border border-white/15 bg-panel p-0 font-body text-white backdrop:bg-black/80"
     >
       <h2 id="add-players-title" className="shrink-0 px-4 pb-2 pt-4 font-display text-2xl font-extrabold">Añadir jugadores</h2>
       {/* flex-auto (no flex-1): en Safari del iPhone, con flex-1 la lista se encoge a nada. */}
@@ -131,7 +131,7 @@ export default function AddPlayersDialog({ teams, players, boardTeamId, placedId
           type="button"
           disabled={count === 0}
           onClick={() => onAdd(players.filter((player) => selected.has(player.id)))}
-          className="min-h-12 rounded-lg bg-brand font-display text-sm font-extrabold disabled:opacity-40 text-onbrand"
+          className="min-h-12 rounded-lg bg-tnt font-display text-sm font-extrabold disabled:opacity-40 text-onbrand"
         >
           {count > 0 ? `Añadir (${count})` : "Añadir"}
         </button>

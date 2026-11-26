@@ -47,14 +47,14 @@ export function GroupPicker({ groups, groupId, onChange }) {
 // - chip: el aro de la chapa en la pista; libero: el líbero lleva la chapa rellena de su color (otra camiseta).
 // - label: el puesto escrito bajo la chapa (la pista va siempre en oscuro).
 export const POSITION_TONES = {
-  Líbero: { tag: "bg-sky-400/10 text-sky-300 ring-sky-400/30", dot: "bg-sky-400", chip: "border-sky-400 bg-sky-400 text-ink", label: "text-sky-300" },
+  Líbero: { tag: "bg-sky-400/10 text-sky-300 ring-sky-400/30", dot: "bg-sky-400", chip: "border-sky-400 bg-sky-400 text-zinc-950", label: "text-sky-300" },
   Colocador: { tag: "bg-violet-400/10 text-violet-300 ring-violet-400/30", dot: "bg-violet-400", chip: "border-violet-400", label: "text-violet-300" },
   Receptor: { tag: "bg-emerald-400/10 text-emerald-300 ring-emerald-400/30", dot: "bg-emerald-400", chip: "border-emerald-400", label: "text-emerald-300" },
   // El ámbar, un tono más oscuro en claro (amber-200 pasa a amber-800): con el 300 quedaba justo en 4,5:1.
   Central: { tag: "bg-amber-400/10 text-amber-200 ring-amber-400/30", dot: "bg-amber-400", chip: "border-amber-400", label: "text-amber-300" },
   Opuesto: { tag: "bg-rose-400/10 text-rose-300 ring-rose-400/30", dot: "bg-rose-400", chip: "border-rose-400", label: "text-rose-300" },
 };
-const NEUTRAL_TONE = { tag: "bg-raised text-ink-muted ring-line", dot: "bg-ink-muted", chip: "border-white", label: "text-white/80" };
+const NEUTRAL_TONE = { tag: "bg-raised text-ink-muted ring-line", dot: "bg-ink-muted", chip: "border-white", label: "text-zinc-300" };
 export const positionTone = (position) => POSITION_TONES[position] ?? NEUTRAL_TONE;
 
 export function PositionTag({ position }) {

@@ -23,13 +23,13 @@ function canDraw3D() {
 const CROWNS = [
   { id: "month", label: "Del mes", chip: "ring-amber-300 bg-amber-300 text-void", icon: "fill-amber-300 text-amber-500" },
   { id: "gold", label: "Oro", chip: "ring-amber-300 bg-amber-400/20 text-amber-200", icon: "fill-amber-300 text-amber-300" },
-  { id: "silver", label: "Plata", chip: "ring-zinc-300 bg-zinc-300/20 text-white", icon: "fill-zinc-300 text-white/80" },
+  { id: "silver", label: "Plata", chip: "ring-zinc-300 bg-zinc-300/20 text-zinc-100", icon: "fill-zinc-300 text-zinc-300" },
   { id: "bronze", label: "Bronce", chip: "ring-orange-400 bg-orange-400/20 text-orange-200", icon: "fill-orange-400 text-orange-400" },
 ];
 
 const PLACE_STYLES = {
   1: { label: "1º", ring: "ring-amber-300", text: "text-amber-300", crown: "fill-amber-300 text-amber-300" },
-  2: { label: "2º", ring: "ring-zinc-300", text: "text-white/60", crown: "fill-zinc-300 text-white/80" },
+  2: { label: "2º", ring: "ring-zinc-300", text: "text-zinc-200", crown: "fill-zinc-300 text-zinc-300" },
   3: { label: "3º", ring: "ring-orange-400", text: "text-orange-300", crown: "fill-orange-400 text-orange-400" },
 };
 
@@ -94,7 +94,7 @@ function CrownShowcase({ profile, prizes, monthTitle }) {
       <div className="relative h-64 md:h-[24rem]">
         <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-4 mx-auto h-48 w-48 rounded-full bg-gold/20 blur-3xl" />
         {with3D ? (
-          <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-ink-muted">Cargando tu personaje…</p>}>
+          <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-zinc-400">Cargando tu personaje…</p>}>
             <AvatarStage
               look={look}
               name={profile.user.name.split(" ")[0]}
@@ -127,7 +127,7 @@ function CrownShowcase({ profile, prizes, monthTitle }) {
                 role="radio"
                 aria-checked={active}
                 onClick={() => setCrown(item.id)}
-                className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-chip px-1 text-xs font-extrabold ring-2 transition ${active ? item.chip : "bg-white/5 text-white/80 ring-transparent hover:bg-white/10"}`}
+                className={`flex min-h-11 flex-col items-center justify-center gap-0.5 rounded-chip px-1 text-xs font-extrabold ring-2 transition ${active ? item.chip : "bg-white/5 text-zinc-300 ring-transparent hover:bg-white/10"}`}
               >
                 <Crown aria-hidden="true" className={`h-4 w-4 ${item.icon}`} />
                 {item.label}
@@ -139,8 +139,8 @@ function CrownShowcase({ profile, prizes, monthTitle }) {
           <div className="flex items-start justify-between gap-3 rounded-xl bg-black/30 p-3">
             <div className="min-w-0">
               <p className="font-display text-xl font-extrabold leading-tight text-white">{story.title}</p>
-              <p className="text-sm text-white/80">{story.how}</p>
-              <p className="text-xs text-ink-muted">{story.lasts}</p>
+              <p className="text-sm text-zinc-300">{story.how}</p>
+              <p className="text-xs text-zinc-400">{story.lasts}</p>
             </div>
             {story.coins != null && (
               <span className="flex shrink-0 items-center gap-1 rounded-full bg-amber-400 px-3 py-1.5 text-base font-extrabold tabular-nums text-void">

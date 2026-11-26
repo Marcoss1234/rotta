@@ -180,7 +180,7 @@ function CourtPlayer({ player, stats, mvp, spot, canScore, onOpen, compact = fal
       </span>
       <span style={{ fontSize: `${labelScale(firstName(player.name), short).toFixed(2)}em` }} className="mt-[1cqmin] flex gap-[1.4cqmin] whitespace-nowrap rounded-md bg-black/85 px-[1.5cqmin] font-bold leading-[1.35] text-white shadow">
         <span>{firstName(player.name)}</span>
-        {short && <span className="shrink-0 text-club-ui">{short}</span>}
+        {short && <span className="shrink-0 text-ember">{short}</span>}
       </span>
       {(good > 0 || bad > 0) && (
         <span className={`flex gap-[1cqmin] font-extrabold tabular-nums leading-[1.3] ${compact ? "absolute -right-[6%] top-0 flex-col" : "mt-[0.8cqmin]"}`}>
@@ -223,7 +223,7 @@ function BenchPlayer({ player, stats, mvp, canScore, onOpen, dragProps = null, d
       )}
     </>
   );
-  const look = `flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-card py-0.5 pl-0.5 pr-2.5 ring-1 ${mvp ? "ring-amber-300/60" : "ring-white/10"} ${dragging ? "opacity-30" : ""}`;
+  const look = `flex min-h-9 shrink-0 items-center gap-1.5 rounded-full bg-panel py-0.5 pl-0.5 pr-2.5 ring-1 ${mvp ? "ring-amber-300/60" : "ring-white/10"} ${dragging ? "opacity-30" : ""}`;
   // Del banquillo se arrastra a la pista.
   const style = dragProps ? { touchAction: "none" } : undefined;
   if (!canScore) return <span style={style} className={look} {...dragProps}>{inner}</span>;
@@ -285,7 +285,7 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
       <button
         type="button"
         onClick={() => onPick({ result, skill: null, point: null })}
-        className="min-h-10 w-full rounded-xl text-xs font-bold text-white/80 ring-1 ring-white/10 hover:bg-white/5"
+        className="min-h-10 w-full rounded-xl text-xs font-bold text-zinc-300 ring-1 ring-white/10 hover:bg-white/5"
       >
         {result === "good" ? "Acierto sin punto" : "Fallo sin punto"}
       </button>
@@ -293,7 +293,7 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
   );
   const quickActions = quick.length > 0 && (
     <section aria-labelledby="player-sheet-quick" className="mb-3 rounded-xl bg-white/[0.04] p-2 ring-1 ring-white/10">
-      <p id="player-sheet-quick" className="mb-1.5 px-1 text-xs font-extrabold uppercase tracking-widest text-white/80">
+      <p id="player-sheet-quick" className="mb-1.5 px-1 text-xs font-extrabold uppercase tracking-widest text-zinc-300">
         Lo suyo · {player.position}
       </p>
       <div className="grid grid-cols-2 gap-1.5">
@@ -318,7 +318,7 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
           );
         })}
       </div>
-      {noPointRole && <p className="mt-1.5 px-1 text-[11px] leading-snug text-ink-muted">No dan punto, pero cuentan en sus estadísticas. ★ = perfecta (doble positiva).</p>}
+      {noPointRole && <p className="mt-1.5 px-1 text-[11px] leading-snug text-zinc-400">No dan punto, pero cuentan en sus estadísticas. ★ = perfecta (doble positiva).</p>}
     </section>
   );
   return (
@@ -338,9 +338,9 @@ function PlayerSheet({ player, opponent, onPick, onClose }) {
         <span className="flex h-10 w-10 items-center justify-center rounded-full bg-club font-display text-lg font-extrabold text-on-club">{player.number ?? "–"}</span>
         <span className="min-w-0 flex-1">
           <span id="player-sheet-title" className="block truncate font-display text-lg font-extrabold">{player.name}</span>
-          <span className="block text-xs text-ink-muted">«+1» suma el punto a Club (su color) o a {opponent} (azul)</span>
+          <span className="block text-xs text-zinc-400">«+1» suma el punto a Club (su color) o a {opponent} (azul)</span>
         </span>
-        <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-10 w-10 items-center justify-center rounded-lg text-white/80 hover:bg-white/10">
+        <button type="button" onClick={onClose} aria-label="Cerrar" className="flex h-10 w-10 items-center justify-center rounded-lg text-zinc-300 hover:bg-white/10">
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
       </div>
@@ -404,7 +404,7 @@ function HelpDialog({ scorer, onClose }) {
             </span>
             <span className="min-w-0">
               <span className="block text-xs font-extrabold">{title}</span>
-              <span className="block text-[13px] leading-snug text-white/80">{text}</span>
+              <span className="block text-[13px] leading-snug text-zinc-300">{text}</span>
             </span>
           </li>
         ))}
@@ -464,7 +464,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel, changing = false }) {
                 role="radio"
                 aria-checked={selected}
                 onClick={() => setChosen(player.player_id)}
-                className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left ${selected ? "bg-amber-400/15 ring-2 ring-amber-300" : "bg-card ring-1 ring-white/10"}`}
+                className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left ${selected ? "bg-amber-400/15 ring-2 ring-amber-300" : "bg-panel ring-1 ring-white/10"}`}
               >
                 <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-club text-sm font-extrabold text-on-club">{player.number ?? initialsOf(player.name)}</span>
                 <span className="min-w-0 flex-1 truncate font-bold">{player.name}</span>
@@ -485,7 +485,7 @@ function MvpDialog({ game, suggested, onFinish, onCancel, changing = false }) {
           Guardar MVP
         </button>
       </div>
-      <button type="button" onClick={onCancel} className="mx-3 mb-3 min-h-10 rounded-lg text-xs font-semibold text-ink-muted hover:bg-white/5">
+      <button type="button" onClick={onCancel} className="mx-3 mb-3 min-h-10 rounded-lg text-xs font-semibold text-zinc-400 hover:bg-white/5">
         {changing ? "Cancelar" : "Aún no, seguir el partido"}
       </button>
     </dialog>
@@ -613,7 +613,7 @@ export default function LiveMatchPage({ onAccessLost }) {
   if (!game) {
     return (
       <section className="fixed inset-0 z-50 flex items-center justify-center bg-void md:left-[17rem]">
-        <p role="status" className="text-white/80">{error || "Cargando el partido…"}</p>
+        <p role="status" className="text-zinc-300">{error || "Cargando el partido…"}</p>
       </section>
     );
   }
@@ -649,7 +649,7 @@ export default function LiveMatchPage({ onAccessLost }) {
         </button>
         <div className="min-w-0 flex-1">
           <p className="truncate font-display text-base font-extrabold leading-tight">
-            {game.team_name.replace(/^Club /, "Club ")} <span className="text-ink">vs</span> {game.opponent}
+            {game.team_name.replace(/^Club /, "Club ")} <span className="text-zinc-500">vs</span> {game.opponent}
           </p>
           <p className="flex items-center gap-1.5 text-[11px] font-extrabold">
             {notStarted ? (
@@ -660,12 +660,12 @@ export default function LiveMatchPage({ onAccessLost }) {
                 <span className="text-red-300">En directo</span>
               </>
             ) : (
-              <span className="text-ink-muted">Terminado</span>
+              <span className="text-zinc-400">Terminado</span>
             )}
-            <span className="text-ink">· {notStarted ? "Set 1" : game.finished || !live ? "Final" : `Set ${game.set_number}`} · a {game.best_of === 5 ? 3 : 2} sets</span>
+            <span className="text-zinc-500">· {notStarted ? "Set 1" : game.finished || !live ? "Final" : `Set ${game.set_number}`} · a {game.best_of === 5 ? 3 : 2} sets</span>
           </p>
         </div>
-        <button type="button" onClick={() => setHelping(true)} aria-label="Cómo funciona" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white/60 hover:bg-white/10">
+        <button type="button" onClick={() => setHelping(true)} aria-label="Cómo funciona" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-200 hover:bg-white/10">
           <Info aria-hidden="true" className="h-5 w-5" />
         </button>
         {(canScore || game.can_start) && (
@@ -755,10 +755,10 @@ export default function LiveMatchPage({ onAccessLost }) {
       )}
       {/* Sin empezar: el entrenador lo arranca con un botón (entrar ya no lo empieza). */}
       {notStarted && (
-        <div className="shrink-0 rounded-card bg-card p-3 ring-1 ring-white/10">
+        <div className="shrink-0 rounded-card bg-panel p-3 ring-1 ring-white/10">
           {game.can_start ? (
             <>
-              <p className="text-sm text-white/60">El partido aún no ha empezado. Cuando empiece, dale al botón y se avisa al equipo.</p>
+              <p className="text-sm text-zinc-200">El partido aún no ha empezado. Cuando empiece, dale al botón y se avisa al equipo.</p>
               <button
                 type="button"
                 disabled={busy}
@@ -770,7 +770,7 @@ export default function LiveMatchPage({ onAccessLost }) {
               </button>
             </>
           ) : (
-            <p className="text-sm font-semibold text-white/60">El partido aún no ha empezado. Cuando empiece, verás aquí el marcador punto a punto.</p>
+            <p className="text-sm font-semibold text-zinc-200">El partido aún no ha empezado. Cuando empiece, verás aquí el marcador punto a punto.</p>
           )}
         </div>
       )}
@@ -781,7 +781,7 @@ export default function LiveMatchPage({ onAccessLost }) {
         <ScoreSide side="us" name="Club" score={game.current.us} sets={game.won.us} serving={!game.finished && game.serving === "us"} timeouts={game.timeouts.us} canScore={scoring} busy={busy} onPoint={() => point("us")} />
         <ScoreSide side="them" name={opponentShort} score={game.current.them} sets={game.won.them} serving={!game.finished && game.serving === "them"} timeouts={game.timeouts.them} canScore={scoring} busy={busy} onPoint={() => point("them")} />
         <span aria-hidden="true" className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 flex-col items-center rounded-2xl bg-void px-2.5 py-1.5 font-display font-extrabold leading-none shadow-[0_6px_20px_rgba(0,0,0,0.6)] ring-2 ring-white/10">
-          <span className="text-[9px] text-ink-muted">{notStarted ? "Set" : game.finished || !live ? "Final" : "Set"}</span>
+          <span className="text-[9px] text-zinc-400">{notStarted ? "Set" : game.finished || !live ? "Final" : "Set"}</span>
           <span className="text-xl text-white">{notStarted ? 1 : game.finished || !live ? `${game.won.us}-${game.won.them}` : game.set_number}</span>
         </span>
       </div>
@@ -801,7 +801,7 @@ export default function LiveMatchPage({ onAccessLost }) {
       <div style={{ gridArea: "court" }} className="flex min-h-0 flex-col gap-2">
         <div ref={court.ref} className="relative flex min-h-0 flex-1 items-center justify-center">
           {game.lineup.length === 0 ? (
-            <p className="max-w-xs rounded-2xl bg-card/80 p-5 text-center text-sm text-white/80 ring-1 ring-white/10">
+            <p className="max-w-xs rounded-2xl bg-panel/80 p-5 text-center text-sm text-zinc-300 ring-1 ring-white/10">
               Todavía nadie ha dicho que va a este partido. En cuanto respondan «Voy», aparecen aquí.
             </p>
           ) : (
@@ -838,9 +838,9 @@ export default function LiveMatchPage({ onAccessLost }) {
         </div>
         {game.lineup.length > COURT_PLACES && (
           <div className="shrink-0">
-            <p className="mb-1 flex items-baseline justify-between text-[10px] font-bold text-ink">
+            <p className="mb-1 flex items-baseline justify-between text-[10px] font-bold text-zinc-500">
               <span>Banquillo · {game.lineup.length - COURT_PLACES}</span>
-              {canArrange && <span className="normal-case tracking-normal text-ink-muted">Arrastra para cambiar</span>}
+              {canArrange && <span className="normal-case tracking-normal text-zinc-400">Arrastra para cambiar</span>}
             </p>
             {/* Todos a la vista (en varias filas si hace falta), para poder sacarlos a la pista arrastrando. */}
             <div className="flex max-h-40 flex-wrap gap-1 overflow-y-auto pb-1">
@@ -866,7 +866,7 @@ export default function LiveMatchPage({ onAccessLost }) {
         {[...game.events].reverse().slice(0, 10).map((event, index) => {
           const tone = event.type === "stat" ? (event.result === "good" ? "border-emerald-400" : "border-red-400") : event.type === "timeout" ? "border-zinc-500" : event.side === "us" ? "border-club-ui" : "border-sky-500";
           return (
-            <li key={event.id} style={{ opacity: 1 - index * 0.08 }} className={`truncate rounded-r-lg border-l-4 bg-white/[0.04] px-3 py-1.5 text-sm font-semibold text-white/60 ${tone}`}>
+            <li key={event.id} style={{ opacity: 1 - index * 0.08 }} className={`truncate rounded-r-lg border-l-4 bg-white/[0.04] px-3 py-1.5 text-sm font-semibold text-zinc-200 ${tone}`}>
               {describe(event, game.lineup, game.opponent)}
             </li>
           );
@@ -876,10 +876,10 @@ export default function LiveMatchPage({ onAccessLost }) {
       <div style={{ gridArea: "controls" }} className="flex flex-col gap-2">
       {/* Última acción */}
       <div className="flex min-h-10 items-center gap-2 rounded-xl bg-white/[0.04] px-3 text-sm ring-1 ring-white/10 backdrop-blur">
-        <span className="min-w-0 flex-1 truncate font-semibold text-white/60" aria-live="polite">
+        <span className="min-w-0 flex-1 truncate font-semibold text-zinc-200" aria-live="polite">
           {!live && game.mvp ? `🏆 MVP: ${game.mvp.name}` : latest ? describe(latest, game.lineup, game.opponent) : live ? "Empieza el partido: toca un marcador para sumar el punto" : "Sin acciones"}
         </span>
-        <span className="shrink-0 text-xs font-bold tabular-nums text-ink">
+        <span className="shrink-0 text-xs font-bold tabular-nums text-zinc-500">
           Equipo <span className="text-emerald-300">✓{game.team_stats.good}</span> <span className="text-red-300">✗{game.team_stats.bad}</span>
         </span>
       </div>
@@ -898,7 +898,7 @@ export default function LiveMatchPage({ onAccessLost }) {
             <span className="text-[10px] font-extrabold">Equipo</span>
           </button>
           <div className="relative">
-            <button type="button" disabled={busy || game.finished} onClick={() => setTimeoutChoice((open) => !open)} aria-expanded={timeoutChoice} className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl bg-white/[0.06] text-white ring-1 ring-white/10 disabled:opacity-40">
+            <button type="button" disabled={busy || game.finished} onClick={() => setTimeoutChoice((open) => !open)} aria-expanded={timeoutChoice} className="flex h-full w-full flex-col items-center justify-center gap-0.5 rounded-xl bg-white/[0.06] text-zinc-100 ring-1 ring-white/10 disabled:opacity-40">
               <Timer aria-hidden="true" className="h-5 w-5" />
               <span className="text-[10px] font-extrabold">Tiempo</span>
             </button>
@@ -917,13 +917,13 @@ export default function LiveMatchPage({ onAccessLost }) {
                     className="flex min-h-11 w-full items-center justify-between px-3 text-sm font-semibold hover:bg-white/5 disabled:opacity-40"
                   >
                     {label}
-                    <span className="text-xs text-ink-muted">{game.timeouts[side]}/2</span>
+                    <span className="text-xs text-zinc-400">{game.timeouts[side]}/2</span>
                   </button>
                 ))}
               </div>
             )}
           </div>
-          <button type="button" disabled={busy || game.event_count === 0} onClick={() => send(() => undoLiveEvent(liveId))} className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-white/[0.06] text-white ring-1 ring-white/10 disabled:opacity-40">
+          <button type="button" disabled={busy || game.event_count === 0} onClick={() => send(() => undoLiveEvent(liveId))} className="flex flex-col items-center justify-center gap-0.5 rounded-xl bg-white/[0.06] text-zinc-100 ring-1 ring-white/10 disabled:opacity-40">
             <Undo2 aria-hidden="true" className="h-5 w-5" />
             <span className="text-[10px] font-extrabold">Deshacer</span>
           </button>

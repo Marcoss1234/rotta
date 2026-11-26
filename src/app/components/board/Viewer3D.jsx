@@ -1653,14 +1653,14 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
     <div className="absolute inset-0">
       <div ref={mountRef} data-viewer-3d className="absolute inset-0 overflow-hidden" />
       <div role="group" aria-label="Cámara" className="pointer-events-none absolute inset-x-0 top-2 flex justify-center px-2">
-        <div className="pointer-events-auto flex max-w-full gap-1 overflow-x-auto rounded-full border border-white/10 bg-card/85 p-1 backdrop-blur [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="pointer-events-auto flex max-w-full gap-1 overflow-x-auto rounded-full border border-white/10 bg-panel/85 p-1 backdrop-blur [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {CAMERAS.map((item) => (
             <button
               key={item.id}
               type="button"
               aria-pressed={camera === item.id}
               onClick={() => chooseCamera(item.id)}
-              className={`min-h-9 shrink-0 rounded-full px-3 text-xs font-bold ${camera === item.id ? "bg-brand text-onbrand" : "text-white/60 hover:bg-white/10"}`}
+              className={`min-h-9 shrink-0 rounded-full px-3 text-xs font-bold ${camera === item.id ? "bg-tnt text-onbrand" : "text-zinc-200 hover:bg-white/10"}`}
             >
               {item.label}
             </button>
@@ -1674,14 +1674,14 @@ export default function Viewer3D({ elements, rosterById, heights, flashes, actio
               setSoundEnabled(!sound);
               setSound(!sound);
             }}
-            className="flex min-h-9 w-9 shrink-0 items-center justify-center rounded-full text-white/60 hover:bg-white/10"
+            className="flex min-h-9 w-9 shrink-0 items-center justify-center rounded-full text-zinc-200 hover:bg-white/10"
           >
             {sound ? <Volume2 aria-hidden="true" className="h-4 w-4" /> : <VolumeX aria-hidden="true" className="h-4 w-4" />}
           </button>
         </div>
       </div>
       {hint && (
-        <p className="pointer-events-none absolute left-1/2 top-14 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-3 py-1 text-[11px] font-semibold text-white/80">
+        <p className="pointer-events-none absolute left-1/2 top-14 -translate-x-1/2 whitespace-nowrap rounded-full bg-black/55 px-3 py-1 text-[11px] font-semibold text-zinc-300">
           Arrastra para girar · pellizca o rueda para acercar
         </p>
       )}

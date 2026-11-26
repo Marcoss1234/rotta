@@ -57,18 +57,18 @@ export default function BackupCard() {
 
   const old = !last || Date.now() - new Date(last).getTime() > 7 * 86400000;
   return (
-    <section aria-labelledby="backup-title" className="rounded-3xl ring-1 ring-white/10 bg-card p-4">
+    <section aria-labelledby="backup-title" className="rounded-3xl ring-1 ring-white/10 bg-panel p-4">
       <div className="flex items-start gap-3">
-        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-club-ui">
+        <span aria-hidden="true" className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white/5 text-ember">
           <DatabaseBackup className="h-5 w-5" />
         </span>
         <div className="min-w-0 flex-1">
           <h2 id="backup-title" className="text-sm font-bold">Copia de seguridad</h2>
-          <p className="mt-1 text-sm text-ink-muted">
+          <p className="mt-1 text-sm text-zinc-400">
             Descarga un archivo con todo lo del club: usuarios, plantillas, asistencia, partidos, eventos, notas, horarios, jugadas y chat.
             Guárdalo en tu ordenador o en Google Drive. Las fotos y las contraseñas no van en la copia.
           </p>
-          <p className={`mt-2 text-xs font-semibold ${old ? "text-amber-300" : "text-ink-muted"}`}>
+          <p className={`mt-2 text-xs font-semibold ${old ? "text-amber-300" : "text-zinc-400"}`}>
             {lastLabel(last)}
             {old ? " Conviene hacer una a la semana." : ""}
           </p>

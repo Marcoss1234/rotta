@@ -28,7 +28,7 @@ import { syncPushSubscription } from "@/app/notifications.js";
 // La pizarra pesa bastante: solo se descarga al entrar en ella.
 const BoardsPage = lazy(() => import("@/app/pages/BoardsPage.jsx"));
 const BoardEditorPage = lazy(() => import("@/app/pages/BoardEditorPage.jsx"));
-const boardLoading = <p role="status" className="text-white/80">Cargando la pizarra…</p>;
+const boardLoading = <p role="status" className="text-zinc-300">Cargando la pizarra…</p>;
 import useAppViewport from "@/app/useAppViewport.js";
 
 export default function PrivateApp() {

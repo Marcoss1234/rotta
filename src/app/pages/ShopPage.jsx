@@ -135,7 +135,7 @@ export default function ShopPage({ onAccessLost }) {
   }, [handleError]);
 
   if (!shop || !look) {
-    return <p role="status" className="text-white/80">{error || "Abriendo la tienda…"}</p>;
+    return <p role="status" className="text-zinc-300">{error || "Abriendo la tienda…"}</p>;
   }
 
   const items = shop.items.filter((item) => item.category === category);
@@ -202,15 +202,15 @@ export default function ShopPage({ onAccessLost }) {
         </div>
         <div className="relative h-48 md:h-72 lg:h-[26rem]">
           {with3D && selected?.category === "efectos" ? (
-            <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-ink-muted">Preparando la pista…</p>}>
+            <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-zinc-400">Preparando la pista…</p>}>
               <ShopActionStage key={selected.id.split(":")[0]} item={selected} look={preview} profile={profile} />
             </Suspense>
           ) : with3D ? (
-            <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-ink-muted">Cargando tu personaje…</p>}>
+            <Suspense fallback={<p role="status" className="flex h-full items-center justify-center text-sm text-zinc-400">Cargando tu personaje…</p>}>
               <AvatarStage look={preview} name={profile.user.name.split(" ")[0]} number={profile.player?.number} position={profile.player?.position} heightCm={profile.height_cm} focus={CATEGORIES.find((item) => item.id === category)?.focus} />
             </Suspense>
           ) : (
-            <p className="flex h-full items-center justify-center text-sm text-ink-muted">Tu móvil no puede mostrar el personaje en 3D.</p>
+            <p className="flex h-full items-center justify-center text-sm text-zinc-400">Tu móvil no puede mostrar el personaje en 3D.</p>
           )}
         </div>
       </section>

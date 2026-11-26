@@ -43,7 +43,7 @@ export default function ClubIdentitySettings() {
     <div className="space-y-3 border-t border-white/10 pt-4">
       <div>
         <h3 className="text-sm font-extrabold">Nombre y escudo del club</h3>
-        <p className="text-xs text-ink-muted">Solo administradores. Salen al entrar, en el menú y en el título de la app.</p>
+        <p className="text-xs text-zinc-400">Solo administradores. Salen al entrar, en el menú y en el título de la app.</p>
       </div>
 
       <div className="flex items-center gap-3 rounded-lg bg-void/60 p-2.5">
@@ -53,7 +53,7 @@ export default function ClubIdentitySettings() {
             type="button"
             disabled={Boolean(busy)}
             onClick={() => fileRef.current?.click()}
-            className="flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-4 text-sm font-bold text-onbrand disabled:opacity-60"
+            className="flex min-h-11 items-center gap-1.5 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-60"
           >
             <ImagePlus aria-hidden="true" className="h-4 w-4" />
             {busy === "crest" ? "Subiendo…" : club.custom.crest ? "Cambiar escudo" : "Subir escudo"}
@@ -63,7 +63,7 @@ export default function ClubIdentitySettings() {
               type="button"
               disabled={Boolean(busy)}
               onClick={() => run("crest", deleteClubCrest, "Escudo quitado: vuelve a salir el de Rotta.")}
-              className="flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-bold text-white/60 ring-1 ring-white/15 hover:bg-white/5 disabled:opacity-60"
+              className="flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-bold text-zinc-200 ring-1 ring-white/15 hover:bg-white/5 disabled:opacity-60"
             >
               <Trash2 aria-hidden="true" className="h-4 w-4" />
               Quitar
@@ -72,7 +72,7 @@ export default function ClubIdentitySettings() {
           <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={chooseCrest} className="sr-only" aria-label="Elegir el escudo del club" tabIndex={-1} />
         </div>
       </div>
-      <p className="text-xs text-ink-muted">Mejor en PNG con el fondo transparente. Se ve entero, sin recortar.</p>
+      <p className="text-xs text-zinc-400">Mejor en PNG con el fondo transparente. Se ve entero, sin recortar.</p>
 
       <form onSubmit={saveName} className="flex gap-2">
         <label className="sr-only" htmlFor="club-name">Nombre del club</label>
@@ -82,9 +82,9 @@ export default function ClubIdentitySettings() {
           onChange={(event) => setName(event.target.value)}
           maxLength={40}
           placeholder="Ej.: C.V. Los Pinos"
-          className="min-h-11 min-w-0 flex-1 rounded-full border border-white/15 bg-void/60 px-4 text-sm text-white placeholder:text-ink"
+          className="min-h-11 min-w-0 flex-1 rounded-full border border-white/15 bg-void/60 px-4 text-sm text-white placeholder:text-zinc-500"
         />
-        <button type="submit" disabled={!changedName || Boolean(busy)} className="min-h-11 shrink-0 rounded-full bg-brand px-4 text-sm font-bold text-onbrand disabled:opacity-50">
+        <button type="submit" disabled={!changedName || Boolean(busy)} className="min-h-11 shrink-0 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-50">
           {busy === "name" ? "Guardando…" : "Guardar"}
         </button>
       </form>

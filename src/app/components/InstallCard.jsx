@@ -23,8 +23,8 @@ function storeDismissed() {
 
 function Step({ number, children }) {
   return (
-    <li className="flex items-start gap-2.5 text-sm leading-snug text-white/60">
-      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-bold text-onbrand">{number}</span>
+    <li className="flex items-start gap-2.5 text-sm leading-snug text-zinc-200">
+      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-tnt text-xs font-bold text-onbrand">{number}</span>
       <span className="min-w-0 pt-0.5">{children}</span>
     </li>
   );
@@ -82,15 +82,15 @@ export default function InstallCard({ variant = "card" }) {
   };
 
   return (
-    <section aria-labelledby={`install-title-${variant}`} className="rounded-3xl border border-tnt/60 bg-card p-4" data-testid={`install-${variant}`}>
+    <section aria-labelledby={`install-title-${variant}`} className="rounded-3xl border border-tnt/60 bg-panel p-4" data-testid={`install-${variant}`}>
       <div className="flex items-start gap-3">
         <ClubCrest className="h-11 w-11 shrink-0" rottaClassName="rounded-xl" />
         <div className="min-w-0 flex-1">
           <h2 id={`install-title-${variant}`} className="font-display text-base font-bold">Ten la app en tu móvil</h2>
-          <p className="text-sm text-white/80">Con su icono en la pantalla de inicio, sin buscar el enlace en WhatsApp.</p>
+          <p className="text-sm text-zinc-300">Con su icono en la pantalla de inicio, sin buscar el enlace en WhatsApp.</p>
         </div>
         {banner && (
-          <button type="button" onClick={dismiss} aria-label="Ocultar este aviso" className="-mr-2 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-ink-muted hover:bg-white/5 hover:text-white">
+          <button type="button" onClick={dismiss} aria-label="Ocultar este aviso" className="-mr-2 -mt-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white">
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         )}
@@ -98,7 +98,7 @@ export default function InstallCard({ variant = "card" }) {
 
       <div className="mt-3">
         {canPrompt ? (
-          <button type="button" onClick={install} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-brand font-bold text-onbrand md:w-auto md:px-6">
+          <button type="button" onClick={install} className="flex min-h-11 w-full items-center justify-center gap-2 rounded-full bg-tnt font-bold text-onbrand md:w-auto md:px-6">
             <Download aria-hidden="true" className="h-5 w-5" />
             Instalar app
           </button>
@@ -108,7 +108,7 @@ export default function InstallCard({ variant = "card" }) {
               type="button"
               aria-expanded={open}
               onClick={() => setOpen((current) => !current)}
-              className="min-h-11 w-full rounded-full bg-brand font-bold text-onbrand md:w-auto md:px-6"
+              className="min-h-11 w-full rounded-full bg-tnt font-bold text-onbrand md:w-auto md:px-6"
             >
               {open ? "Ocultar pasos" : "Ver cómo se hace"}
             </button>

@@ -63,7 +63,7 @@ function applyRottaTheme(root, club, mode) {
   root.dataset.rotta = style;
   Object.entries(CLUB_VARIABLES).forEach(([name, key]) => root.style.setProperty(`--c-${name}`, triplet(rotta[key])));
   DARK_VARIABLES.forEach((name) => root.style.setProperty(`--c-${name}-dark`, triplet(dark[CLUB_VARIABLES[name]])));
-  // El segundo color de las pantallas de hoy (text-club-ui...) va ya ajustado para que se lea.
+  // El segundo color de las pantallas de hoy (text-ember...) va ya ajustado para que se lea.
   root.style.setProperty("--c-ember-dark", triplet(dark.accentText));
   root.style.setProperty("--c-onember-dark", triplet(textOn(dark.accentText)));
   return rotta;
@@ -77,7 +77,7 @@ export function applyTheme(club, choice) {
   const rotta = applyRottaTheme(root, club, mode);
   // Si el texto encima del color del club es claro u oscuro (lo usa src/theme-palette.css).
   root.dataset.onbrand = theme.onBrand === "#FFFFFF" ? "light" : "dark";
-  // Lo que usan las clases de siempre (bg-brand, text-club-ui...) y el código nuevo (var(--brand)...).
+  // Lo que usan las clases de siempre (bg-tnt, text-ember...) y el código nuevo (var(--brand)...).
   root.style.setProperty("--c-tnt", triplet(theme.brand));
   root.style.setProperty("--c-tntdeep", triplet(theme.brandStrong));
   root.style.setProperty("--c-ember", triplet(rotta.accentText));
