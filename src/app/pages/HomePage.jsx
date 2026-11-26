@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, UserPlus, Volleyball, X, Zap } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, UserPlus, X, Zap } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   answerAttendance,
@@ -37,7 +37,7 @@ import { localToday, matchDayLabel, matchKindLabel, placeInfo } from "@/app/matc
 import { nextTraining, trainingAfter } from "@/app/nextTraining.js";
 import { TEAM_SCHEDULES, defaultTeamId, isBeachTeam, isTeamId, sessionsToSchedules, shareMatches } from "@/app/teams.js";
 import { TRAINING_VENUE_ADDRESS, TRAINING_VENUE_URL } from "../../../data/groups.js";
-import { Notice, Stage, StatTile, TabPanel, Tabs } from "@/app/ui/index.js";
+import { Button, EmptyState, Notice, Stage, StatTile, TabPanel, Tabs } from "@/app/ui/index.js";
 import ClubCrest from "@/app/components/ClubCrest.jsx";
 
 const STORAGE_KEY = "tnt-equipo-visto";
@@ -312,10 +312,10 @@ function WhoIsGoing({ lists, currentUserId }) {
           {shown.length === 0 ? (
             <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-ink/25 text-ink-muted">?</span>
           ) : (
-            shown.map((person) => <Avatar key={person.id} name={person.name} picture={person.picture} className="h-9 w-9 text-[11px] ring-2 ring-stage" />)
+            shown.map((person) => <Avatar key={person.id} name={person.name} picture={person.picture} className="who-avatar h-9 w-9 text-[11px] ring-2 ring-card" />)
           )}
           {going.length > shown.length && (
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink/15 text-xs font-bold text-ink ring-2 ring-stage">+{going.length - shown.length}</span>
+            <span className="who-avatar flex h-9 w-9 items-center justify-center rounded-full bg-raised text-xs font-bold text-ink ring-2 ring-card">+{going.length - shown.length}</span>
           )}
         </span>
         <span className="min-w-0 flex-1">
@@ -342,20 +342,30 @@ function WhoIsGoing({ lists, currentUserId }) {
   );
 }
 
-function EventCard({ icon: Icon, label, status, action, testId, children }) {
+// Un partido: el primero de la lista es el escenario de la pestaña (featured); los demás, tarjetas del tema.
+function EventCard({ icon: Icon, label, status, action, testId, featured = false, labelledBy, children }) {
+  const head = (
+    <div className="mb-4 flex min-h-11 items-center justify-between gap-2">
+      <span className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
+        <Icon aria-hidden="true" className={`h-4 w-4 ${featured ? "text-rotta-on-stage" : "text-club-ui"}`} />
+        {label}
+        {status && <span className="rounded-full bg-voy px-2 py-0.5 text-[11px] font-bold text-snow">{status}</span>}
+      </span>
+      {action && <span>{action}</span>}
+    </div>
+  );
+  if (featured) {
+    return (
+      <Stage as="article" aria-labelledby={labelledBy} data-testid={testId} className="p-5 md:p-7">
+        {head}
+        {children}
+      </Stage>
+    );
+  }
   return (
-    <article className="overflow-hidden rounded-3xl bg-panel ring-1 ring-white/10" data-testid={testId}>
-      <div className="flex min-h-14 items-center justify-between gap-2 px-4 pt-2">
-        <span className="flex items-center gap-2.5 text-sm font-semibold text-zinc-300">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-tnt text-onbrand">
-            <Icon aria-hidden="true" className="h-4 w-4" />
-          </span>
-          {label}
-          {status && <span className="rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-bold text-snow">{status}</span>}
-        </span>
-        {action && <span>{action}</span>}
-      </div>
-      <div className="space-y-4 px-4 pb-4">{children}</div>
+    <article aria-labelledby={labelledBy} className="ui-card rounded-card bg-card p-card text-ink" data-testid={testId}>
+      {head}
+      {children}
     </article>
   );
 }
@@ -390,8 +400,9 @@ function EventWhen({ iso, time, until, spoken, subtitle, titleId, aside = null, 
   return (
     <div className="space-y-4">
       {before}
-      <div className="flex items-end gap-3">
-        <div className="min-w-0 flex-1">
+      {/* Si la hora y el botón de ayuda no caben juntos (números anchos de Naranja), el botón baja de línea. */}
+      <div className="flex flex-wrap items-end gap-3">
+        <div className="min-w-fit flex-1">
           {(day || startsIn) && (
             <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink-muted">
               {day && <span className="first-letter:uppercase">{day}</span>}
@@ -415,25 +426,24 @@ function EventWhen({ iso, time, until, spoken, subtitle, titleId, aside = null, 
   );
 }
 
-// Partido: nuestro equipo contra el rival, cara a cara.
+// Partido: nuestro equipo (con el escudo del club) contra el rival, cara a cara.
 function Versus({ teamName, opponent }) {
   const side = (name, ours) => (
-    <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-      <span
-        className={`flex h-14 w-14 items-center justify-center rounded-full font-display text-lg font-extrabold ${
-          ours ? "bg-tnt text-onbrand" : "bg-zinc-200 text-zinc-900"
-        }`}
-        aria-hidden="true"
-      >
-        {ours ? <Volleyball className="h-7 w-7" /> : initialsOf(name)}
-      </span>
-      <span className="w-full truncate text-sm font-semibold">{name}</span>
+    <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+      {ours ? (
+        <ClubCrest className="h-14 w-14" rottaClassName="rounded-[30%] object-cover" />
+      ) : (
+        <span className="flex h-14 w-14 items-center justify-center rounded-[30%] bg-ink/10 font-title text-lg text-ink" aria-hidden="true">
+          {initialsOf(name)}
+        </span>
+      )}
+      <span className="w-full truncate text-sm font-semibold text-ink">{name}</span>
     </div>
   );
   return (
-    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-2xl bg-void/50 px-3 py-4">
+    <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 rounded-inner bg-ink/[0.06] px-3 py-4">
       {side(teamName, true)}
-      <span className="font-display text-2xl font-extrabold text-zinc-500">vs</span>
+      <span className="font-score text-2xl text-ink-muted">vs</span>
       {side(opponent, false)}
     </div>
   );
@@ -600,8 +610,8 @@ function LiveMatchButton({ match, onError }) {
       type="button"
       onClick={enter}
       disabled={busy}
-      className={`relative flex min-h-14 w-full items-center gap-3 overflow-hidden rounded-xl px-4 text-left text-white disabled:opacity-70 ${
-        playing || !live || live.status === "pending" ? "bg-gradient-to-r from-red-600 via-live-club to-live-accent shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow" : "bg-panel ring-1 ring-white/15"
+      className={`relative flex min-h-14 w-full items-center gap-3 overflow-hidden rounded-control px-4 text-left transition-ui disabled:opacity-70 ${
+        playing || !live || live.status === "pending" ? "bg-gradient-to-r from-red-600 via-live-club to-live-accent shadow-[0_8px_24px_rgba(255,56,0,0.35)] text-snow" : "bg-raised text-ink ring-1 ring-line"
       }`}
     >
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-black/25">
@@ -632,43 +642,60 @@ function LiveMatchButton({ match, onError }) {
   );
 }
 
-function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onError, coinBurst = null }) {
+function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onError, coinBurst = null, featured = false }) {
+  const titleId = `match-${match.id}-title`;
   const editButton = match.can_edit && (
     <button
       type="button"
       onClick={() => onEdit(match)}
       aria-label={`Editar el partido contra ${match.opponent}`}
-      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-white hover:bg-white/10"
+      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-control px-3 text-sm font-semibold text-ink transition-ui hover:bg-ink/10"
     >
       <Pencil aria-hidden="true" className="h-4 w-4" />
       Editar
     </button>
   );
+  // Como el entreno: en escritorio, el primero con la pista grande a la derecha.
+  const wide = featured ? "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-x-8" : "";
+  const left = featured ? "lg:col-start-1" : "";
 
   return (
-    <EventCard icon={Trophy} label={`Partido · ${matchKindLabel(match.kind)}`} action={editButton} testId="match-card">
-      <EventWhen
-        iso={match.date}
-        time={match.time}
-        spoken={`${matchDayLabel(match.date)} contra ${match.opponent}`}
-        startsIn={startsInText(matchStart(match) - Date.now())}
-        before={<Versus teamName={teamName || "Nosotros"} opponent={match.opponent} />}
-      />
-      <GoingCourt teamId={match.team_id} people={match.going} currentUserId={currentUserId} />
-      <LiveMatchButton match={match} onError={onError} />
-      {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
-      {match.notes && <MatchNotes notes={match.notes} />}
-      {match.can_respond && (
-        <AnswerButtons
-          question="¿Vas a jugar?"
-          mine={match.mine}
-          busy={busy}
-          onAnswer={(status) => onAnswer(match, status)}
-          burst={coinBurst}
-          hint={match.mine === "going" ? "Vas: +7 coins conseguidos" : "Voy: +7 coins"}
-        />
-      )}
-      <WhoIsGoing lists={match} currentUserId={currentUserId} />
+    <EventCard icon={Trophy} label={`Partido · ${matchKindLabel(match.kind)}`} action={editButton} testId="match-card" featured={featured} labelledBy={titleId}>
+      <div className={`grid gap-5 ${wide}`}>
+        <div className={left}>
+          <EventWhen
+            iso={match.date}
+            time={match.time}
+            spoken={`${matchDayLabel(match.date)} contra ${match.opponent}`}
+            startsIn={startsInText(matchStart(match) - Date.now())}
+            titleId={titleId}
+            before={<Versus teamName={teamName || "Nosotros"} opponent={match.opponent} />}
+          />
+        </div>
+        <div className={`empty:hidden ${left}`}><LiveMatchButton match={match} onError={onError} /></div>
+        {match.can_respond && (
+          <div className={left}>
+            <AnswerButtons
+              question="¿Vas a jugar?"
+              mine={match.mine}
+              busy={busy}
+              onAnswer={(status) => onAnswer(match, status)}
+              burst={coinBurst}
+              hint={match.mine === "going" ? "Vas: +7 coins conseguidos" : "Voy: +7 coins"}
+            />
+          </div>
+        )}
+        <div className={`space-y-3 ${featured ? "lg:col-start-2 lg:row-span-5 lg:row-start-1" : ""}`}>
+          <GoingCourt teamId={match.team_id} people={match.going} currentUserId={currentUserId} />
+          <WhoIsGoing lists={match} currentUserId={currentUserId} />
+        </div>
+        {(match.location || match.notes) && (
+          <div className={`space-y-3 ${left}`}>
+            {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
+            {match.notes && <MatchNotes notes={match.notes} />}
+          </div>
+        )}
+      </div>
     </EventCard>
   );
 }
@@ -740,28 +767,28 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
   if (!matches) {
     return error
       ? <Notice tone="error" inline>{error}</Notice>
-      : <p role="status" className="text-zinc-300">Cargando…</p>;
+      : <p role="status" className="text-ink-muted">Cargando…</p>;
   }
 
   return (
     <section aria-labelledby="matches-title" className="space-y-3">
-      <div className="flex items-center justify-between gap-3 border-b border-white/15 pb-2">
-        <h2 id="matches-title" className="font-display text-2xl font-extrabold">Próximos</h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="matches-title" className="font-title text-2xl text-ink">Próximos</h2>
         {canManage && (
-          <button type="button" onClick={() => setEditing({ match: null })} className="flex min-h-11 items-center gap-1.5 rounded-full border border-white/20 px-3 text-sm font-semibold hover:bg-white/5">
-            <Plus aria-hidden="true" className="h-4 w-4" />
+          <Button variant="secondary" size="sm" icon={Plus} onClick={() => setEditing({ match: null })}>
             Añadir partido
-          </button>
+          </Button>
         )}
       </div>
       {error && <Notice tone="error" inline>{error}</Notice>}
       {matches.length === 0 ? (
-        <p className="rounded-3xl bg-panel p-4 text-sm text-zinc-400">No hay partidos programados para este equipo.</p>
+        <EmptyState>No hay partidos programados para este equipo.</EmptyState>
       ) : (
         <div className="space-y-3">
-          {matches.map((match) => (
+          {matches.map((match, index) => (
             <MatchCard
               key={match.id}
+              featured={index === 0}
               match={match}
               teamName={(teams.find((team) => team.id === match.team_id)?.name ?? "").replace(/^Club (Senior )?/, "")}
               currentUserId={user.id}
@@ -774,10 +801,10 @@ function MatchesSection({ teamId, teams, user, canManage, onAccessLost, onChange
           ))}
         </div>
       )}
-      <Link to={`/app/partidos/jugados?equipo=${teamId}`} data-testid="played-link" className="flex min-h-14 items-center gap-3 rounded-xl border border-white/10 bg-panel px-4 hover:bg-white/5">
-        <History aria-hidden="true" className="h-5 w-5 shrink-0 text-ember" />
-        <span className="flex-1 font-display text-lg font-extrabold">Partidos jugados</span>
-        <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-zinc-400" />
+      <Link to={`/app/partidos/jugados?equipo=${teamId}`} data-testid="played-link" className="ui-card ui-card-interactive flex min-h-14 items-center gap-3 rounded-card bg-card px-4 text-ink transition-ui focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text">
+        <History aria-hidden="true" className="h-5 w-5 shrink-0 text-club-ui" />
+        <span className="flex-1 font-title text-lg">Partidos jugados</span>
+        <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-ink-muted" />
       </Link>
       {editing && (
         <MatchDialog
@@ -930,7 +957,7 @@ function HomeHeader({ user, coins, shownCoins, coinBurst }) {
 
 // Tus números (solo si tienes ficha de jugador): puesto y nota global del ranking y asistencia de los últimos días.
 // Son datos que la app ya tiene (tu perfil y tu ficha); si no cargan, no salen. Dorado solo para 85 o más.
-function MyNumbers({ user }) {
+function useMyNumbers(user) {
   const [numbers, setNumbers] = useState(null);
   useEffect(() => {
     if (user.role === "familia") return undefined;
@@ -946,6 +973,10 @@ function MyNumbers({ user }) {
       cancelled = true;
     };
   }, [user.id, user.role]);
+  return numbers;
+}
+
+function MyNumbers({ numbers }) {
   if (!numbers) return null;
   const { stats, ranking } = numbers;
   const answered = stats.going + stats.not_going;
@@ -1052,8 +1083,12 @@ export default function HomePage({ user, onAccessLost }) {
 
   const shownTab = tab ?? (matches === null ? null : firstTab(training, matches));
   const tabsId = useId();
+  const numbers = useMyNumbers(user);
   // El próximo partido que aún no ha terminado (para enseñarlo al lado del entreno).
   const nextMatch = (matches ?? []).find((item) => matchStart(item) > Date.now() - MATCH_LENGTH_MS) ?? null;
+  // La columna de resumen solo existe si tiene algo: tus números (si tienes ficha) o el próximo partido.
+  const showPeek = shownTab === "training" && Boolean(nextMatch);
+  const hasAside = Boolean(numbers) || showPeek;
   const matchToday = (matches ?? []).some((item) => matchDayLabel(item.date) === "Hoy");
   // Aunque se abra en Entrenamientos, la pestaña dice cuántos partidos hay por delante.
   const matchBadge = matchToday ? "Hoy" : matches?.length ? String(matches.length) : null;
@@ -1164,7 +1199,7 @@ export default function HomePage({ user, onAccessLost }) {
 
       {/* Escritorio: la agenda a la izquierda y tus números y el próximo partido a la derecha. En el móvil, uno debajo
           de otro (primero la agenda, que es lo que se viene a mirar). */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_21rem]">
+      <div className={`grid gap-6 lg:items-start ${hasAside ? "lg:grid-cols-[minmax(0,1fr)_19rem] xl:grid-cols-[minmax(0,1fr)_21rem]" : ""}`}>
       <section aria-label="Agenda del equipo" className="min-w-0 space-y-4">
         <Tabs
           id={tabsId}
@@ -1231,10 +1266,12 @@ export default function HomePage({ user, onAccessLost }) {
         </TabPanel>
       </section>
 
-      <aside aria-label="Tu resumen" className="space-y-3 lg:sticky lg:top-8">
-        <MyNumbers user={user} />
-        {shownTab === "training" && <NextMatchPeek match={nextMatch} onOpen={() => setTab("matches")} />}
-      </aside>
+      {hasAside && (
+        <aside aria-label="Tu resumen" className="space-y-3 lg:sticky lg:top-8">
+          <MyNumbers numbers={numbers} />
+          {showPeek && <NextMatchPeek match={nextMatch} onOpen={() => setTab("matches")} />}
+        </aside>
+      )}
       </div>
     </div>
   );

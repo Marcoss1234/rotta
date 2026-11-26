@@ -116,7 +116,7 @@ export default function GoingCourt({ teamId, people, currentUserId }) {
       >
         <MiniCourt beach={beach} />
         {people.length === 0 && (
-          <span className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-[6cqw] text-center font-semibold text-ink-muted" style={{ fontSize: "4.2cqw" }}>
+          <span className="court-name absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap px-[3cqw] py-[0.8cqw] font-semibold" style={{ fontSize: "4cqw" }}>
             Aún no va nadie
           </span>
         )}

@@ -438,6 +438,11 @@
   display: block;
 }
 
+/* Las caras de «quién va» se separan con un aro del color de lo que tienen detrás (tarjeta o escenario). */
+.stage .who-avatar {
+  --tw-ring-color: rgb(var(--c-stage));
+}
+
 /* ---------- Pista de quien va (components/GoingCourt.jsx): siempre oscura, con el carácter de la identidad ----------
    No es la pista de Plantilla ni la pizarra: solo enseña quién va. Suelo y líneas en los colores del escenario. */
 .going-court {
