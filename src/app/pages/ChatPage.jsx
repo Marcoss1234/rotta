@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 import { Heart, Megaphone, MessagesSquare, Volleyball } from "lucide-react";
 import { listChatChannels } from "@/app/api.js";
 import ChatConversation from "@/app/components/ChatConversation.jsx";
@@ -66,6 +67,8 @@ function ChannelList({ channels, selectedId, onSelect }) {
 }
 
 export default function ChatPage({ onAccessLost }) {
+  // En el móvil, «X mensajes sin leer» no hace falta: cada chat ya lleva su número.
+  const phone = useMediaQuery("(max-width: 767px)");
   const [channels, setChannels] = useState(null);
   const [error, setError] = useState("");
   const [searchParams, setSearchParams] = useSearchParams();
@@ -104,7 +107,7 @@ export default function ChatPage({ onAccessLost }) {
   return (
     <div className="flex h-full flex-col gap-3 md:h-[calc(100dvh-4.5rem)]">
       <div className={`shrink-0 ${selected ? "hidden md:block" : ""}`}>
-        <PageHeader title="Chat" subtitle={totalUnread > 0 ? (totalUnread === 1 ? "1 mensaje sin leer" : `${totalUnread} mensajes sin leer`) : "Todo leído"} />
+        <PageHeader title="Chat" subtitle={phone ? undefined : totalUnread > 0 ? (totalUnread === 1 ? "1 mensaje sin leer" : `${totalUnread} mensajes sin leer`) : "Todo leído"} />
       </div>
 
       {error && <Notice tone="error">{error}</Notice>}

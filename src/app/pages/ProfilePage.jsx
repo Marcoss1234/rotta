@@ -489,7 +489,7 @@ export default function ProfilePage({ user, onSignedOut, onUserChanged, onAccess
   // Cuenta); cada una se desliza por dentro. En escritorio: tu ficha fija a la izquierda y las pestañas a la derecha.
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
-      <PageHeader title="Perfil" subtitle={profile.user.name} />
+      <PageHeader title="Perfil" subtitle={wide ? profile.user.name : undefined} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 lg:grid lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)] lg:items-start lg:gap-6">
       {wide && <div className="lg:sticky lg:top-8">{ficha}</div>}
       <div className="flex min-h-0 flex-1 flex-col gap-3">

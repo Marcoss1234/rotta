@@ -42,6 +42,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Título de cada pantalla en la barra de arriba del móvil (en lugar del nombre del club, que ya se ve en el escudo); la cabecera de la página queda en una línea con el subtítulo y los botones. El `h1` sigue en la página para lectores de pantalla (`sr-only` en el móvil). `PageHeader` avisa del título con un evento (`PAGE_TITLE_EVENT`) |
 | (este) | Plantilla y Pizarra en el móvil: las pestañas «Plantilla | Pizarra» van en la línea de la cabecera, junto a «Añadir»/«Nueva» (una fila menos; el equipo ya se ve en sus botones). `PageHeader` acepta un subtítulo que no sea texto |
 | (este) | Una fila menos en el móvil: Eventos con el mes en la línea de la cabecera (en lugar de «Calendario del club»); Notas con los equipos en la cabecera y «Ranking» como icono; Jugados con los tipos de partido en la cabecera y «Partidos» como flecha |
+| (este) | Chat y Perfil en el móvil sin la línea de subtítulo («X mensajes sin leer», tu nombre), que ya se ve en otro sitio; `PageHeader` sin subtítulo ni botones no ocupa nada en el móvil |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 

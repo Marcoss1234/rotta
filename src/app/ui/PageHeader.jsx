@@ -27,7 +27,8 @@ export function PageHeader({ title, subtitle, actions, stacked = false, classNam
   }, [title]);
   return (
     // Los botones van al lado del título (no debajo) para que la cabecera ocupe una sola franja.
-    <header className={cx("app-page-header gap-x-3 gap-y-2 md:gap-y-3", stacked ? "flex flex-col" : "grid grid-cols-[minmax(0,1fr)_auto] items-center justify-between md:items-end", className)}>
+    // Sin subtítulo ni botones, en el móvil no ocupa nada (el título ya está arriba; el h1 sigue para lectores).
+    <header className={cx("app-page-header gap-x-3 gap-y-2 md:gap-y-3", stacked ? "flex flex-col" : "grid grid-cols-[minmax(0,1fr)_auto] items-center justify-between md:items-end", !subtitle && !actions && "max-md:sr-only", className)}>
       <div className="min-w-0">
         <h1 className="sr-only font-title text-title text-ink md:not-sr-only md:text-display">{title}</h1>
         {/* El subtítulo puede ser un texto o algo más (unas pestañas): entonces va en un <div>. */}
