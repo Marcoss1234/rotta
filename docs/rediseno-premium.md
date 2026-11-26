@@ -25,6 +25,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Notas: pantalla fija en el móvil (cabecera, equipo, semana con su estado Borrador/Publicada, cuántos llevas y «Publicar» fijos; la lista se desliza por dentro); filas compactas con la nota de cada habilidad en una línea, si hay comentario y «Puntuar» a los que faltan; filtro Todos / Sin nota / Con nota; confirmar la publicación en hoja; escritorio con la lista a la izquierda y el estado a la derecha. `RatingDialog` sobre `ui/Dialog` (hoja en el móvil): quién, cuántas habilidades lleva, posición y «Nota global» arriba fijos; cada habilidad con su peso («pesa 30%»), su nota en grande y un botón para dejarla sin nota; Guardar siempre a la vista. Barra y aro con el carácter de cada identidad (`rating-range`, `rating-ring` en index.css) |
 | (este) | Eventos: pantalla fija en el móvil (cabecera con «Añadir» al lado y el mes fijos; calendario y agenda se deslizan por dentro); días más bajos; agenda en filas dentro de un solo bloque; escritorio a todo el ancho con el calendario a la izquierda y la agenda fija a la derecha; formulario de evento en hoja (`placement="auto"`) |
 | (este) | Partidos jugados: pantalla fija en el móvil (cabecera con «Partidos» al lado, tipo de partido y resumen fijos; la lista se desliza por dentro); resultado y sets más compactos; MVP e informe en una misma franja; formulario de partido en hoja |
+| (este) | Móvil compacto (pedido por Marcos): en el móvil todo un poco más pequeño en la misma proporción que en el ordenador (raíz de 15 px en `html.app-shell` por debajo de 768 px; letra mínima 12 px con `text-xs`; campos de texto en 16 px; relleno de tarjetas 16 px; títulos de pantalla 28 px en el móvil). Afecta a todas las pantallas a la vez |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -49,7 +50,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 2. ~~Plantilla y fichas de jugadores~~ (hecho; la nota de la ficha y el suelo del 3D se ven en Ranking y componentes).
 3. ~~Ranking y Notas~~ (hecho).
 4. ~~Eventos y calendario~~ (hecho).
-5. **Siguiente paso:** Partidos jugados y marcador en directo.
+5. Partidos jugados y marcador en directo: **Partidos jugados hecho**. **Siguiente paso:** el directo
+   (`LiveMatchPage`: siempre oscuro y a pantalla completa; sus ventanas en hoja desde abajo).
 6. Premios y tienda.
 7. Chat.
 8. Perfil, apariencia y configuración (que se vean las diferencias entre identidades).
@@ -67,7 +69,12 @@ la zona que se desliza es `min-h-0 flex-1 overflow-y-auto overscroll-contain` (e
 la ruta se añade a `WIDE_PATHS` en `AppLayout.jsx` si tiene distribución de escritorio propia.
 
 Principio en todas: diseño compacto (menos scroll y espacio vacío, filas en vez de tarjetas grandes, columnas en
-escritorio) sin bajar el tamaño de letra ni de los controles ni quitar información.
+escritorio) sin quitar información.
+
+**Norma nueva (26-11-2026, pedida por Marcos): móvil compacto.** En el móvil todo puede ser algo más pequeño para que
+se vea como en el ordenador y no parezca que no cabe. Está hecho en general (raíz de 15 px en el móvil), así que no hay
+que bajar tamaños pantalla a pantalla. Límites: letra de 12 px como mínimo, campos de texto en 16 px y zonas de toque
+de unos 40 px. Sustituye a «sin bajar el tamaño de letra ni de los controles».
 
 ## Pendiente aparte (backend, no se toca en el rediseño)
 

@@ -629,6 +629,18 @@ body {
   font-size: 16px;
 }
 
+/* Premium deportivo, móvil compacto (pedido por Marcos): en el móvil todo es un poco más pequeño, en la misma
+   proporción que en el ordenador (letra, botones, márgenes e iconos van en rem). La letra más pequeña nunca baja de
+   12 px (text-xs en tailwind.config.js) y los campos de texto siguen en 16 px (si no, el iPhone acerca la pantalla). */
+@media (max-width: 767px) {
+  html.app-shell {
+    font-size: 15px;
+  }
+  :root {
+    --space-card: 1rem;
+  }
+}
+
 /* En el móvil la página no se desplaza, solo el contenido: si no, iPhone arrastra el menú de abajo. */
 @media (max-width: 767px) {
   html.app-shell,
