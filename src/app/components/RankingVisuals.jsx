@@ -120,7 +120,8 @@ export function AnimatedBar({ percent, className = "h-1.5" }) {
   );
 }
 
-const SHORT_LABELS = {
+// Nombres cortos de las habilidades (radar y resumen de cada fila en Notas).
+export const SHORT_LABELS = {
   saque: "Saque",
   recepcion: "Recep.",
   antebrazo: "Defensa",

@@ -1,52 +1,91 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
+import { X } from "lucide-react";
 import Avatar from "@/app/components/Avatar.jsx";
 import { overallTone } from "@/app/components/RankingVisuals.jsx";
 import { POSITIONS } from "@/app/roles.js";
 import { formatOverall, formatScore, overallOf, weightPercent } from "@/app/ranking.js";
-import { Notice } from "@/app/ui/index.js";
-
-const fieldClass =
-  "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-base text-white focus:border-white focus:outline-none";
-const primaryClass = "min-h-12 rounded-full bg-tnt px-4 font-display text-sm font-extrabold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
-const secondaryClass =
-  "min-h-12 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
+import { Button, ChipGroup, Dialog, Field, Notice, Textarea } from "@/app/ui/index.js";
 
 // La barra empieza medio punto antes del 1: ese primer tramo significa "sin nota".
 const NO_SCORE = 0.5;
 
+// La nota global en un aro que se llena (0 a 100). Colores del tema; el grosor y el remate, de cada identidad
+// (rating-ring en index.css: Lima recto y fino, Naranja grueso y redondo, Tinta una línea finísima).
 function OverallRing({ overall }) {
   const fill = overall === null ? 0 : overall;
+  const radius = 34;
+  const length = 2 * Math.PI * radius;
   return (
-    <div
-      className="flex h-[5.5rem] w-[5.5rem] shrink-0 items-center justify-center rounded-full"
-      style={{ background: `conic-gradient(#FF3800, #FF8800 ${fill}%, rgba(255,255,255,0.12) ${fill}%)` }}
-    >
-      <div className="flex h-[4.6rem] w-[4.6rem] flex-col items-center justify-center rounded-full bg-panel" aria-live="polite">
-        <span className={`font-display text-3xl font-extrabold leading-none tabular-nums ${overallTone(overall)}`}>{formatOverall(overall)}</span>
-        <span className="text-[10px] font-semibold text-ink-muted">Nota global</span>
-      </div>
+    <div className="relative flex h-[5.25rem] w-[5.25rem] shrink-0 items-center justify-center" aria-live="polite">
+      <svg aria-hidden="true" viewBox="0 0 84 84" className="rating-ring absolute inset-0 h-full w-full -rotate-90">
+        <circle cx="42" cy="42" r={radius} className="rating-ring-track" />
+        <circle cx="42" cy="42" r={radius} className="rating-ring-fill" strokeDasharray={`${(fill / 100) * length} ${length}`} />
+      </svg>
+      <span className="relative flex flex-col items-center">
+        <span className={`font-score text-3xl leading-none ${overallTone(overall)}`}>{formatOverall(overall)}</span>
+        <span className="mt-0.5 text-[11px] font-semibold leading-none text-ink-muted">Nota global</span>
+      </span>
     </div>
   );
 }
 
-export default function RatingDialog({ row, skills, weights, onSave, onClose }) {
-  const dialogRef = useRef(null);
+// Una habilidad: nombre, cuánto pesa en su posición, la nota en grande y la barra para ponerla.
+function SkillSlider({ id, label, weight, value, busy, onChange }) {
+  const empty = value === NO_SCORE;
+  const text = empty ? "–" : formatScore(value);
+  return (
+    <li className="py-2.5">
+      <div className="flex items-center gap-2">
+        <label htmlFor={`rating-${id}`} className="min-w-0 flex-1 text-sm font-semibold text-ink">
+          {label}
+          <span className="ml-2 rounded-full bg-raised px-1.5 py-0.5 text-xs font-bold text-ink-muted">pesa {weight}%</span>
+        </label>
+        {!empty && (
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onChange(NO_SCORE)}
+            aria-label={`Dejar ${label} sin nota`}
+            title="Sin nota"
+            className="flex h-8 w-8 items-center justify-center rounded-full text-ink-muted transition-ui hover:bg-raised hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text"
+          >
+            <X aria-hidden="true" className="h-4 w-4" />
+          </button>
+        )}
+        <span className={`w-12 text-right font-score text-2xl leading-none ${empty ? "text-ink-muted" : "text-ink"}`}>{text}</span>
+      </div>
+      <input
+        id={`rating-${id}`}
+        type="range"
+        min={NO_SCORE}
+        max="10"
+        step="0.5"
+        value={value}
+        disabled={busy}
+        aria-valuetext={empty ? "Sin nota" : text}
+        onChange={(event) => onChange(Number(event.target.value))}
+        style={{ "--fill": `${((value - NO_SCORE) / (10 - NO_SCORE)) * 100}%` }}
+        className="rating-range"
+      />
+    </li>
+  );
+}
+
+// Poner las notas de un jugador: hoja desde abajo en el móvil y ventana en el centro en escritorio. Arriba, fijo
+// mientras se desliza, quién es, su posición y la nota global que va saliendo; debajo, una barra por habilidad.
+export default function RatingDialog({ row, skills, weights, published = false, onSave, onClose }) {
   const [position, setPosition] = useState(row.rating?.position ?? row.position);
   const [scores, setScores] = useState(row.rating?.scores ?? {});
   const [comment, setComment] = useState(row.rating?.comment ?? "");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    dialog.showModal();
-    return () => dialog.close();
-  }, []);
-
   const positionWeights = weights[position];
   // Si cambia la posición, lo ya escrito se recuerda, pero solo cuenta lo que esa posición puntúa.
   const counted = Object.fromEntries(Object.entries(scores).filter(([skill]) => positionWeights[skill] !== undefined));
   const overall = overallOf(positionWeights, counted);
+  const positionSkills = skills.filter(({ id }) => positionWeights[id] !== undefined);
+  const scoredCount = positionSkills.filter(({ id }) => counted[id] !== undefined).length;
 
   const setScore = (skill, value) =>
     setScores((current) => {
@@ -57,7 +96,7 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
     });
 
   const submit = async (event) => {
-    event.preventDefault();
+    event?.preventDefault();
     if (comment.trim() && Object.keys(counted).length === 0) {
       setError("Pon al menos una nota para dejar un comentario");
       return;
@@ -73,92 +112,64 @@ export default function RatingDialog({ row, skills, weights, onSave, onClose }) 
   };
 
   return (
-    <dialog
-      ref={dialogRef}
-      aria-labelledby="rating-dialog-title"
-      onCancel={(event) => {
-        event.preventDefault();
-        if (!busy) onClose();
-      }}
-      className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/15 bg-panel p-0 font-body text-white backdrop:bg-black/80"
+    <Dialog
+      title={row.name}
+      description={published ? "Semana publicada: lo que guardes cambia el ranking al momento." : "Borrador: los jugadores no lo verán hasta que publiques la semana."}
+      onClose={onClose}
+      busy={busy}
+      placement="auto"
     >
-      <div className="flex items-center gap-3 bg-gradient-to-r from-tnt/30 via-tnt/10 to-transparent p-5">
-        <Avatar name={row.name} picture={row.picture} className="h-12 w-12 text-sm" />
-        <h2 id="rating-dialog-title" className="min-w-0 flex-1 break-words font-display text-2xl font-extrabold leading-tight">{row.name}</h2>
-        <OverallRing overall={overall} />
-      </div>
-
-      <form onSubmit={submit} className="space-y-5 p-5 pt-4">
-        <fieldset disabled={busy}>
-          <legend className="mb-2 text-[11px] font-bold text-zinc-400">Posición esta semana</legend>
-          <div className="grid grid-cols-3 gap-1.5">
-            {POSITIONS.map((item) => (
-              <button
-                key={item}
-                type="button"
-                aria-pressed={item === position}
-                onClick={() => setPosition(item)}
-                className={`min-h-11 rounded-full px-1 text-xs font-bold ${item === position ? "bg-white text-void" : "bg-void text-zinc-300 hover:text-white"}`}
-              >
-                {item}
-              </button>
-            ))}
+      <form id="rating-form" onSubmit={submit}>
+        {/* Lo que manda: quién, su posición y la nota global. Se queda arriba mientras se desliza por las habilidades. */}
+        <div className="sticky -top-5 z-10 -mx-5 mb-1 bg-overlay px-5 pb-3 pt-1 md:-top-6 md:-mx-6 md:px-6">
+          <div className="flex items-center gap-3">
+            <Avatar name={row.name} picture={row.picture} className="h-11 w-11 text-sm" />
+            <p className="min-w-0 flex-1 text-sm text-ink-muted">
+              <span className="font-score text-lg text-ink">{scoredCount}</span>/{positionSkills.length} habilidades con nota
+            </p>
+            <OverallRing overall={overall} />
           </div>
-        </fieldset>
-
-        <div className="space-y-1">
-          {skills.filter(({ id }) => positionWeights[id] !== undefined).map(({ id, label }) => {
-            const value = scores[id] ?? NO_SCORE;
-            const text = value === NO_SCORE ? "–" : formatScore(value);
-            return (
-              <div key={id}>
-                <div className="flex items-baseline justify-between gap-3">
-                  <label htmlFor={`rating-${id}`} className="text-sm font-semibold text-zinc-200">
-                    {label} <span className="text-xs font-bold text-ember">{weightPercent(positionWeights, id)}%</span>
-                  </label>
-                  <span className="font-display text-2xl font-extrabold tabular-nums">{text}</span>
-                </div>
-                <input
-                  id={`rating-${id}`}
-                  type="range"
-                  min={NO_SCORE}
-                  max="10"
-                  step="0.5"
-                  value={value}
-                  disabled={busy}
-                  aria-valuetext={value === NO_SCORE ? "Sin nota" : text}
-                  onChange={(event) => setScore(id, Number(event.target.value))}
-                  style={{ "--fill": `${((value - NO_SCORE) / (10 - NO_SCORE)) * 100}%` }}
-                  className="rating-range"
-                />
-              </div>
-            );
-          })}
+          <p className="mb-1.5 mt-2 text-xs font-semibold text-ink-muted">Posición esta semana</p>
+          <ChipGroup label="Posición esta semana" scroll value={position} onChange={(item) => !busy && setPosition(item)} options={POSITIONS.map((item) => ({ value: item, label: item }))} />
         </div>
-        <p className="text-xs text-zinc-400">De 1 a 10 según lo esperado para su posición. Si algo no se ha visto esta semana, déjalo a la izquierda del todo, sin nota.</p>
 
-        <div>
-          <label htmlFor="rating-comment" className="mb-1.5 block text-[11px] font-bold text-zinc-400">Comentario <span className="font-normal normal-case tracking-normal">(opcional)</span></label>
-          <textarea
+        <ul aria-label="Habilidades" className="divide-y divide-line">
+          {positionSkills.map(({ id, label }) => (
+            <SkillSlider
+              key={id}
+              id={id}
+              label={label}
+              weight={weightPercent(positionWeights, id)}
+              value={scores[id] ?? NO_SCORE}
+              busy={busy}
+              onChange={(value) => setScore(id, value)}
+            />
+          ))}
+        </ul>
+        <p className="mt-1 text-xs text-ink-muted">
+          De 1 a 10 según lo esperado para su posición. Si algo no se ha visto esta semana, déjalo a la izquierda del todo, sin nota.
+        </p>
+
+        <Field id="rating-comment" label="Comentario" optional hint="Solo lo verán este jugador y sus entrenadores." className="mt-4">
+          <Textarea
             id="rating-comment"
             value={comment}
             onChange={(event) => setComment(event.target.value)}
             maxLength={500}
-            rows={3}
+            rows={2}
             disabled={busy}
-            aria-describedby="rating-comment-hint"
-            className={`${fieldClass} py-2.5`}
+            hint="Solo lo verán este jugador y sus entrenadores."
           />
-          <p id="rating-comment-hint" className="mt-1 text-xs text-zinc-400">Solo lo verán este jugador y sus entrenadores.</p>
-        </div>
+        </Field>
 
-        {error && <Notice tone="error">{error}</Notice>}
+        {error && <Notice tone="error" className="mt-3">{error}</Notice>}
 
-        <div className="grid grid-cols-2 gap-2">
-          <button type="button" disabled={busy} onClick={onClose} className={secondaryClass}>Cancelar</button>
-          <button type="submit" disabled={busy} className={primaryClass}>{busy ? "Guardando…" : "Guardar"}</button>
+        {/* Guardar siempre a mano, abajo, aunque falten habilidades por ver. */}
+        <div className="sticky bottom-[calc(-1.25rem-env(safe-area-inset-bottom))] z-10 -mx-5 mt-4 grid grid-cols-2 gap-2 border-t border-line bg-overlay px-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] pt-3 -mb-[calc(1.25rem+env(safe-area-inset-bottom))] md:-bottom-6 md:-mx-6 md:-mb-6 md:px-6 md:pb-6">
+          <Button variant="secondary" size="lg" disabled={busy} onClick={onClose}>Cancelar</Button>
+          <Button type="submit" size="lg" busy={busy} busyLabel="Guardando…">Guardar</Button>
         </div>
       </form>
-    </dialog>
+    </Dialog>
   );
 }

@@ -640,7 +640,15 @@ body {
 }
 
 /* La barra de notas: alta para tocarla bien con el dedo, aunque la pista se vea fina. */
+/* Barra para poner una nota (Notas del ranking). Colores del tema: el tramo puesto en el color del club y el resto
+   en la línea del tema; el tirador con el color de la tarjeta y aro del club. Cada identidad, a su manera: Lima
+   recta, con tirador cuadrado; Naranja gruesa y redonda; Tinta una línea fina con tirador hueco. */
 .rating-range {
+  --track: 8px;
+  --thumb: 26px;
+  --thumb-radius: 50%;
+  --thumb-border: 4px;
+  --track-radius: 999px;
   display: block;
   width: 100%;
   height: 2.75rem;
@@ -650,43 +658,62 @@ body {
   -webkit-appearance: none;
   appearance: none;
 }
+:root[data-rotta="lima"] .rating-range { --track: 6px; --thumb: 22px; --thumb-radius: 5px; --thumb-border: 3px; --track-radius: 2px; }
+:root[data-rotta="naranja"] .rating-range { --track: 12px; --thumb: 30px; --thumb-border: 5px; }
+:root[data-rotta="tinta"] .rating-range { --track: 3px; --thumb: 22px; --thumb-border: 2px; }
 
 .rating-range::-webkit-slider-runnable-track {
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgb(var(--c-club-ui)), rgb(var(--c-accent-ui))) 0 / var(--fill) 100% no-repeat, rgb(var(--c-white) / 0.12);
+  height: var(--track);
+  border-radius: var(--track-radius);
+  background: linear-gradient(rgb(var(--c-club-ui)), rgb(var(--c-club-ui))) 0 / var(--fill) 100% no-repeat, rgb(var(--c-white) / 0.14);
 }
 
 .rating-range::-moz-range-track {
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgb(var(--c-club-ui)), rgb(var(--c-accent-ui))) 0 / var(--fill) 100% no-repeat, rgb(var(--c-white) / 0.12);
+  height: var(--track);
+  border-radius: var(--track-radius);
+  background: linear-gradient(rgb(var(--c-club-ui)), rgb(var(--c-club-ui))) 0 / var(--fill) 100% no-repeat, rgb(var(--c-white) / 0.14);
 }
 
 .rating-range::-webkit-slider-thumb {
-  width: 26px;
-  height: 26px;
-  margin-top: -9px;
-  border: 4px solid var(--tnt);
-  border-radius: 50%;
-  background: #fff;
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((var(--track) - var(--thumb)) / 2);
+  border: var(--thumb-border) solid rgb(var(--c-club-ui));
+  border-radius: var(--thumb-radius);
+  background: rgb(var(--c-overlay));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
   -webkit-appearance: none;
   appearance: none;
 }
 
 .rating-range::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
-  border: 4px solid var(--tnt);
-  border-radius: 50%;
-  background: #fff;
+  width: calc(var(--thumb) - 2 * var(--thumb-border));
+  height: calc(var(--thumb) - 2 * var(--thumb-border));
+  border: var(--thumb-border) solid rgb(var(--c-club-ui));
+  border-radius: var(--thumb-radius);
+  background: rgb(var(--c-overlay));
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.25);
 }
 
 .rating-range:focus-visible {
-  outline: 2px solid #fff;
+  outline: 2px solid rgb(var(--c-rotta-text));
   outline-offset: 2px;
   border-radius: 8px;
 }
+
+.rating-range:disabled { cursor: not-allowed; opacity: 0.6; }
+
+/* El aro de la nota global (Notas del ranking). */
+.rating-ring circle { fill: none; transition: stroke-dasharray 0.35s ease-out; }
+.rating-ring-track { stroke: rgb(var(--c-white) / 0.12); stroke-width: 6; }
+.rating-ring-fill { stroke: rgb(var(--c-club-ui)); stroke-width: 6; stroke-linecap: round; }
+:root[data-rotta="lima"] .rating-ring-track { stroke-width: 4; stroke-dasharray: 2 3; }
+:root[data-rotta="lima"] .rating-ring-fill { stroke-width: 4; stroke-linecap: butt; }
+:root[data-rotta="naranja"] .rating-ring-track,
+:root[data-rotta="naranja"] .rating-ring-fill { stroke-width: 8; }
+:root[data-rotta="tinta"] .rating-ring-track { stroke-width: 1.5; }
+:root[data-rotta="tinta"] .rating-ring-fill { stroke-width: 2.5; }
+@media (prefers-reduced-motion: reduce) { .rating-ring circle { transition: none; } }
 
 @keyframes marquee-scroll {
   from {
