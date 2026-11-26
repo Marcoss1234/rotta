@@ -30,6 +30,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Cabecera más pequeña en el móvil: título de pantalla de 24 px, subtítulo de 12 px, menos espacio debajo; pastillas de elegir (equipo, filtros) y pestañas Plantilla/Pizarra algo más bajas. En escritorio, igual que antes |
 | (este) | Directo e informe: sin degradados ni el naranja del TNT (marcador con el color del club y el rival en su azul fijo `rival`; textura del marcador según la identidad); media pista con sus medidas de verdad y la pista de la identidad (`CourtDrawing themed`); ventanas del jugador, ayuda y MVP en hoja desde abajo en el móvil; «Empezar partido» como botón principal; el informe con verde/rojo de victoria y derrota. Arreglo: la pizarra, el directo y el informe ya no quedan debajo de la barra lateral en escritorio (`md:left-[17rem]`). Texto corregido: «+1» ya no dice «naranja» |
 | (este) | Premios y tienda: pantalla fija en el móvil; escaparates en el escenario oscuro de Rotta (sin el degradado ámbar del TNT); escritorio en dos columnas. Premios: «Volver al ranking» (flecha) y «Tienda» al lado del título; premios en tarjetas del tema. Tienda: categorías como pastillas de la identidad; artículos con la selección del club; «Puesto» pasa a la línea de estado; la barra de abajo junta lo que te pruebas y comprar/ponértelo (antes «Probándote» iba encima del personaje); comprar en dorado sólido con texto oscuro fijo. Arreglo: la barra de comprar ya no se mete bajo la barra lateral |
+| (este) | Chat: lista en filas dentro de un solo bloque (lo elegido con el tono del club, lo sin leer en negrita con su contador); conversación con cabecera ligera (icono del club, sin franja maciza), burbujas propias con el color del club y las de los demás con la tarjeta del tema, separador de día en pastilla, campo de escribir como los del tema; escritorio a todo el ancho |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -56,8 +57,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 4. ~~Eventos y calendario~~ (hecho).
 5. ~~Partidos jugados y marcador en directo~~ (hecho).
 6. ~~Premios y tienda~~ (hecho).
-7. **Siguiente paso:** Chat.
-8. Perfil, apariencia y configuración (que se vean las diferencias entre identidades).
+7. ~~Chat~~ (hecho).
+8. **Siguiente paso:** Perfil, apariencia y configuración (que se vean las diferencias entre identidades).
 9. Pizarra y editor 3D (solo el entorno; sin perder espacio ni precisión).
 10. Componentes y gráficas comunes (`ui/charts`, `Dialog` con hoja, `Segmented`, `ListRow`), según se necesiten.
 11. Revisión responsive y de accesibilidad (360, 390, tableta, escritorio; claro y oscuro).

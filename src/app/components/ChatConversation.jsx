@@ -121,20 +121,20 @@ function Message({ message, grouped, onDelete, onOpenImage, onHelpChange, onAcce
         </span>
       )}
       <div
-        className={`${message.help ? "w-[85%] max-w-md" : "max-w-[85%] md:max-w-[75%]"} rounded-2xl px-3 py-2 shadow-[0_2px_8px_rgba(0,0,0,0.35)] ${
-          message.mine ? "rounded-br-md bg-tnt text-onbrand" : "rounded-bl-md bg-zinc-800 text-zinc-50"
+        className={`${message.help ? "w-[85%] max-w-md" : "max-w-[85%] md:max-w-[75%]"} rounded-2xl px-3 py-2 shadow-card ${
+          message.mine ? "rounded-br-md bg-club text-on-club" : "rounded-bl-md bg-card text-ink ring-1 ring-inset ring-line"
         }`}
       >
         {!message.mine && !grouped && (
           <p className={`mb-0.5 break-words text-xs font-extrabold ${color}`}>
             {message.author}
-            {staffRole && <span className="font-semibold text-ember"> · {roleLabel(message.author_role)}</span>}
+            {staffRole && <span className="font-semibold text-club-ui"> · {roleLabel(message.author_role)}</span>}
           </p>
         )}
         {message.image && <MessageImage image={message.image} author={message.author} onOpen={onOpenImage} />}
         {message.text && <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{message.text}</p>}
         {message.help && <HelpCard help={message.help} mine={message.mine} onChange={(card) => onHelpChange(message.id, card)} onAccessLost={onAccessLost} />}
-        <p className={`mt-0.5 flex items-center justify-end gap-1 text-[11px] ${message.mine ? "text-white/80" : "text-zinc-300"}`}>
+        <p className={`mt-0.5 flex items-center justify-end gap-1 text-[11px] ${message.mine ? "opacity-80" : "text-ink-muted"}`}>
           {timeOf(message.created_at)}
           {message.mine && (message.seen ? (
             <CheckCheck role="img" aria-label="Visto" className="h-4 w-4 text-white" />
@@ -148,7 +148,7 @@ function Message({ message, grouped, onDelete, onOpenImage, onHelpChange, onAcce
           type="button"
           onClick={() => onDelete(message)}
           aria-label={`Borrar el mensaje de ${message.mine ? "ti" : message.author}: ${message.text ? message.text.slice(0, 40) : "foto"}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-500 hover:bg-white/5 hover:text-red-300"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:bg-raised hover:text-danger-text"
         >
           <Trash2 aria-hidden="true" className="h-4 w-4" />
         </button>
@@ -364,35 +364,36 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
     <section
       aria-label={`Chat ${channel.label}`}
       style={viewport ? { "--chat-top": `${viewport.top}px`, "--chat-height": `${viewport.height}px` } : undefined}
-      className="fixed inset-x-0 top-[var(--chat-top,0px)] z-50 flex h-[var(--chat-height,100dvh)] min-w-0 flex-col overflow-hidden bg-void md:static md:h-auto md:min-h-0 md:flex-1 md:rounded-3xl md:ring-1 md:ring-white/10"
+      className="fixed inset-x-0 top-[var(--chat-top,0px)] z-50 flex h-[var(--chat-height,100dvh)] min-w-0 flex-col overflow-hidden bg-canvas md:static md:h-auto md:min-h-0 md:flex-1 md:rounded-card md:ring-1 md:ring-line"
     >
-      <header className="relative flex min-h-16 shrink-0 items-center gap-2 bg-tnt px-2 pt-[env(safe-area-inset-top)] md:px-4 md:pt-0 text-onbrand">
+      {/* Cabecera ligera (como las de las pantallas): el icono del chat con el color del club, no una franja maciza. */}
+      <header className="relative flex min-h-14 shrink-0 items-center gap-2 border-b border-line bg-card px-2 pt-[env(safe-area-inset-top)] text-ink md:px-4 md:pt-0">
         <button
           type="button"
           onClick={onBack}
           aria-label="Volver a los chats"
-          className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10 md:hidden"
+          className="relative z-10 flex h-11 w-11 shrink-0 items-center justify-center rounded-control hover:bg-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text md:hidden"
         >
           <ArrowLeft aria-hidden="true" className="h-5 w-5" />
         </button>
-        <span aria-hidden="true" className="relative flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white">
-          <channel.Icon className="h-5 w-5 text-tnt" />
+        <span aria-hidden="true" className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-club text-on-club">
+          <channel.Icon className="h-[18px] w-[18px]" />
         </span>
         <div className="relative min-w-0 flex-1 pl-1">
-          <h2 className="truncate font-display text-xl font-extrabold leading-tight">{channel.label}</h2>
-          <p aria-live="polite" className="truncate text-xs font-semibold text-white/90 empty:hidden">{typingLabel(typing)}</p>
+          <h2 className="truncate font-title text-lg leading-tight">{channel.label}</h2>
+          <p aria-live="polite" className="truncate text-xs font-semibold text-club-ui empty:hidden">{typingLabel(typing)}</p>
         </div>
       </header>
 
       <div
         ref={listRef}
         onScroll={onScroll}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(rgba(255,255,255,0.05)_1px,transparent_1px)] px-3 py-2 [background-size:18px_18px]"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(rgb(var(--c-white)/0.06)_1px,transparent_1px)] px-3 py-2 [background-size:18px_18px]"
         data-lenis-prevent
       >
-        {!messages && !error && <p role="status" className="p-2 text-zinc-300">Cargando…</p>}
+        {!messages && !error && <p role="status" className="p-2 text-ink-muted">Cargando…</p>}
         {messages?.length === 0 && (
-          <p className="p-6 text-center text-sm text-zinc-400">Todavía no hay mensajes. Escribe el primero.</p>
+          <p className="p-6 text-center text-sm text-ink-muted">Todavía no hay mensajes. Escribe el primero.</p>
         )}
         {hasMore && messages?.length > 0 && (
           <div className="flex justify-center py-2">
@@ -400,7 +401,7 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
               type="button"
               onClick={loadOlder}
               disabled={loadingOlder}
-              className="min-h-11 rounded-full border border-white/20 px-4 text-sm font-semibold hover:bg-white/5 disabled:opacity-60"
+              className="min-h-11 rounded-control px-4 text-sm font-semibold text-ink ring-1 ring-inset ring-control hover:bg-raised disabled:opacity-60"
             >
               {loadingOlder ? "Cargando…" : "Ver mensajes anteriores"}
             </button>
@@ -415,9 +416,9 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
               <Fragment key={message.id}>
                 {newDay && (
                   <li className="mt-4 flex items-center gap-3 first:mt-1">
-                    <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
-                    <span className="font-display text-xs font-extrabold text-ember">{dayLabel(message.created_at)}</span>
-                    <span aria-hidden="true" className="h-px flex-1 bg-white/10" />
+                    <span aria-hidden="true" className="h-px flex-1 bg-line" />
+                    <span className="rounded-full bg-raised px-2.5 py-0.5 text-xs font-bold text-ink-muted">{dayLabel(message.created_at)}</span>
+                    <span aria-hidden="true" className="h-px flex-1 bg-line" />
                   </li>
                 )}
                 <Message message={message} grouped={grouped} onDelete={remove} onOpenImage={setViewing} onHelpChange={updateHelp} onAccessLost={onAccessLost} />
@@ -430,28 +431,28 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
       {error && <Notice tone="error" className="mx-3 mb-2">{error}</Notice>}
 
       {photo && (
-        <div className="flex shrink-0 items-center gap-3 border-t border-white/10 bg-panel px-3 pt-2">
+        <div className="flex shrink-0 items-center gap-3 border-t border-line bg-card px-3 pt-2">
           <img src={photo.preview} alt="Foto que vas a enviar" className="h-20 w-20 rounded-lg object-cover" />
-          <p className="flex-1 text-sm text-zinc-300">Escribe un texto si quieres y pulsa enviar.</p>
+          <p className="flex-1 text-sm text-ink-muted">Escribe un texto si quieres y pulsa enviar.</p>
           <button
             type="button"
             onClick={() => setPhoto(null)}
             aria-label="Quitar la foto"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-300 hover:bg-white/10"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-raised"
           >
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         </div>
       )}
 
-      <form onSubmit={send} className="flex shrink-0 items-end gap-2 border-t border-white/10 bg-panel p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:pb-2">
+      <form onSubmit={send} className="flex shrink-0 items-end gap-2 border-t border-line bg-card p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:pb-2">
         <input ref={fileRef} type="file" accept="image/*" onChange={choosePhoto} className="hidden" tabIndex={-1} aria-hidden="true" />
         <button
           type="button"
           onClick={() => fileRef.current?.click()}
           disabled={preparing || sending}
           aria-label={preparing ? "Preparando la foto…" : "Adjuntar una foto"}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-zinc-300 hover:bg-white/10 hover:text-white disabled:opacity-50"
+          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-raised hover:text-ink disabled:opacity-50"
         >
           <ImagePlus aria-hidden="true" className={`h-5 w-5 ${preparing ? "animate-pulse" : ""}`} />
         </button>
@@ -465,14 +466,14 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
           rows={1}
           maxLength={MAX_LENGTH}
           placeholder={photo ? "Añade un texto (opcional)" : "Escribe un mensaje"}
-          className="max-h-32 min-h-11 flex-1 resize-none rounded-2xl border border-white/15 bg-void px-4 py-2.5 text-base [field-sizing:content] placeholder:text-zinc-500 focus:border-tnt focus:outline-none"
+          className="max-h-32 min-h-11 flex-1 resize-none rounded-field bg-raised px-4 py-2.5 text-base text-ink ring-1 ring-inset ring-control [field-sizing:content] placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-rotta-text"
         />
         <button
           type="submit"
           disabled={sending || preparing || (!text.trim() && !photo)}
           onMouseDown={(event) => event.preventDefault()}
           aria-label="Enviar mensaje"
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-tnt text-onbrand disabled:opacity-40"
+          className="ui-btn-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-club text-on-club disabled:opacity-40"
         >
           <SendHorizontal aria-hidden="true" className="h-5 w-5" />
         </button>
