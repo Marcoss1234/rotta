@@ -186,6 +186,33 @@ const COLORLESS = 4; // por debajo, el color del club es blanco, negro o gris
 const TOO_CHANGED = 25; // si para leerse como texto cambia más que esto, ya no parece el color del club
 const VOY_GREEN = "#16A34A";
 const TRACK = 0.12; // la pista de las barras (.rating-range en index.css): el color del texto al 12 %
+// El resplandor de la identidad en el escenario (abajo a la izquierda), igual en las tres; el del club va con
+// la fuerza de cada identidad (THEMES[...].glow). index.css usa los mismos valores (--glow y --glow-rotta).
+export const STAGE_ROTTA_GLOW = 0.22;
+const GOLD_ON_STAGE = THEME_MEANINGS.dark.goldText;
+
+/**
+ * Las zonas del escenario sobre las que puede caer un texto: el fondo, la del resplandor del club, la del de la
+ * identidad y donde se juntan. Un degradado con transparencia sobre el fondo es igual que mezclar los dos colores.
+ */
+export function stageZones(stage, glowClub, glowRotta, strength) {
+  const club = mix(stage, glowClub, strength);
+  const rotta = mix(stage, glowRotta, STAGE_ROTTA_GLOW);
+  return [stage, club, rotta, mix(club, glowRotta, STAGE_ROTTA_GLOW)];
+}
+
+/**
+ * El color de un resplandor, oscurecido lo justo (a pasos pequeños, sin cambiar de tono) para que el texto del
+ * escenario, el secundario y el dorado se sigan leyendo en todas las zonas que toca (zonesOf da esas zonas para
+ * un color). Un club blanco, amarillo o dorado se oscurece; uno morado, rojo o azul se queda casi igual.
+ */
+function glowFor(color, readers, zonesOf, fallback) {
+  for (let step = 0; step <= 40; step += 1) {
+    const candidate = mix(color, "#000000", step * 0.025);
+    if (zonesOf(candidate).every((ground) => readers.every((reader) => contrast(reader, ground) >= 4.5))) return candidate;
+  }
+  return fallback;
+}
 
 /** Aclara u oscurece el color, a pasos pequeños, hasta llegar al mínimo sobre TODOS los fondos. */
 export function readableOnAll(color, backgrounds, minimum) {
@@ -247,6 +274,21 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
   const accentUi = readableOnAll(accent, [...grounds, ...tracks], 3);
   const whiteText = (color) => readableOnAll(color, ["#FFFFFF"], 4.5);
 
+  // Escenario (Premium deportivo): siempre oscuro, igual en claro y en oscuro. Lo que lleva encima se calcula
+  // contra todas sus zonas, resplandores incluidos: el resplandor nunca puede comerse un texto.
+  const stage = theme.stage;
+  const readers = [stage.text, stage.muted, GOLD_ON_STAGE];
+  // Primero el del club (el protagonista); el de la identidad se ajusta después, también donde se junta con él.
+  const glowClub = glowFor(brand, readers, (glow) => [mix(stage.bg, glow, theme.glow)], stage.bg);
+  const clubZone = mix(stage.bg, glowClub, theme.glow);
+  const glowRotta = glowFor(theme.dark.rotta, readers, (glow) => [mix(stage.bg, glow, STAGE_ROTTA_GLOW), mix(clubZone, glow, STAGE_ROTTA_GLOW)], stage.bg);
+  const zones = stageZones(stage.bg, glowClub, glowRotta, theme.glow);
+  const rottaOnStage = readableOnAll(theme.dark.rottaText, zones, 4.5);
+  const clubOnStage = colorless ? stage.text : readableOnAll(brand, zones, 4.5);
+  // El botón principal (color del club) sobre el escenario: si no se distingue de todas sus zonas (un club oscuro,
+  // o sobre su propio resplandor), lleva un borde en el tono claro de su color (clubOnStage, que ya se lee).
+  const stageEdge = zones.every((zone) => contrast(brand, zone) >= 3) ? brand : clubOnStage;
+
   const warnings = [
     yields && "similar-rotta",
     colorDistance(brand, VOY_GREEN) < SIMILAR_COLORS && "similar-voy",
@@ -280,6 +322,18 @@ export function buildRottaTheme(style, mode, brand, accent = brand) {
     accentUi,
     liveClub: whiteText(brand),
     liveAccent: whiteText(accent),
+    depth: theme.depth,
+    selected: theme.selected,
+    glow: theme.glow,
+    stage: stage.bg,
+    stageText: stage.text,
+    stageMuted: stage.muted,
+    stageLine: stage.line,
+    glowClub,
+    glowRotta,
+    clubOnStage,
+    rottaOnStage,
+    stageEdge,
     warnings,
   };
 }
@@ -356,5 +410,33 @@ export function themeContrastChecks(theme) {
     ["Banner del directo: blanco sobre rojo", "#FFFFFF", "#DC2626", 4.5],
     ["Banner del directo: blanco sobre el club", "#FFFFFF", theme.liveClub, 4.5],
     ["Banner del directo: blanco sobre el segundo color", "#FFFFFF", theme.liveAccent, 4.5],
+    // ---------- Premium deportivo ----------
+    // Ventanas y menús (overlay).
+    ["Texto sobre ventana", theme.text, theme.overlay, 4.5],
+    ["Texto secundario sobre ventana", theme.muted, theme.overlay, 4.5],
+    ["Foco del teclado sobre ventana", theme.focus, theme.overlay, 3],
+    ["Borde de campo sobre ventana", theme.control, theme.overlay, 3],
+    // Tarjetas que se separan solo con el borde (Lima, sin sombra): que no se fundan con el fondo.
+    ...(theme.cardBorder === "line" && theme.depth === "plana"
+      ? [["Borde de tarjeta sobre el fondo", theme.line, theme.bg, 1.25], ["Borde de tarjeta sobre la tarjeta", theme.line, theme.surface, 1.25]]
+      : []),
+    // Naranja marca lo elegido con el color del club entero: el texto encima tiene que leerse.
+    ...(theme.selected === "relleno" ? [["Elegido (relleno del club): texto encima", theme.onClub, theme.club, 4.5]] : []),
+    // Gráficas: la línea va en el color del texto al 75 %.
+    ["Línea de gráfica sobre tarjeta", mix(theme.surface, theme.text, 0.75), theme.surface, 3],
+    ["Línea de gráfica sobre el fondo", mix(theme.bg, theme.text, 0.75), theme.bg, 3],
+    // Escenario: cada texto y control, sobre cada zona (fondo, resplandor del club, de la identidad y los dos).
+    ...stageZones(theme.stage, theme.glowClub, theme.glowRotta, theme.glow).flatMap((zone, index) => {
+      const where = ["el escenario", "el resplandor del club", "el resplandor de la identidad", "los dos resplandores"][index];
+      return [
+        [`Texto sobre ${where}`, theme.stageText, zone, 4.5],
+        [`Texto secundario sobre ${where}`, theme.stageMuted, zone, 4.5],
+        [`Dorado sobre ${where}`, GOLD_ON_STAGE, zone, 4.5],
+        [`Color del club como texto sobre ${where}`, theme.clubOnStage, zone, 4.5],
+        [`Enlace de la identidad sobre ${where}`, theme.rottaOnStage, zone, 4.5],
+        [`Foco del teclado sobre ${where}`, theme.rottaOnStage, zone, 3],
+        [`Borde del botón principal sobre ${where}`, theme.stageEdge, zone, 3],
+      ];
+    }),
   ];
 }

@@ -23,7 +23,13 @@ const hsl = (hue, saturation, lightness) => {
 };
 
 // Casos difíciles: blanco, negro, gris, amarillo puro, verde de «Voy», y colores casi iguales a los de Rotta.
-const HARD = ["#FFFFFF", "#000000", "#111827", "#6B7280", "#FFEB00", "#84CC16", "#16A34A", "#F97316", "#FF4D00", "#1E3A8A", "#38BDF8", "#C7F23A", "#1E2F7A", "#8FA8FF"];
+// Extremos para el escenario: blancos, amarillos y dorados (el resplandor se oscurece) y tonos muy oscuros (el botón
+// principal necesita borde).
+const HARD = [
+  "#FFFFFF", "#000000", "#111827", "#6B7280", "#FFEB00", "#84CC16", "#16A34A", "#F97316", "#FF4D00", "#1E3A8A", "#38BDF8", "#C7F23A", "#1E2F7A", "#8FA8FF",
+  "#FAFAFA", "#FFF7D6", "#FFFF00", "#FDE047", "#F5C542", "#E8B923", "#D4A017", "#B8860B",
+  "#0B0C0F", "#050A1F", "#1A0000", "#00140A", "#140A1F", "#0A1230", "#170E09", "#0B140D",
+];
 const sweep = [];
 for (let hue = 0; hue < 360; hue += 10) {
   for (const saturation of [0, 40, 75, 100]) {
@@ -48,11 +54,18 @@ const FIXED = [
   [/\b(?:bg|text|ring|border|from|via|to|fill|stroke|outline|divide|placeholder|shadow|decoration|accent|caret)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black|tnt|tntdeep|ember|void|onbrand|onember)\b/g, "color fijo de Tailwind o alias antiguo"],
   [/\brgba?\(/g, "rgb() escrito a mano"],
 ];
+// El segundo color del club es solo de marca y adorno: una pieza común no lo usa para dar información (estados,
+// notas, asistencia, errores). Solo el escenario (Stage.jsx) puede llevar la franja (`stripe`) como adorno.
+const SECOND_COLOR = /\b(?:bg|text|ring|border|from|via|to|fill|stroke|outline|divide|shadow|decoration|caret)-(?:accent-ui|live-accent|stripe)\b/g;
 const fixedColors = readdirSync(UI_DIR)
   .filter((name) => /\.(jsx?|css)$/.test(name))
   .flatMap((name) => {
     const source = readFileSync(new URL(name, UI_DIR), "utf8");
-    return FIXED.flatMap(([pattern, what]) => [...source.matchAll(pattern)].map((match) => `${name}: ${what} «${match[0]}»`));
+    const fixed = FIXED.flatMap(([pattern, what]) => [...source.matchAll(pattern)].map((match) => `${name}: ${what} «${match[0]}»`));
+    const second = [...source.matchAll(SECOND_COLOR)]
+      .filter((match) => !(name === "Stage.jsx" && match[0].endsWith("-stripe")))
+      .map((match) => `${name}: segundo color del club dando información «${match[0]}»`);
+    return [...fixed, ...second];
   });
 
 // Sin reglas: el color del club tal cual en todas partes (lo que pasaría sin theme.js).
@@ -66,6 +79,9 @@ const raw = (theme) => ({
   accentUi: theme.accent,
   liveClub: theme.club,
   liveAccent: theme.accent,
+  glowClub: theme.club,
+  clubOnStage: theme.club,
+  stageEdge: theme.club,
 });
 
 let total = 0;

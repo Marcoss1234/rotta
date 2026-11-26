@@ -62,6 +62,12 @@ export default {
         "stage-ink": themed("stage-ink"),
         "stage-muted": themed("stage-muted"),
         "stage-line": themed("stage-line"),
+        // Con el color del club, ya ajustados para que el texto del escenario se lea (theme.js).
+        "glow-club": themed("glow-club"),
+        "glow-rotta": themed("glow-rotta"),
+        "club-on-stage": themed("club-on-stage"),
+        "rotta-on-stage": themed("rotta-on-stage"),
+        "stage-edge": themed("stage-edge"),
         "accent-ui": themed("accent-ui"),
         "live-club": themed("live-club"),
         "live-accent": themed("live-accent"),

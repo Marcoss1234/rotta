@@ -68,6 +68,13 @@
   --c-stage-ink: 244 246 251;
   --c-stage-muted: 174 184 210;
   --c-stage-line: 36 48 90;
+  --c-glow-club: 124 58 237;
+  --c-glow-rotta: 143 168 255;
+  --c-club-on-stage: 168 128 244;
+  --c-rotta-on-stage: 167 186 255;
+  --c-stage-edge: 124 58 237;
+  /* Fuerza del resplandor de la identidad (STAGE_ROTTA_GLOW en theme.js). */
+  --glow-rotta: 0.22;
   --hair: rgb(255 255 255 / 0.07);
   --shadow-depth: 0 0 #0000;
   --shadow-overlay: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 48px -16px rgb(0 0 0 / 0.7);
@@ -186,6 +193,20 @@
   font-stretch: var(--title-width);
   font-weight: var(--title-weight);
   letter-spacing: -0.015em;
+}
+
+/* Escenario (Premium deportivo): la pieza protagonista de una pantalla, siempre oscura (también en claro).
+   Dos resplandores sobre el fondo del escenario: el del club arriba a la derecha y el de la identidad abajo a la
+   izquierda. Sus colores (glow-club, glow-rotta) ya vienen oscurecidos lo justo para que todo el texto se lea:
+   theme.js comprueba cada texto sobre cada zona. Dentro se usan los colores oscuros de la identidad: el
+   componente (ui/Stage) añade también .force-dark. */
+.stage {
+  color: rgb(var(--c-stage-ink));
+  background-color: rgb(var(--c-stage));
+  background-image:
+    radial-gradient(110% 90% at 90% -10%, rgb(var(--c-glow-club) / var(--glow)), transparent 62%),
+    radial-gradient(70% 70% at 0% 110%, rgb(var(--c-glow-rotta) / var(--glow-rotta)), transparent 70%);
+  border: 1px solid rgb(var(--c-stage-line));
 }
 
 /* Transiciones con el ritmo de cada identidad; sin movimiento si la persona lo pide. */

@@ -47,7 +47,7 @@ export const THEMES = {
     motion: { ms: 120, ease: "ease-out" },
     stage: { bg: "#0B140D", text: "#EEF3EA", muted: "#A9B6A5", line: "#26332A" },
     dark: {
-      bg: "#0A0D0B", surface: "#131814", raised: "#1C231D", line: "#242D25", control: "#5C6B59", text: "#EEF3EA", muted: "#93A08F", rotta: "#C7F23A", rottaText: "#C7F23A",
+      bg: "#0A0D0B", surface: "#131814", raised: "#1C231D", line: "#242D25", control: "#6A7867", text: "#EEF3EA", muted: "#93A08F", rotta: "#C7F23A", rottaText: "#C7F23A",
       overlay: "#1E2720", hair: "none", shadow: "none", overlayShadow: "0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 48px -16px rgb(0 0 0 / 0.7)", cardBorder: "line",
     },
     light: {
@@ -95,7 +95,7 @@ export const THEMES = {
     motion: { ms: 180, ease: "cubic-bezier(0.2, 0.8, 0.2, 1)" },
     stage: { bg: "#0A1230", text: "#F4F6FB", muted: "#AEB8D2", line: "#24305A" },
     dark: {
-      bg: "#090D18", surface: "#10172A", raised: "#172036", line: "#1F2943", control: "#56638A", text: "#E9EDF6", muted: "#8E99B4", rotta: "#8FA8FF", rottaText: "#A7BAFF",
+      bg: "#090D18", surface: "#10172A", raised: "#172036", line: "#1F2943", control: "#6A779C", text: "#E9EDF6", muted: "#8E99B4", rotta: "#8FA8FF", rottaText: "#A7BAFF",
       overlay: "#1B2742", hair: "rgb(255 255 255 / 0.07)", shadow: "none", overlayShadow: "0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 48px -16px rgb(0 0 0 / 0.7)", cardBorder: "line",
     },
     light: {
