@@ -15,7 +15,7 @@ describe("PageHeader", () => {
   it("pone los botones a la derecha, o debajo si se pide", () => {
     const { rerender } = render(<PageHeader title="Notas" actions={<button type="button">Ranking</button>} />);
     expect(screen.getByRole("button", { name: "Ranking" })).toBeTruthy();
-    expect(screen.getByRole("banner").className).toContain("justify-between");
+    expect(screen.getByRole("banner").className).toContain("grid-cols-[minmax(0,1fr)_auto]");
     rerender(<PageHeader title="Notas" stacked actions={<button type="button">Ranking</button>} />);
     expect(screen.getByRole("banner").className).toContain("flex-col");
   });

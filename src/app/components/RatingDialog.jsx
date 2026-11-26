@@ -23,7 +23,7 @@ function OverallRing({ overall }) {
     >
       <div className="flex h-[4.6rem] w-[4.6rem] flex-col items-center justify-center rounded-full bg-panel" aria-live="polite">
         <span className={`font-display text-3xl font-extrabold leading-none tabular-nums ${overallTone(overall)}`}>{formatOverall(overall)}</span>
-        <span className="text-[9px] font-bold text-zinc-400">Overall</span>
+        <span className="text-[10px] font-semibold text-ink-muted">Nota global</span>
       </div>
     </div>
   );

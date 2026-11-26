@@ -8,7 +8,8 @@ import { cx } from "./cx.js";
  */
 export function PageHeader({ title, subtitle, actions, stacked = false, className }) {
   return (
-    <header className={cx("app-page-header flex gap-x-3 gap-y-3", stacked ? "flex-col" : "flex-wrap items-end justify-between", className)}>
+    // Los botones van al lado del título (no debajo) para que la cabecera ocupe una sola franja.
+    <header className={cx("app-page-header gap-x-3 gap-y-3", stacked ? "flex flex-col" : "grid grid-cols-[minmax(0,1fr)_auto] items-end justify-between", className)}>
       <div className="min-w-0">
         <h1 className="font-title text-title text-ink md:text-display">{title}</h1>
         {subtitle && <p className="mt-1.5 text-sm text-ink-muted">{subtitle}</p>}

@@ -67,19 +67,18 @@ export function PositionTag({ position }) {
   );
 }
 
-// Cuanto mejor es la nota, más se enciende el número.
+// La nota global: dorada solo con 85 o más (lo que de verdad es oro). El resto, en el color del texto, sin colores
+// de estado ni del club (decisión de Ranking y Notas: el segundo color del club no da información).
 export function overallTone(overall) {
-  if (overall === null || overall === undefined) return "text-zinc-500";
-  if (overall >= 85) return "text-amber-300";
-  if (overall >= 70) return "text-ember";
-  if (overall >= 50) return "text-white";
-  return "text-zinc-400";
+  if (overall === null || overall === undefined) return "text-ink-muted";
+  if (overall >= 85) return "text-gold-text";
+  return "text-ink";
 }
 
 export function OverallNumber({ overall, className = "text-3xl" }) {
   return (
-    <span className={`font-display font-extrabold leading-none tabular-nums ${overallTone(overall)} ${className}`}>
-      <span className="sr-only">Overall </span>{formatOverall(overall)}
+    <span className={`font-score leading-none ${overallTone(overall)} ${className}`}>
+      <span className="sr-only">Nota global </span>{formatOverall(overall)}
     </span>
   );
 }
@@ -87,11 +86,11 @@ export function OverallNumber({ overall, className = "text-3xl" }) {
 export function MovementPill({ value, hasPrevious }) {
   if (!hasPrevious) return null;
   if (value === null) {
-    return <span className="rounded-full bg-sky-400/15 px-2 py-0.5 text-[11px] font-bold text-sky-300">Nuevo</span>;
+    return <span className="rounded-full bg-raised px-2 py-0.5 text-xs font-bold text-ink-muted">Nuevo</span>;
   }
   if (value === 0) {
     return (
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white/5 text-zinc-400">
+      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-raised text-ink-muted">
         <Equal aria-hidden="true" className="h-3.5 w-3.5" />
         <span className="sr-only">Sigue igual</span>
       </span>
@@ -100,7 +99,7 @@ export function MovementPill({ value, hasPrevious }) {
   const up = value > 0;
   const Icon = up ? ArrowUp : ArrowDown;
   return (
-    <span className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-sm font-extrabold ${up ? "bg-emerald-400/15 text-emerald-300" : "bg-red-400/15 text-red-300"}`}>
+    <span className={`flex items-center gap-0.5 rounded-full px-2 py-0.5 text-sm font-bold ${up ? "bg-voy/10 text-voy-text" : "bg-danger/10 text-danger-text"}`}>
       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
       <span className="sr-only">{up ? "Sube" : "Baja"} </span>
       {Math.abs(value)}
@@ -110,9 +109,9 @@ export function MovementPill({ value, hasPrevious }) {
 
 export function AnimatedBar({ percent, className = "h-1.5" }) {
   return (
-    <div aria-hidden="true" className={`overflow-hidden rounded-full bg-white/10 ${className}`}>
+    <div aria-hidden="true" className={`chart-bar overflow-hidden rounded-full bg-ink/10 ${className}`}>
       <motion.div
-        className="h-full rounded-full bg-tnt text-onbrand"
+        className="h-full rounded-full bg-club-ui"
         initial={{ width: 0 }}
         animate={{ width: `${percent}%` }}
         transition={{ duration: 0.7, ease: "easeOut" }}
@@ -141,25 +140,19 @@ export function SkillRadar({ skills, scores }) {
   const shape = (scaleOf) => skills.map((skill, index) => pointAt(index, scaleOf(skill)).join(",")).join(" ");
 
   return (
-    <svg viewBox="-40 0 320 240" aria-hidden="true" className="mx-auto w-full max-w-[20rem]">
-      <defs>
-        <linearGradient id="radar-fill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#FF3800" stopOpacity="0.75" />
-          <stop offset="100%" stopColor="#FF8800" stopOpacity="0.45" />
-        </linearGradient>
-      </defs>
+    // Colores del tema (chart-* en index.css): rejilla en las líneas del tema, relleno y borde en el color del club
+    // ajustado (club-ui), letras en el texto secundario. Grosor de línea de la identidad (--chart-line).
+    <svg viewBox="-40 0 320 240" aria-hidden="true" className="chart mx-auto w-full max-w-[18rem]">
       {[0.25, 0.5, 0.75, 1].map((ring) => (
-        <polygon key={ring} points={shape(() => ring)} fill="none" stroke="rgba(255,255,255,0.12)" />
+        <polygon key={ring} points={shape(() => ring)} className="chart-grid" fill="none" />
       ))}
       {skills.map((skill, index) => {
         const [x, y] = pointAt(index, 1);
-        return <line key={skill.id} x1={center} y1={center} x2={x} y2={y} stroke="rgba(255,255,255,0.08)" />;
+        return <line key={skill.id} x1={center} y1={center} x2={x} y2={y} className="chart-grid" />;
       })}
       <motion.polygon
         points={shape((skill) => scores[skill.id] / 10)}
-        fill="url(#radar-fill)"
-        stroke="#FF8800"
-        strokeWidth="2"
+        className="chart-area-strong"
         strokeLinejoin="round"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -167,13 +160,13 @@ export function SkillRadar({ skills, scores }) {
       />
       {skills.map((skill, index) => {
         const [x, y] = pointAt(index, scores[skill.id] / 10);
-        return <circle key={skill.id} cx={x} cy={y} r="3.5" fill="#fff" />;
+        return <circle key={skill.id} cx={x} cy={y} r="3.5" className="chart-point" />;
       })}
       {skills.map((skill, index) => {
         const [x, y] = pointAt(index, 1.24);
         const anchor = Math.abs(x - center) < 8 ? "middle" : x > center ? "start" : "end";
         return (
-          <text key={skill.id} x={x} y={y + 4} textAnchor={anchor} fill="#d4d4d8" fontSize="12" fontWeight="700">
+          <text key={skill.id} x={x} y={y + 4} textAnchor={anchor} className="chart-label" fontSize="13" fontWeight="700">
             {SHORT_LABELS[skill.id]}
           </text>
         );
@@ -203,20 +196,15 @@ export function EvolutionChart({ weeks }) {
   const area = `24,92 ${line} ${width - 24},92`;
 
   return (
-    <svg viewBox={`0 0 ${width} ${height}`} aria-hidden="true" className="w-full">
-      <defs>
-        <linearGradient id="evolution-area" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#FF3800" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="#FF3800" stopOpacity="0" />
-        </linearGradient>
-      </defs>
-      <polygon points={area} fill="url(#evolution-area)" />
-      <polyline points={line} fill="none" stroke="#FF8800" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    // Colores del tema (chart-* en index.css) y tamaño máximo: en escritorio no se estira (las letras no crecen).
+    <svg viewBox={`0 0 ${width} ${height}`} aria-hidden="true" className="chart mx-auto w-full max-w-md">
+      <polygon points={area} className="chart-area" />
+      <polyline points={line} className="chart-line" fill="none" strokeLinecap="round" strokeLinejoin="round" />
       {points.map(([x, y], index) => (
         <g key={weeks[index].week}>
-          <circle cx={x} cy={y} r="4" fill={index === points.length - 1 ? "#fff" : "#FF8800"} />
-          <text x={x} y={y - 9} textAnchor="middle" fill="#fff" fontSize="12" fontWeight="800">{Math.round(weeks[index].overall)}</text>
-          <text x={x} y={106} textAnchor="middle" fill="#a1a1aa" fontSize="10">{shortDate.format(dayOf(weeks[index].week))}</text>
+          <circle cx={x} cy={y} r="4" className={index === points.length - 1 ? "chart-point-last" : "chart-point"} />
+          <text x={x} y={y - 9} textAnchor="middle" className="chart-value" fontSize="12" fontWeight="800">{Math.round(weeks[index].overall)}</text>
+          <text x={x} y={106} textAnchor="middle" className="chart-label" fontSize="10">{shortDate.format(dayOf(weeks[index].week))}</text>
         </g>
       ))}
     </svg>

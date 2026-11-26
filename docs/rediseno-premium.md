@@ -20,6 +20,8 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 
 | (este) | Inicio 3: sitio en una línea bajo la hora (entreno y partido), arena en la pista de playa; revisado con familia, entrenador sin ficha, playa, 360 px y tableta |
 | (este) | Plantilla: lista en filas compactas dentro de un solo bloque (contacto en una línea), pista con suelo y líneas de la identidad (`CourtDrawing themed`), escritorio a todo el ancho con pista y lista lado a lado |
+| `9770252` | Ranking y Premios: grupo por defecto desde la estructura del club (`ownGroupOf`), sin `startsWith("escuela")` (cambio funcional pequeño, aparte) |
+| (este) | Ranking: pantalla fija en el móvil (cabecera, equipo, semana/mes, filtro y acceso a «Tu ficha» fijos; premios, podio compacto, clasificación en filas y tu ficha al final en una zona que se desliza por dentro); escritorio con tu ficha a la derecha; «Nota global» en lugar de «Overall»; nota dorada solo ≥85 y el resto neutra; gráficas con colores del tema y estilo de cada identidad; fichas en hoja desde abajo (`ui/Dialog placement="auto"`); `PageHeader` con los botones al lado del título |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -42,8 +44,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 
 1. ~~Inicio, bloque 3~~ (hecho).
 2. ~~Plantilla y fichas de jugadores~~ (hecho; la nota de la ficha y el suelo del 3D se ven en Ranking y componentes).
-3. Ranking y Notas (ver `docs/ranking-y-notas.md`: «Nota global», dorado solo ≥85, Tu ficha arriba y al
-   final, equipo por defecto sin `startsWith("escuela")`).
+3. Ranking y Notas: **Ranking hecho**. **Siguiente paso: Notas** (hoja del entrenador `RatingSheetPage` y
+   `RatingDialog`: borradores frente a publicadas, habilidades y puntuaciones más claras, pantalla fija).
 4. Eventos y calendario.
 5. Partidos jugados y marcador en directo.
 6. Premios y tienda.
@@ -54,6 +56,11 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 11. Revisión responsive y de accesibilidad (360, 390, tableta, escritorio; claro y oscuro).
 12. Limpieza: estilos y alias antiguos sin uso (`bg-panel`, `text-zinc-…`, `bg-tnt`, `text-ember`, `buildTheme`),
     colores fijos y documentación (`CLAUDE.md`).
+
+**Norma nueva (26-11-2026, pedida por Marcos): pantalla fija en el móvil.** La página no se desplaza entera: arriba lo
+fijo (cabecera, filtros, lo importante) y las listas largas en una zona que se desliza por dentro; lo secundario se
+abre en hoja desde abajo. Hecho en Ranking. Pendiente de aplicar a Inicio y Plantilla (fase de revisión responsive) y
+a todas las pantallas nuevas.
 
 Principio en todas: diseño compacto (menos scroll y espacio vacío, filas en vez de tarjetas grandes, columnas en
 escritorio) sin bajar el tamaño de letra ni de los controles ni quitar información.

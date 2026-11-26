@@ -420,6 +420,34 @@
   box-shadow: 0 1px 0 rgb(var(--c-line));
 }
 
+/* Hoja desde abajo (ui/Dialog placement sheet o auto): entra deslizándose. */
+@keyframes ui-sheet-in {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+dialog[open].ui-sheet { animation: ui-sheet-in 260ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) {
+  dialog[open].ui-sheet { animation: none; }
+}
+
+/* ---------- Gráficas (RankingVisuals: radar, evolución, barras): colores del tema y estilo de la identidad ----------
+   Rejilla en las líneas del tema, la línea en el texto (al 75 %), relleno y último punto en el club ajustado
+   (club-ui, que ya llega a 3:1), letras en el texto secundario. Lima: puntos cuadrados y rejilla discontinua;
+   Naranja: línea gruesa y relleno amplio; Tinta: puntos huecos. */
+.chart-grid { stroke: rgb(var(--c-line)); stroke-width: 1; }
+.chart-line { stroke: rgb(var(--c-white) / 0.75); stroke-width: var(--chart-line); }
+.chart-area { fill: rgb(var(--c-club-ui) / 0.16); }
+.chart-area-strong { fill: rgb(var(--c-club-ui) / 0.28); stroke: rgb(var(--c-club-ui)); stroke-width: var(--chart-line); }
+.chart-point { fill: rgb(var(--c-white) / 0.85); }
+.chart-point-last { fill: rgb(var(--c-club-ui)); stroke: rgb(var(--c-surface)); stroke-width: 2; }
+.chart-value { fill: rgb(var(--c-white)); }
+.chart-label { fill: rgb(var(--c-muted)); }
+:root[data-rotta="lima"] .chart-grid { stroke-dasharray: 3 3; }
+:root[data-rotta="naranja"] .chart-area { fill: rgb(var(--c-club-ui) / 0.24); }
+:root[data-rotta="tinta"] .chart-point { fill: rgb(var(--c-surface)); stroke: rgb(var(--c-white) / 0.75); stroke-width: 1.5; }
+:root[data-rotta="lima"] .chart-bar,
+:root[data-rotta="lima"] .chart-bar > * { border-radius: 2px; }
+
 /* ---------- Escenario (ui/Stage): el adorno de cada identidad, muy suave ---------- */
 /* Solo en la esquina del resplandor (arriba a la derecha) y desvaneciéndose hacia el texto: adorno, no rejilla. */
 .stage-decoration svg {
