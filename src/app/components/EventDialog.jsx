@@ -37,7 +37,7 @@ export default function EventDialog({ event, defaultDate, onSave, onDelete, onCl
   };
 
   return (
-    <Dialog title={editing ? "Editar evento" : "Nuevo evento"} onClose={onClose} busy={busy}>
+    <Dialog title={editing ? "Editar evento" : "Nuevo evento"} onClose={onClose} busy={busy} placement="auto">
       <form onSubmit={submit} className="space-y-4">
         <Field id="event-title" label="Qué es">
           <Input id="event-title" value={form.title} onChange={set("title")} maxLength={80} required disabled={busy} placeholder="Cena de equipo" />

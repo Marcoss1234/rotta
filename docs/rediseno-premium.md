@@ -23,6 +23,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | `9770252` | Ranking y Premios: grupo por defecto desde la estructura del club (`ownGroupOf`), sin `startsWith("escuela")` (cambio funcional pequeño, aparte) |
 | (este) | Ranking: pantalla fija en el móvil (cabecera, equipo, semana/mes, filtro y acceso a «Tu ficha» fijos; premios, podio compacto, clasificación en filas y tu ficha al final en una zona que se desliza por dentro); escritorio con tu ficha a la derecha; «Nota global» en lugar de «Overall»; nota dorada solo ≥85 y el resto neutra; gráficas con colores del tema y estilo de cada identidad; fichas en hoja desde abajo (`ui/Dialog placement="auto"`); `PageHeader` con los botones al lado del título |
 | (este) | Notas: pantalla fija en el móvil (cabecera, equipo, semana con su estado Borrador/Publicada, cuántos llevas y «Publicar» fijos; la lista se desliza por dentro); filas compactas con la nota de cada habilidad en una línea, si hay comentario y «Puntuar» a los que faltan; filtro Todos / Sin nota / Con nota; confirmar la publicación en hoja; escritorio con la lista a la izquierda y el estado a la derecha. `RatingDialog` sobre `ui/Dialog` (hoja en el móvil): quién, cuántas habilidades lleva, posición y «Nota global» arriba fijos; cada habilidad con su peso («pesa 30%»), su nota en grande y un botón para dejarla sin nota; Guardar siempre a la vista. Barra y aro con el carácter de cada identidad (`rating-range`, `rating-ring` en index.css) |
+| (este) | Eventos: pantalla fija en el móvil (cabecera con «Añadir» al lado y el mes fijos; calendario y agenda se deslizan por dentro); días más bajos; agenda en filas dentro de un solo bloque; escritorio a todo el ancho con el calendario a la izquierda y la agenda fija a la derecha; formulario de evento en hoja (`placement="auto"`) |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -46,8 +47,8 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 1. ~~Inicio, bloque 3~~ (hecho).
 2. ~~Plantilla y fichas de jugadores~~ (hecho; la nota de la ficha y el suelo del 3D se ven en Ranking y componentes).
 3. ~~Ranking y Notas~~ (hecho).
-4. **Siguiente paso:** Eventos y calendario.
-5. Partidos jugados y marcador en directo.
+4. ~~Eventos y calendario~~ (hecho).
+5. **Siguiente paso:** Partidos jugados y marcador en directo.
 6. Premios y tienda.
 7. Chat.
 8. Perfil, apariencia y configuración (que se vean las diferencias entre identidades).
@@ -59,7 +60,7 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 
 **Norma nueva (26-11-2026, pedida por Marcos): pantalla fija en el móvil.** La página no se desplaza entera: arriba lo
 fijo (cabecera, filtros, lo importante) y las listas largas en una zona que se desliza por dentro; lo secundario se
-abre en hoja desde abajo. Hecho en Ranking y Notas. Pendiente de aplicar a Inicio y Plantilla (fase de revisión responsive) y
+abre en hoja desde abajo. Hecho en Ranking, Notas y Eventos. Pendiente de aplicar a Inicio y Plantilla (fase de revisión responsive) y
 a todas las pantallas nuevas. Cómo se hace: la página es `flex h-full min-h-0 flex-col md:h-auto`; lo fijo va arriba y
 la zona que se desliza es `min-h-0 flex-1 overflow-y-auto overscroll-contain` (en escritorio, `md:overflow-visible`);
 la ruta se añade a `WIDE_PATHS` en `AppLayout.jsx` si tiene distribución de escritorio propia.

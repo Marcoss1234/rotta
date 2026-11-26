@@ -3,8 +3,7 @@ import { ChevronLeft, ChevronRight, Pencil, Plus } from "lucide-react";
 import { createEvent, deleteEvent, getCalendar, updateEvent } from "@/app/api.js";
 import EventDialog from "@/app/components/EventDialog.jsx";
 import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
-import { RankingHero } from "@/app/components/RankingVisuals.jsx";
-import { Badge, Button, Card, EmptyState, IconButton, Notice, cx } from "@/app/ui/index.js";
+import { Badge, Button, Card, EmptyState, IconButton, Notice, PageHeader, cx } from "@/app/ui/index.js";
 import { localToday, placeInfo } from "@/app/matches.js";
 import { MATCH_TEAM_PHRASE } from "@/app/teams.js";
 
@@ -60,7 +59,7 @@ function DayCell({ iso, items, selected, onSelect }) {
       aria-label={`${dayTitle(iso)}${items.length ? `: ${items.map((item) => (isMatch(item) ? "partido" : item.title)).join(", ")}` : ", nada"}`}
       onClick={() => onSelect(iso)}
       className={cx(
-        "flex min-h-[3.75rem] min-w-0 flex-col gap-1 rounded-field p-1 text-left transition md:min-h-28 md:gap-0.5 md:p-1.5",
+        "flex min-h-12 min-w-0 flex-col gap-1 rounded-field p-1 text-left transition md:min-h-24 md:gap-0.5 md:p-1.5 xl:min-h-28",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
         selected ? "bg-club-soft ring-2 ring-club-ui" : items.length ? "bg-panel ring-1 ring-line hover:ring-control" : "ring-1 ring-line/60 hover:ring-line",
       )}
@@ -84,14 +83,16 @@ function DayCell({ iso, items, selected, onSelect }) {
   );
 }
 
+// Un partido o evento de la agenda: fila compacta dentro de un solo bloque (fecha, tipo, qué es y la hora; el sitio
+// y las notas debajo, si los tiene).
 function AgendaRow({ item, canManage, onEdit }) {
   return (
-    <Card as="li" padding="sm" className="space-y-2.5" data-testid="calendar-item">
+    <li className="space-y-2 p-3" data-testid="calendar-item">
       <div className="flex items-center gap-3">
         <DateBadge iso={item.date} />
         <div className="min-w-0 flex-1">
           <Badge tone={isMatch(item) ? "club" : "neutral"}>{isMatch(item) ? "Partido" : "Evento"}</Badge>
-          <p className="mt-1 break-words font-display text-lg font-extrabold leading-tight text-ink">
+          <p className="mt-1 break-words font-display text-base font-extrabold leading-tight text-ink">
             {isMatch(item) ? `Partido ${MATCH_TEAM_PHRASE[item.team_id]}` : item.title}
           </p>
           {isMatch(item) && <p className="mt-0.5 break-words text-sm font-semibold text-ink-muted">contra <span className="text-ink">{item.opponent}</span></p>}
@@ -101,7 +102,7 @@ function AgendaRow({ item, canManage, onEdit }) {
       </div>
       {!isMatch(item) && item.location && <EventPlace place={placeInfo(item.location).label} url={placeInfo(item.location).url} />}
       {!isMatch(item) && item.notes && <MatchNotes notes={item.notes} />}
-    </Card>
+    </li>
   );
 }
 
@@ -158,61 +159,83 @@ export default function EventsPage({ onAccessLost }) {
   const defaultDate = selected ?? (today.startsWith(month) ? today : `${month}-01`);
   const canManage = Boolean(calendar?.can_manage);
 
-  return (
-    <div className="space-y-6">
-      <RankingHero title="Eventos" subtitle="Calendario del club" stacked>
-        {canManage && (
-          <Button icon={Plus} onClick={() => setEditing({ event: null })}>Añadir</Button>
-        )}
-      </RankingHero>
+  const monthStepper = (
+    <>
+      <IconButton icon={ChevronLeft} label="Mes anterior" onClick={() => goToMonth(shiftMonth(month, -1))} />
+      <h2 className="font-display text-lg font-extrabold text-ink md:text-xl" aria-live="polite">{monthTitle(month)}</h2>
+      <IconButton icon={ChevronRight} label="Mes siguiente" onClick={() => goToMonth(shiftMonth(month, 1))} />
+    </>
+  );
 
-      <section aria-label="Calendario" className="space-y-2">
-        <Card as="div" padding="none" className="flex items-center justify-between gap-2 p-1">
-          <IconButton icon={ChevronLeft} label="Mes anterior" onClick={() => goToMonth(shiftMonth(month, -1))} />
-          <h2 className="font-display text-xl font-extrabold text-ink" aria-live="polite">{monthTitle(month)}</h2>
-          <IconButton icon={ChevronRight} label="Mes siguiente" onClick={() => goToMonth(shiftMonth(month, 1))} />
-        </Card>
-        <div aria-hidden="true" className="grid grid-cols-7 gap-1">
-          {WEEKDAYS.map((day) => <span key={day} className="text-center text-xs font-bold text-ink-muted">{day}</span>)}
-        </div>
-        <div className="grid grid-cols-7 gap-1" data-testid="calendar-grid">
-          {monthCells(month).map((iso, index) => (
-            iso
-              ? <DayCell key={iso} iso={iso} items={itemsOf(iso)} selected={selected === iso} onSelect={(day) => setSelected((current) => (current === day ? null : day))} />
-              : <span key={`hueco-${index}`} aria-hidden="true" />
-          ))}
-        </div>
-        <p aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs font-semibold text-ink-muted md:hidden">
-          <span className="flex items-center gap-1.5"><MatchMark /> Partido</span>
-          <span className="flex items-center gap-1.5"><EventMark /> Evento</span>
-          {/* Solo en el mes de hoy: en otro mes no hay ningún día marcado como hoy. */}
-          {today.startsWith(month) && (
-            <span className="flex items-center gap-1.5">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-club font-display text-xs font-extrabold text-on-club">{Number(today.slice(8))}</span>
-              Hoy
-            </span>
-          )}
-        </p>
-      </section>
-
-      {error && <Notice tone="error">{error}</Notice>}
-      {!error && !calendar && <p role="status" className="text-ink-muted">Cargando…</p>}
-
-      {calendar && (
-        <section aria-labelledby="agenda-title" className="space-y-2">
-          <div className="flex min-h-11 items-center justify-between gap-3 border-b border-line pb-1">
-            <h2 id="agenda-title" className="min-w-0 font-display text-lg font-extrabold text-ink">{selected ? dayTitle(selected) : "Todo el mes"}</h2>
-            {selected && <Button variant="quiet" size="sm" onClick={() => setSelected(null)}>Ver el mes</Button>}
-          </div>
-          {listed.length === 0 ? (
-            <EmptyState>{selected ? "No hay nada este día." : "No hay nada este mes."}</EmptyState>
-          ) : (
-            <ul className="space-y-2">
-              {listed.map((item) => <AgendaRow key={item.id} item={item} canManage={canManage} onEdit={(event) => setEditing({ event })} />)}
-            </ul>
-          )}
-        </section>
+  const legend = (
+    <p aria-hidden="true" className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-xs font-semibold text-ink-muted md:hidden">
+      <span className="flex items-center gap-1.5"><MatchMark /> Partido</span>
+      <span className="flex items-center gap-1.5"><EventMark /> Evento</span>
+      {/* Solo en el mes de hoy: en otro mes no hay ningún día marcado como hoy. */}
+      {today.startsWith(month) && (
+        <span className="flex items-center gap-1.5">
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-club font-display text-[11px] font-extrabold text-on-club">{Number(today.slice(8))}</span>
+          Hoy
+        </span>
       )}
+    </p>
+  );
+
+  // Pantalla fija en el móvil (Premium deportivo): arriba, fijos, la cabecera y el mes; debajo, el calendario y la
+  // agenda del mes (o del día elegido) se deslizan por dentro. En escritorio: el calendario a la izquierda y la
+  // agenda a la derecha, fija mientras se baja.
+  return (
+    <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
+      <PageHeader
+        title="Eventos"
+        subtitle="Calendario del club"
+        actions={canManage && <Button size="sm" icon={Plus} onClick={() => setEditing({ event: null })}>Añadir</Button>}
+      />
+
+      <Card as="div" padding="none" className="flex shrink-0 items-center justify-between gap-2 p-1 lg:hidden">
+        {monthStepper}
+      </Card>
+
+      <div
+        className="-mx-gutter min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:overflow-visible md:px-0 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-6 lg:space-y-0"
+        data-testid="events-scroll"
+      >
+        <section aria-label="Calendario" className="space-y-1.5">
+          <Card as="div" padding="none" className="hidden items-center justify-between gap-2 p-1 lg:flex">
+            {monthStepper}
+          </Card>
+          <div aria-hidden="true" className="grid grid-cols-7 gap-1">
+            {WEEKDAYS.map((day) => <span key={day} className="text-center text-xs font-bold text-ink-muted">{day}</span>)}
+          </div>
+          <div className="grid grid-cols-7 gap-1" data-testid="calendar-grid">
+            {monthCells(month).map((iso, index) => (
+              iso
+                ? <DayCell key={iso} iso={iso} items={itemsOf(iso)} selected={selected === iso} onSelect={(day) => setSelected((current) => (current === day ? null : day))} />
+                : <span key={`hueco-${index}`} aria-hidden="true" />
+            ))}
+          </div>
+          {legend}
+        </section>
+
+        {error && <Notice tone="error">{error}</Notice>}
+        {!error && !calendar && <p role="status" className="text-ink-muted">Cargando…</p>}
+
+        {calendar && (
+          <section aria-labelledby="agenda-title" className="space-y-2 lg:sticky lg:top-8 lg:flex lg:max-h-[calc(100vh-4rem)] lg:flex-col lg:space-y-0 lg:gap-2">
+            <div className="flex min-h-11 shrink-0 items-center justify-between gap-3 border-b border-line pb-1">
+              <h2 id="agenda-title" className="min-w-0 font-display text-lg font-extrabold text-ink">{selected ? dayTitle(selected) : "Todo el mes"}</h2>
+              {selected && <Button variant="quiet" size="sm" onClick={() => setSelected(null)}>Ver el mes</Button>}
+            </div>
+            {listed.length === 0 ? (
+              <EmptyState>{selected ? "No hay nada este día." : "No hay nada este mes."}</EmptyState>
+            ) : (
+              <ul className="ui-card divide-y divide-line overflow-hidden rounded-card bg-card lg:min-h-0 lg:overflow-y-auto">
+                {listed.map((item) => <AgendaRow key={item.id} item={item} canManage={canManage} onEdit={(event) => setEditing({ event })} />)}
+              </ul>
+            )}
+          </section>
+        )}
+      </div>
 
       {editing && (
         <EventDialog
