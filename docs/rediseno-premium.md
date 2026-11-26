@@ -39,6 +39,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Inicio con pantalla fija en el móvil: saludo con coins y equipo fijos; lo demás se desliza con las pestañas Entrenamientos/Partidos pegadas arriba al bajar; orden nuevo: avisos de acceso, directo y la agenda primero, y los avisos de instalar, notificaciones y la bienvenida al final (antes empujaban el entreno). Escritorio igual |
 | (este) | Repaso: Notas con la semana, su estado, el progreso y «Publicar» en un solo bloque en el móvil; Jugados con el resumen en una sola tira (cada dato con su ancho) |
 | (este) | Barra de arriba del móvil: en Inicio, el saludo («Buenas tardes, Carmen») en lugar del nombre del club; las coins (moneda y número, con la corona si la tienes) junto a tu foto en todas las pantallas, al día con Inicio y la tienda (`src/app/coins.js`). Inicio ya no tiene la franja del saludo en el móvil |
+| (este) | Título de cada pantalla en la barra de arriba del móvil (en lugar del nombre del club, que ya se ve en el escudo); la cabecera de la página queda en una línea con el subtítulo y los botones. El `h1` sigue en la página para lectores de pantalla (`sr-only` en el móvil). `PageHeader` avisa del título con un evento (`PAGE_TITLE_EVENT`) |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 

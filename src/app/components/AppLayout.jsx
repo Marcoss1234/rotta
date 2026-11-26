@@ -12,6 +12,7 @@ import { useClubIdentity } from "@/app/clubIdentity.js";
 import { useWelcomeVisible } from "@/app/welcome.js";
 import { roleLabel } from "@/app/roles.js";
 import { greeting, useCoins } from "@/app/coins.js";
+import { PAGE_TITLE_EVENT, currentPageTitle } from "@/app/ui/PageHeader.jsx";
 
 const UNREAD_POLL_MS = 30000;
 const CHAT_PATH = "/app/chat";
@@ -137,8 +138,16 @@ export default function AppLayout({ isAdmin, user, children }) {
   const items = navItems(isAdmin, user, pathname);
   const unread = useUnreadChat(pathname);
   const club = useClubIdentity();
-  // Las coins, en la barra de arriba del móvil (las familias no tienen).
+  // Las coins, en la barra de arriba del móvil (si el servidor no las da, no salen).
   const coins = useCoins();
+  // El título de la pantalla (lo manda PageHeader): en el móvil va aquí arriba en lugar del nombre del club.
+  const [pageTitle, setPageTitle] = useState(currentPageTitle);
+  useEffect(() => {
+    setPageTitle(currentPageTitle());
+    const update = (event) => setPageTitle(event.detail);
+    window.addEventListener(PAGE_TITLE_EVENT, update);
+    return () => window.removeEventListener(PAGE_TITLE_EVENT, update);
+  }, []);
   const mainRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const closeMenu = useCallback(() => setMenuOpen(false), []);
@@ -269,7 +278,8 @@ export default function AppLayout({ isAdmin, user, children }) {
               <span className="block truncate font-title text-base text-ink">{user.name.split(" ")[0]}</span>
             </span>
           ) : (
-            <span className="min-w-0 flex-1 truncate font-title text-base leading-tight text-ink">{club.name}</span>
+            // El título de la pantalla (el de verdad, para lectores de pantalla, sigue en la cabecera de la página).
+            <span aria-hidden={pageTitle ? "true" : undefined} className={`min-w-0 flex-1 truncate font-title leading-tight text-ink ${pageTitle ? "text-xl" : "text-base"}`}>{pageTitle ?? club.name}</span>
           )}
           {coins && (
             <Link
