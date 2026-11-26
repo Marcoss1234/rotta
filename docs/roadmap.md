@@ -6,18 +6,61 @@ lo apruebe.** (Mientras tanto, `CLAUDE.md` en `main` ya apunta a este archivo.)
 
 Cómo leerlo: `[x]` hecho · `[ ]` pendiente · `(?)` decisión de Marcos antes de empezar.
 
-## 0. Decisiones de Marcos (26-11-2026)
+## 0. Fuente de verdad y registro de decisiones
 
-1. **No hay ningún club externo confirmado ni fecha.** El TNT es nuestro entorno de pruebas, no un cliente externo.
-   Por eso el orden se decide por dependencias y calidad, no por prisa.
-2. **Sin módulos por adelantado.** Primero la base para que cada club pueda configurar su funcionamiento; las
-   necesidades concretas (convocatorias, cuotas, lesiones…) se deciden cuando haya clubs interesados.
-3. **Notas de jugadores: se limita el servidor**, no se amplía la política para justificar permisos amplios. La matriz
-   propuesta está en el apartado 3 (pendiente de aprobar).
-4. **Legal:** todavía no hay persona que revise la documentación. Es un requisito pendiente **antes de incorporar
-   clubs externos**.
-5. **La pantalla de alta de clubs sigue en el roadmap** (B1), pero por ahora se usa la CLI.
-6. **No se empieza ninguna funcionalidad nueva** hasta aprobar este documento.
+**Este archivo es la única fuente de verdad** de las decisiones de producto, privacidad, funcionalidades y diseño de
+Rotta, abramos los chats que abramos. Reglas:
+- Una decisión que no esté aquí **no existe**: si Marcos la dio en un chat, se apunta aquí en el momento.
+- Las dudas no se resuelven por cuenta propia: se apuntan en «Dudas por recuperar» y se preguntan.
+- `CLAUDE.md` guarda solo el contexto técnico y remite aquí; los detalles de diseño están en
+  `docs/rediseno-premium.md` y los de ranking en `docs/ranking-y-notas.md` (se resumen aquí lo que decidan).
+- Cada decisión lleva fecha y origen: *documentada* (ya estaba en el repositorio) o *dada en chat* (Marcos la dijo y se
+  apunta hoy; no se ha podido comprobar en conversaciones anteriores, solo por lo que él cuenta).
+
+### Decisiones vigentes
+
+| Id | Decisión | Fecha | Origen |
+| --- | --- | --- | --- |
+| D1 | La app del TNT (`proyecto-voley-tnt`, rama `app-privada`) queda en mantenimiento: solo lo que pida David o arreglos. Lo nuevo va a Rotta. Un fallo que exista en las dos apps se arregla en ambas | — | `CLAUDE.md` |
+| D2 | Más adelante el TNT podría ser un club más dentro de Rotta; mientras tanto es el entorno de pruebas, no un cliente externo | 26-11 | `CLAUDE.md` + dada en chat |
+| D3 | Commit y push solo cuando Marcos lo pide (salvo que un hook del entorno lo exija); nunca subir `backend/.env` | — | `CLAUDE.md` |
+| D4 | Marcos habla en español y quiere explicaciones sencillas | — | `CLAUDE.md` |
+| D5 | Cada bloque del rediseño se publicó también en `main` (Render publica `main` solo) | 26-11 | `docs/rediseno-premium.md` |
+| D6 | Diseño: pantalla fija en el móvil; móvil compacto (raíz de 15 px, letra mínima 12 px, campos 16 px); sin degradados de marca; no estirar pistas ni dibujos; no gastar franjas en cosas pequeñas; reordenar y no solo repintar | 26-11 | `docs/rediseno-premium.md` |
+| D7 | Ranking y Notas: «Overall» pasa a «Nota global»; dorado solo para 85 o más; «Tu ficha» con acceso rápido arriba y la ficha al final; el equipo por defecto sale de la estructura del club | 26-11 | `docs/ranking-y-notas.md` (**ver duda Q7**) |
+| D8 | No hay módulos por adelantado: primero la base de configuración por club; los módulos concretos se deciden cuando haya clubs interesados | 26-11 | dada en chat |
+| D9 | No hay club externo confirmado ni fecha | 26-11 | dada en chat |
+| D10 | Notas: se limita el servidor; no se amplía la política para justificar permisos amplios | 26-11 | dada en chat |
+| D11 | La revisión legal es un requisito pendiente antes de incorporar clubs externos (aún sin persona) | 26-11 | dada en chat |
+| D12 | La pantalla de alta de clubs queda en el roadmap (B1); por ahora, la CLI | 26-11 | dada en chat |
+| D13 | La limpieza de estilos no se da por cerrada hasta revisarla pantalla por pantalla | 26-11 | dada en chat |
+| D14 | **Evaluaciones: los compañeros NO ven las de otros jugadores, ni la nota global.** Cada jugador ve solo las suyas. El entrenador ve las de los jugadores de los equipos que entrena | «ayer» (25-11) | dada en chat |
+| D15 | **Familias: de momento no ven evaluaciones.** Aparcado hasta que exista relación familia–jugador y un sistema de permisos propio | «ayer» | dada en chat |
+| D16 | **Jugadores sin cuenta vinculada: se aplican provisionalmente las restricciones más protectoras**, como si fueran menores, **sin afirmar que se conoce su edad** (ni en la app ni en la política) | «ayer» | dada en chat |
+| D17 | **La Escuela puede conservar su ranking público** | «ayer» | dada en chat (**ver Q1, Q2**) |
+| D18 | **Masculino y Femenino no tendrán ranking público semanal** | «ayer» | dada en chat (**ver Q3**) |
+| D19 | **Las evaluaciones individuales son privadas** | «ayer» | dada en chat |
+| D20 | **El MVP de los partidos sigue siendo público** | «ayer» | dada en chat (**ver Q6**) |
+| D21 | **Las evaluaciones son de 0 a 100 y no tienen frecuencia semanal obligatoria** | «ayer» | dada en chat (**ver Q4**) |
+| D22 | **Se conserva el histórico de evaluaciones** | «ayer» | dada en chat (**ver Q5**) |
+
+### Dudas por recuperar (no se han resuelto ni inventado; hay que preguntarlas)
+
+| Id | Duda |
+| --- | --- |
+| Q1 | **D17 choca con D14.** Si el ranking de la Escuela es «público», los jugadores de la Escuela verían el puesto o la nota global de sus compañeros. ¿Es una excepción a D14 solo para la Escuela? ¿Se enseña puesto y nota global, solo el puesto, o solo un podio? |
+| Q2 | **¿Qué significa «público»?** ¿Visible para todo el club (cualquier miembro aprobado), solo para el equipo/grupo, también para familias, o fuera de la app? Hoy Rotta no tiene web pública. Además, la Escuela son sobre todo menores: ¿entran en el ranking público aunque D16 los trate como protegidos si no tienen cuenta vinculada? |
+| Q3 | **¿Qué pasa con lo que nace del ranking semanal en Masculino y Femenino?** Hoy el podio semanal, la corona, las monedas de premio (100/60/40 semanal; 250/150/100 «mejor del mes»), el título «Jugadora del mes» y los títulos de la ficha salen de ese ranking. ¿Desaparecen en esos equipos, se quedan solo como títulos sin nota, o se sustituyen por otra cosa? |
+| Q4 | **0 a 100: ¿de qué?** Hoy cada habilidad se puntúa de 1 a 10 (de medio en medio) y la **nota global** (0 a 100) se calcula con pesos por posición. ¿Las habilidades pasan también a 0–100, o la escala nueva es solo la nota global? Y sin frecuencia semanal obligatoria: ¿cada evaluación se guarda con su fecha y deja de haber «semana publicada»? ¿Quién decide cuándo se evalúa y cómo se calcula «Mejor del mes» y el ranking de la Escuela sin semanas? |
+| Q5 | **Histórico y borrar la cuenta.** Hoy borrar la cuenta borra sus evaluaciones y premios (`backend/privacy.py`). ¿El histórico se conserva mientras exista la cuenta y se borra con ella (lo que exige el derecho a borrar), o se conserva de forma anónima? ¿Cuánto histórico ve el jugador de sí mismo (hoy se enseñan 12 semanas)? |
+| Q6 | **MVP «público»**: mismo significado que Q2. ¿Lo ven también las familias? (Hoy ven los partidos.) ¿Sigue contando en la ficha («MVP: n») y en las monedas? |
+| Q7 | **Ranking y Notas ya se rediseñó** (podio de 3, filas, «Tu ficha»; D7) pensando en que todos ven el ranking. D14 y D18 cambian la pantalla entera para Masculino/Femenino. ¿Se rehace esa pantalla con estas decisiones? |
+| Q8 | **Administradores:** D14 solo habla de jugadores y entrenadores. Hoy el administrador principal puede puntuar todos los equipos y el secundario los que entrena, y **cualquier** administrador lee comentarios de cualquier equipo. ¿Ven las evaluaciones de todos los equipos o solo de los que entrenan? |
+| Q9 | **Entrenadores de varios equipos y entrenadores que también son jugadores**: ¿qué ven de sí mismos y de los demás? |
+| Q10 | **Playa** no está en ningún grupo (no tiene ranking). ¿Se evalúa o no? ¿Y los equipos nuevos de otros clubs: cuál es la regla por defecto (¿privado, como Masculino/Femenino, y el club activa el ranking público?) |
+| Q11 | **Resto de la ficha del jugador** (estatura, foto, personaje, títulos): hoy la ve cualquier persona aprobada de cualquier equipo, incluidas familias. Mi propuesta anterior de limitar la estatura **no fue una decisión de Marcos**. ¿Qué se enseña de otros jugadores? |
+| Q12 | **El README tiene un «Plan» antiguo** (marca como pendiente lo que ya está hecho). Para que haya una sola fuente de verdad, ¿lo sustituimos por un enlace a este archivo? |
+| Q13 | **Decisiones de chats anteriores que no estén aquí** y que Marcos recuerde (por ejemplo sobre precios, marca, módulos o diseño): hay que apuntarlas cuando salgan. |
 
 ---
 
@@ -90,7 +133,7 @@ escudo y colores) y tiene identidad visual propia.
 | # | Tarea | Por qué | Depende de |
 | --- | --- | --- | --- |
 | A1 | **Política con el nombre y el contacto del club** que la lee (TODO en `PrivacyPage.jsx:9`) y decidir si hacen falta aviso legal y condiciones de uso | El club es el responsable de los datos y Rotta trabaja por encargo suyo: tiene que verse quién es | A2 |
-| A2 | **Limitar lo que el servidor deja ver de las notas** según la matriz del apartado 3, y dejar la política diciendo exactamente eso | Hoy el servidor enseña más de lo que dice la política; lo más delicado son los menores | Aprobar la matriz; A9 |
+| A2 | **Limitar lo que el servidor deja ver de las evaluaciones** según la matriz del apartado 3 (D14–D22) y dejar la política diciendo exactamente eso. Incluye cambiar la escala (0 a 100) y la frecuencia (sin semana obligatoria) | Hoy el servidor enseña más de lo que dice la política; lo más delicado son los menores | Aprobar la matriz y resolver Q1–Q6 y Q8; A9; A10 |
 | A3 | **Instalar la app con la marca del club**: nombre e icono del manifest y moneda («Club Coins») hoy son los de Rotta | Cada club ve su app, no la de otro | Fase 3 (hecha) |
 | A4 | **Unirse con enlace o QR por equipo** | Hoy cada persona entra por solicitud de acceso; con varios clubs es mucho trabajo para el administrador | Nada |
 | A5 | **Revisión legal** de política, reparto de responsabilidades y contrato con el club. **Sin persona confirmada**: requisito pendiente | No lo puede dar por bueno el desarrollo | A1, A2 |
@@ -134,68 +177,82 @@ error del directo que da «Derrota» si se termina con los sets empatados; texto
 
 ---
 
-## 3. Matriz de permisos de las notas (propuesta, pendiente de aprobar)
+## 3. Matriz de permisos de las evaluaciones (con las decisiones D14–D22; pendiente de aprobar)
 
-### Cómo es hoy (revisado en `backend/ranking.py`)
+Lo que está marcado **(?)** depende de una duda de la sección 0 y **no se decide aquí**. El servidor aplicará la matriz
+(no solo la web) y la política se reescribirá a la vez para decir exactamente esto.
 
-Roles: `admin` (el principal está en `ADMIN_EMAILS`; los demás administran solo sus equipos), `entrenador`, `jugador`,
-`familia`.
+### 3.1 Cómo es hoy (revisado en `backend/ranking.py`)
 
-| Dato | Jugador | Entrenador | Administrador | Familia |
-| --- | --- | --- | --- | --- |
-| Ranking (puesto, nota global, foto, nombre, posición) de **todos los grupos** | Sí | Sí | Sí | No |
-| Detalle por habilidad, radar y evolución (12 semanas) de **cualquier jugador de cualquier grupo** | **Sí** | **Sí** | **Sí** | No |
-| Comentario de una nota | Solo el suyo | Solo si puntúa ese grupo | **De cualquier grupo, aunque no lo entrene** | No |
-| Hoja con borradores y puntuar | No | Sus equipos | Principal: todos; resto: los suyos | No |
-| Ficha del jugador (títulos, estatura, personaje, foto) | **Cualquier persona aprobada, también familia, de cualquier equipo** | igual | igual | igual |
+Roles: `admin` (el principal está en `ADMIN_EMAILS`; los demás puntúan solo los equipos que entrenan), `entrenador`,
+`jugador`, `familia`. Hoy:
+- **Todos menos familia** ven el ranking de **todos** los grupos (puesto, nota global, foto, nombre, posición) y el
+  detalle por habilidad, el radar y la evolución (12 semanas) de **cualquier jugador**.
+- El comentario lo ve el propio jugador, quien puntúa ese grupo y **cualquier administrador** (aunque no entrene).
+- La ficha del jugador (títulos, estatura, personaje, foto) la ve cualquier persona aprobada, familias incluidas.
+- Las familias no ven nada del ranking.
 
-Problemas: (1) el detalle por habilidad de cualquier menor lo ve todo el club; (2) la familia no ve nada de su propio
-hijo pero sí la ficha de cualquiera; (3) un administrador secundario lee comentarios de equipos que no entrena;
-(4) la política solo habla de «nota media».
+### 3.2 Evaluaciones individuales (nota global, detalle por habilidad, comentario, histórico)
 
-### Propuesta
+«Suyas» = las de la persona con la cuenta vinculada a ese jugador. «Sus equipos» = los que entrena.
 
-Cada celda es lo máximo que se puede ver; el servidor lo aplica, no solo la web.
+| Quién mira → | Jugador | Entrenador | Admin principal | Admin secundario | Familia |
+| --- | --- | --- | --- | --- | --- |
+| **Sus propias evaluaciones** (nota global, detalle, comentario, histórico) | **Sí** (D14) | Sí, si es también jugador | Sí, si es también jugador | Sí, si es también jugador | No (D15) |
+| **Evaluaciones de otro jugador de su mismo equipo** | **No** (D14) | **Sí** (D14) | (?) Q8: hoy puede puntuar todos | (?) Q8: hoy, los que entrena | No (D15) |
+| **Evaluaciones de otro jugador de otro equipo** (aunque sea del mismo grupo) | **No** (D14) | **No**, salvo equipos que entrena (D14) | (?) Q8 | (?) Q8 | No (D15) |
+| **Evaluaciones de un jugador sin cuenta vinculada** | **No** | Sí si es de sus equipos | (?) Q8 | (?) Q8 | No |
+| **Puntuar, borradores y publicar** | No | Sus equipos | Todos (como hoy, (?) Q8) | Sus equipos | No |
+| **Comentario** | Solo el suyo | Sus equipos | (?) Q8 | (?) Q8; hoy lee cualquiera | No |
 
-| Dato | El propio jugador | Compañeros del mismo equipo | Otros equipos del club | Entrenador del equipo | Administrador principal | Administrador secundario | Familia |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Podio y títulos (top 3 de la semana, mejor del mes) | Sí | Sí | Sí | Sí | Sí | Sí | Sí |
-| Puesto y nota global en el ranking | Sí | Sí (*) | No | Sí | Sí | Solo sus equipos | No (de momento) |
-| Detalle por habilidad, radar y evolución | **Sí** | **No** | **No** | Sí | Sí | Solo sus equipos | No (de momento) |
-| Comentario | **Sí** | No | No | Sí | Sí | Solo sus equipos | No |
-| Hoja con borradores y puntuar | No | No | No | Sus equipos | Todos | Sus equipos | No |
-| Ficha: nombre, foto, posición, personaje, títulos | Sí | Sí | Sí | Sí | Sí | Sí | Sí |
-| Ficha: estatura | Sí | Sí | No | Sí | Sí | Solo sus equipos | No |
+Cada evaluación mantiene su fecha y el histórico se conserva (D22); lo que cada persona ve de su historial y cómo se
+trata al borrar la cuenta está en Q5.
 
-(*) **Menores de 14** (los que tienen el permiso de tutor, `consent.adult = false`): su puesto y nota global solo los
-ven ellos, su entrenador y los administradores; para sus compañeros aparecen únicamente si están en el podio. Para
-jugadores sin cuenta vinculada no se sabe la edad: se tratan como menores.
+### 3.3 Rankings y premios, por equipo
 
-### Qué cambia respecto a hoy
-- El detalle por habilidad y el comentario dejan de verse entre compañeros y entre equipos.
-- Otros equipos solo enseñan podio y títulos (hoy enseñan todo el ranking).
-- La ficha de un jugador deja de enseñar estatura a otros equipos y a familias.
-- El administrador secundario deja de leer comentarios de equipos que no entrena.
-- Los menores de 14 dejan de ser visibles en el ranking para sus compañeros salvo en el podio.
+Un equipo pertenece a un grupo de ranking (estructura del club). Con la estructura de serie:
 
-### Decisiones para Marcos (?)
-1. **¿Compañeros del mismo equipo ven la nota global de los demás?** La propuesta dice sí (es lo que da sentido al
-   ranking), salvo los menores de 14. Alternativa más estricta: que cada club decida (ajuste de C1) y por defecto no.
-2. **¿Familias?** Hoy no ven nada. Lo coherente sería que vieran la nota y el comentario de **su** hijo, pero no hay
-   vínculo familia–jugador en los datos: es una funcionalidad nueva (aparcada). Mientras tanto, siguen sin ver ranking.
-3. **¿Menores de 14 sin cuenta vinculada se tratan como menores?** Propuesto que sí.
+| Equipo (grupo) | Ranking | Evaluaciones individuales | MVP de los partidos |
+| --- | --- | --- | --- |
+| **Masculino** (grupo Masculino) | **Sin ranking público semanal** (D18). Lo que hoy nace de él (podio, corona, monedas, «Jugador del mes», títulos): (?) Q3 | **Privadas** (D19): las ve cada jugador y su entrenador | **Público** (D20) (?) Q2, Q6 |
+| **Femenino** (grupo Femenino) | **Sin ranking público semanal** (D18); igual (?) Q3 | **Privadas** (D19) | **Público** (D20) |
+| **Escuela LM** y **Escuela MJ** (grupo Escuela: comparten ranking) | **Puede conservar su ranking público** (D17). A quién se enseña y qué (puesto, nota global, podio): (?) Q1, Q2 | **Privadas** (D19); el detalle y el comentario solo el propio jugador y su entrenador | **Público** (D20) |
+| **Playa** (sin grupo, sin ranking hoy) | Sin ranking | (?) Q10 | **Público** (D20) |
+| **Equipo nuevo de otro club** | Regla por defecto: (?) Q10 | **Privadas** (D19) | **Público** (D20) |
 
-### Cómo se implementaría (cuando se apruebe)
-Un único sitio en el servidor que decida qué puede ver quién (hoy repartido entre `_can_view`, `_can_rate`, `with_comment`
-y `get_player_profile`), con tests por rol y edad, y la política (`PrivacyPage.jsx`) reescrita a la vez para decir
-exactamente esto. La visibilidad entre compañeros sería el primer ajuste de la base de configuración (A10).
+Nota: la excepción de la Escuela contradice a D14 («ni siquiera la nota global») si el ranking público enseña la nota
+global; la contradicción se resuelve con Q1, no aquí.
+
+### 3.4 Otras cosas visibles del jugador
+
+| Dato | Quién lo ve | Estado |
+| --- | --- | --- |
+| Nombre, foto (solo con permiso de fotos), posición, personaje | Todo el club, como hoy | Sin decidir cambiar |
+| Estatura | Hoy cualquier persona aprobada | (?) Q11 |
+| Títulos y contadores de la ficha (victorias de semana, «Mejor del mes», MVP) | Hoy cualquier persona aprobada | MVP: público (D20). Los de semana y mes: (?) Q3 |
+| Jugador sin cuenta vinculada | Se tratan con las restricciones más protectoras (D16), **sin decir que son menores** | Redacción de la política: pendiente |
+
+### 3.5 Qué cambia respecto a hoy (resumen, sin implementar)
+
+- El detalle por habilidad, el radar, la evolución y el comentario de un jugador dejan de verse entre compañeros, entre
+  equipos y entre grupos.
+- Masculino y Femenino pierden la pantalla de ranking semanal público (el resto de lo que dependía de ella, Q3).
+- La escala y la frecuencia de las evaluaciones cambian (0 a 100, sin semana obligatoria; Q4), lo que afecta al modelo
+  de datos, a la hoja de Notas, al «Mejor del mes» y a las gráficas. Es un cambio grande, no un ajuste de permisos.
+- La política (`PrivacyPage.jsx`) tiene que reescribirse con exactamente lo que se apruebe.
+
+### 3.6 Dependencias para implementarlo
+Aprobar la matriz y resolver Q1–Q6 y Q8 → base de configuración del club (A10) → cambio de servidor en un único sitio
+que decida quién ve qué (hoy repartido entre `_can_view`, `_can_rate`, `with_comment` y `get_player_profile`), con
+tests por rol y por equipo → rehacer Ranking y Notas en la web (Q7) → política. Los tests del servidor tienen que
+funcionar antes (A9).
 
 ---
 
 ## 4. Para pasar de pruebas a un club externo
 
 Lo mínimo, por dependencias: **A9** (tests del servidor) → **A6** (aislamiento probado) → **A7** (producción propia);
-**A10** (base de configuración) → **A2** (permisos de notas) → **A1** (política con el club); en paralelo **A3** y **A4**;
+**A10** (base de configuración) → **A2** (permisos y modelo de evaluaciones; antes, resolver las dudas Q1–Q8) → **A1** (política con el club); en paralelo **A3** y **A4**;
 **A5** (revisión legal, sin persona todavía); y **A8** (ensayo y comprobación). El alta del club se hace con la CLI
 (`crear-club.py`, `estructura-club.py`, `crear-admin.py`): no hace falta B1.
 
