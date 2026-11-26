@@ -40,7 +40,7 @@ function typingLabel(names) {
   return `${names.length} personas están escribiendo…`;
 }
 
-// El nombre de cada persona lleva su color. Las burbujas van todas iguales y la tuya, en naranja.
+// El nombre de cada persona lleva su color. Las burbujas van todas iguales y la tuya, con el color del club.
 const AUTHOR_COLORS = [
   "text-red-500",
   "text-blue-400",
@@ -110,45 +110,76 @@ function ImageViewer({ image, onClose }) {
   );
 }
 
+// El piquito de la burbuja (como en WhatsApp): solo en el primer mensaje de cada tanda, arriba, del lado de quien
+// escribe. Del mismo color que su burbuja.
+function BubbleTail({ mine }) {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 8 13" className={`absolute top-0 h-[13px] w-2 ${mine ? "-right-2 fill-club" : "-left-2 -scale-x-100 fill-card"}`}>
+      <path d="M0 0h8L1.3 9.6C0.8 10.4 0 10 0 9.1z" />
+    </svg>
+  );
+}
+
+// La hora y los ✓ dentro de la burbuja, abajo a la derecha; el texto se aparta para que no se monten.
+function MessageMeta({ message, floating }) {
+  return (
+    <span className={`flex items-center gap-1 text-[11px] leading-none ${floating ? "float-right ml-2 mt-2.5 translate-y-1" : "mt-1 justify-end"} ${message.mine ? "text-on-club/75" : "text-ink-muted"}`}>
+      {timeOf(message.created_at)}
+      {message.mine && (message.seen ? (
+        <CheckCheck role="img" aria-label="Visto" className="h-4 w-4 text-on-club" />
+      ) : (
+        <Check role="img" aria-label="Enviado" className="h-4 w-4" />
+      ))}
+    </span>
+  );
+}
+
 function Message({ message, grouped, onDelete, onOpenImage, onHelpChange, onAccessLost }) {
   const staffRole = message.author_role === "admin" || message.author_role === "entrenador";
   const color = authorColor(message.author_id);
+  // Tocar la burbuja enseña la papelera (en el ordenador también sale al pasar el ratón): así no hay una en cada mensaje.
+  const [showActions, setShowActions] = useState(false);
+  const textOnly = Boolean(message.text) && !message.help;
   return (
-    <li className={`message-in group flex items-center gap-1 ${message.mine ? "flex-row-reverse" : ""} ${grouped ? "mt-0.5" : "mt-3"}`}>
+    <li className={`message-in group flex items-center gap-1 ${message.mine ? "flex-row-reverse" : ""} ${grouped ? "mt-0.5" : "mt-2.5"}`}>
       {!message.mine && (
         <span className="w-8 shrink-0 self-start">
           {!grouped && <Avatar name={message.author} picture={message.author_picture} className="h-8 w-8 text-xs" />}
         </span>
       )}
       <div
-        className={`${message.help ? "w-[85%] max-w-md" : "max-w-[85%] md:max-w-[75%]"} rounded-2xl px-3 py-2 shadow-card ${
-          message.mine ? "rounded-br-md bg-club text-on-club" : "rounded-bl-md bg-card text-ink ring-1 ring-inset ring-line"
-        }`}
+        onClick={(event) => {
+          if (message.can_delete && !event.target.closest("button, a")) setShowActions((open) => !open);
+        }}
+        className={`relative ${message.help ? "w-[85%] max-w-md" : "max-w-[85%] md:max-w-[70%]"} rounded-[1.1rem] px-3 py-1.5 shadow-[0_1px_1.5px_rgb(0_0_0/0.18)] ${
+          message.mine ? "bg-club text-on-club" : "bg-card text-ink"
+        } ${grouped ? "" : message.mine ? "rounded-tr-[0.3rem]" : "rounded-tl-[0.3rem]"}`}
       >
+        {!grouped && <BubbleTail mine={message.mine} />}
         {!message.mine && !grouped && (
-          <p className={`mb-0.5 break-words text-xs font-extrabold ${color}`}>
+          <p className={`break-words text-xs font-extrabold ${color}`}>
             {message.author}
-            {staffRole && <span className="font-semibold text-club-ui"> · {roleLabel(message.author_role)}</span>}
+            {staffRole && <span className="font-semibold text-ink-muted"> · {roleLabel(message.author_role)}</span>}
           </p>
         )}
         {message.image && <MessageImage image={message.image} author={message.author} onOpen={onOpenImage} />}
-        {message.text && <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">{message.text}</p>}
+        {message.text && (
+          <p className="whitespace-pre-wrap break-words text-[15px] leading-snug">
+            {message.text}
+            {textOnly && <MessageMeta message={message} floating />}
+          </p>
+        )}
         {message.help && <HelpCard help={message.help} mine={message.mine} onChange={(card) => onHelpChange(message.id, card)} onAccessLost={onAccessLost} />}
-        <p className={`mt-0.5 flex items-center justify-end gap-1 text-[11px] ${message.mine ? "opacity-80" : "text-ink-muted"}`}>
-          {timeOf(message.created_at)}
-          {message.mine && (message.seen ? (
-            <CheckCheck role="img" aria-label="Visto" className="h-4 w-4 text-white" />
-          ) : (
-            <Check role="img" aria-label="Enviado" className="h-4 w-4" />
-          ))}
-        </p>
+        {!textOnly && <MessageMeta message={message} />}
       </div>
       {message.can_delete && (
         <button
           type="button"
           onClick={() => onDelete(message)}
           aria-label={`Borrar el mensaje de ${message.mine ? "ti" : message.author}: ${message.text ? message.text.slice(0, 40) : "foto"}`}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-control text-ink-muted hover:bg-raised hover:text-danger-text"
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-ink-muted transition-ui hover:bg-raised hover:text-danger-text focus:opacity-100 ${
+            showActions ? "opacity-100" : "opacity-0 md:group-hover:opacity-100"
+          }`}
         >
           <Trash2 aria-hidden="true" className="h-4 w-4" />
         </button>
@@ -388,7 +419,7 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
       <div
         ref={listRef}
         onScroll={onScroll}
-        className="min-h-0 flex-1 overflow-y-auto overscroll-contain bg-[radial-gradient(rgb(var(--c-white)/0.06)_1px,transparent_1px)] px-3 py-2 [background-size:18px_18px]"
+        className="chat-wallpaper min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-2 md:px-6"
         data-lenis-prevent
       >
         {!messages && !error && <p role="status" className="p-2 text-ink-muted">Cargando…</p>}
@@ -415,10 +446,8 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
             return (
               <Fragment key={message.id}>
                 {newDay && (
-                  <li className="mt-4 flex items-center gap-3 first:mt-1">
-                    <span aria-hidden="true" className="h-px flex-1 bg-line" />
-                    <span className="rounded-full bg-raised px-2.5 py-0.5 text-xs font-bold text-ink-muted">{dayLabel(message.created_at)}</span>
-                    <span aria-hidden="true" className="h-px flex-1 bg-line" />
+                  <li className="sticky top-1 z-10 mt-4 flex justify-center first:mt-1">
+                    <span className="rounded-full bg-card px-3 py-1 text-xs font-semibold text-ink-muted shadow-[0_1px_1.5px_rgb(0_0_0/0.15)]">{dayLabel(message.created_at)}</span>
                   </li>
                 )}
                 <Message message={message} grouped={grouped} onDelete={remove} onOpenImage={setViewing} onHelpChange={updateHelp} onAccessLost={onAccessLost} />
@@ -445,35 +474,38 @@ export default function ChatConversation({ channel, onBack, onRead, onAccessLost
         </div>
       )}
 
-      <form onSubmit={send} className="flex shrink-0 items-end gap-2 border-t border-line bg-card p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:pb-2">
+      {/* Como WhatsApp: el mensaje en una pastilla con la foto dentro, y el botón redondo de enviar al lado. */}
+      <form onSubmit={send} className="chat-wallpaper flex shrink-0 items-end gap-2 p-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] md:px-4 md:pb-3">
         <input ref={fileRef} type="file" accept="image/*" onChange={choosePhoto} className="hidden" tabIndex={-1} aria-hidden="true" />
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          disabled={preparing || sending}
-          aria-label={preparing ? "Preparando la foto…" : "Adjuntar una foto"}
-          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ink-muted hover:bg-raised hover:text-ink disabled:opacity-50"
-        >
-          <ImagePlus aria-hidden="true" className={`h-5 w-5 ${preparing ? "animate-pulse" : ""}`} />
-        </button>
-        <label htmlFor="chat-message" className="sr-only">Mensaje para {channel.label}</label>
-        <textarea
-          id="chat-message"
-          ref={inputRef}
-          value={text}
-          onChange={(event) => changeText(event.target.value)}
-          onKeyDown={onKeyDown}
-          rows={1}
-          maxLength={MAX_LENGTH}
-          placeholder={photo ? "Añade un texto (opcional)" : "Escribe un mensaje"}
-          className="max-h-32 min-h-11 flex-1 resize-none rounded-field bg-raised px-4 py-2.5 text-base text-ink ring-1 ring-inset ring-control [field-sizing:content] placeholder:text-ink-muted focus:outline-none focus:ring-2 focus:ring-rotta-text"
-        />
+        <div className="flex min-h-12 min-w-0 flex-1 items-end rounded-[1.5rem] bg-card shadow-[0_1px_1.5px_rgb(0_0_0/0.18)] ring-1 ring-inset ring-line focus-within:ring-2 focus-within:ring-rotta-text">
+          <label htmlFor="chat-message" className="sr-only">Mensaje para {channel.label}</label>
+          <textarea
+            id="chat-message"
+            ref={inputRef}
+            value={text}
+            onChange={(event) => changeText(event.target.value)}
+            onKeyDown={onKeyDown}
+            rows={1}
+            maxLength={MAX_LENGTH}
+            placeholder={photo ? "Añade un texto (opcional)" : "Mensaje"}
+            className="max-h-32 min-h-12 min-w-0 flex-1 resize-none bg-transparent py-3 pl-4 pr-1 text-base text-ink [field-sizing:content] placeholder:text-ink-muted focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            disabled={preparing || sending}
+            aria-label={preparing ? "Preparando la foto…" : "Adjuntar una foto"}
+            className="flex h-12 w-11 shrink-0 items-center justify-center rounded-full text-ink-muted hover:text-ink disabled:opacity-50"
+          >
+            <ImagePlus aria-hidden="true" className={`h-5 w-5 ${preparing ? "animate-pulse" : ""}`} />
+          </button>
+        </div>
         <button
           type="submit"
           disabled={sending || preparing || (!text.trim() && !photo)}
           onMouseDown={(event) => event.preventDefault()}
           aria-label="Enviar mensaje"
-          className="ui-btn-primary flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-club text-on-club disabled:opacity-40"
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-club text-on-club shadow-[0_1px_2px_rgb(0_0_0/0.25)] transition-ui disabled:opacity-50"
         >
           <SendHorizontal aria-hidden="true" className="h-5 w-5" />
         </button>
