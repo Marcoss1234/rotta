@@ -4,10 +4,9 @@ import { Link, useSearchParams } from "react-router-dom";
 import { changeLiveMvp, deleteMatch, listPlayedMatches, listTeams, updateMatch } from "@/app/api.js";
 import { DateBadge, EventPlace, MatchNotes } from "@/app/components/MatchInfo.jsx";
 import MatchDialog from "@/app/components/MatchDialog.jsx";
-import { RankingHero } from "@/app/components/RankingVisuals.jsx";
 import { placeInfo, setsWon, matchKindLabel } from "@/app/matches.js";
 import { defaultTeamId, isTeamId } from "@/app/teams.js";
-import { Badge, Card, ChipGroup, EmptyState, IconButton, LinkButton, Notice, Select, cx } from "@/app/ui/index.js";
+import { Badge, Card, ChipGroup, EmptyState, IconButton, LinkButton, Notice, PageHeader, Select, cx } from "@/app/ui/index.js";
 
 const KIND_TABS = [
   { value: "amistoso", label: "Amistosos" },
@@ -46,8 +45,8 @@ export function summarize(matches) {
 function Stat({ label, value, className }) {
   return (
     <div className="min-w-0">
-      <dt className="text-xs font-semibold text-ink-muted">{label}</dt>
-      <dd className={cx("font-score text-2xl leading-tight text-ink", className)}>{value}</dd>
+      <dt className="truncate text-xs font-semibold text-ink-muted">{label}</dt>
+      <dd className={cx("font-score text-xl leading-tight text-ink md:text-2xl", className)}>{value}</dd>
     </div>
   );
 }
@@ -57,8 +56,8 @@ function SeasonSummary({ matches, label }) {
   const totals = summarize(matches);
   const missing = totals.played - totals.withResult;
   return (
-    <Card as="section" aria-label={`Resumen de ${label}`} padding="sm" className="space-y-2" data-testid="played-summary">
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 min-[420px]:grid-cols-4">
+    <Card as="section" aria-label={`Resumen de ${label}`} padding="sm" className="space-y-1.5" data-testid="played-summary">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 min-[420px]:grid-cols-4">
         <Stat label="Partidos" value={totals.played} />
         {totals.withResult > 0 ? (
           <>
@@ -81,13 +80,13 @@ function MatchResult({ sets }) {
   const { won, lost, outcome } = matchOutcome(sets);
   const { label, tone, icon: Icon } = OUTCOME[outcome];
   return (
-    <div className="space-y-2.5 rounded-field bg-raised p-3" data-testid="match-result">
+    <div className="space-y-2 rounded-field bg-raised p-2.5" data-testid="match-result">
       <div className="flex items-center justify-between gap-3">
         <Badge tone={tone} className="gap-1 px-2.5 py-1 text-sm">
           {Icon && <Icon aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={3} />}
           {label}
         </Badge>
-        <p className="font-score text-4xl leading-none text-ink">
+        <p className="font-score text-3xl leading-none text-ink">
           <span className="sr-only">Sets ganados y perdidos: </span>
           {won}<span className="mx-1 text-ink-muted">–</span>{lost}
         </p>
@@ -96,7 +95,7 @@ function MatchResult({ sets }) {
         {sets.map((set, index) => {
           const ours = set.us > set.them;
           return (
-            <li key={index} className={cx("rounded-field py-1.5 text-center", ours ? "bg-voy/10 text-voy-text" : "bg-danger/10 text-danger-text")}>
+            <li key={index} className={cx("rounded-field py-1 text-center", ours ? "bg-voy/10 text-voy-text" : "bg-danger/10 text-danger-text")}>
               <p className="text-xs font-semibold">Set {index + 1}</p>
               <p className="font-score text-base">{set.us}-{set.them}</p>
             </li>
@@ -110,7 +109,7 @@ function MatchResult({ sets }) {
 // El MVP: lo único dorado de la tarjeta. El entrenador lo elige de un menú con los que jugaron (o «Sin MVP»).
 function MvpStrip({ children }) {
   return (
-    <div className="flex items-center gap-2.5 rounded-field bg-gold/10 p-2.5 ring-1 ring-inset ring-gold/30" data-testid="match-mvp">
+    <div className="flex min-h-11 items-center gap-2.5 rounded-field bg-gold/10 px-2.5 py-1.5 ring-1 ring-inset ring-gold/30" data-testid="match-mvp">
       <Trophy aria-hidden="true" className="h-5 w-5 shrink-0 text-gold-text" />
       {children}
     </div>
@@ -159,9 +158,24 @@ function MvpPicker({ match, onChange }) {
   );
 }
 
+// Un partido jugado: quién, cuándo y de qué tipo arriba; el resultado con sus sets; el MVP y el informe en una
+// misma franja (uno al lado del otro si caben); el sitio y las notas al final.
 function PlayedMatchRow({ match, onEdit, onReload }) {
+  const mvp = match.can_edit && match.live_id && match.players.length > 0 ? (
+    <MvpPicker match={match} onChange={onReload} />
+  ) : (
+    match.mvp && (
+      <MvpStrip>
+        <p className="min-w-0 text-sm">
+          <span className="font-bold text-gold-text">MVP</span>
+          <span className="mx-1.5 text-ink-muted">·</span>
+          <span className="font-bold text-ink">{match.mvp}</span>
+        </p>
+      </MvpStrip>
+    )
+  );
   return (
-    <Card as="li" padding="sm" className="flex flex-col gap-3" data-testid="played-match">
+    <Card as="li" padding="sm" className="flex flex-col gap-2.5" data-testid="played-match">
       <div className="flex items-center gap-3">
         <DateBadge iso={match.date} />
         <div className="min-w-0 flex-1">
@@ -176,23 +190,15 @@ function PlayedMatchRow({ match, onEdit, onReload }) {
       ) : (
         <p className="rounded-field bg-raised px-3 py-2.5 text-sm text-ink-muted">Resultado sin apuntar</p>
       )}
-      {match.can_edit && match.live_id && match.players.length > 0 ? (
-        <MvpPicker match={match} onChange={onReload} />
-      ) : (
-        match.mvp && (
-          <MvpStrip>
-            <p className="min-w-0 text-sm">
-              <span className="font-bold text-gold-text">MVP</span>
-              <span className="mx-1.5 text-ink-muted">·</span>
-              <span className="font-bold text-ink">{match.mvp}</span>
-            </p>
-          </MvpStrip>
-        )
-      )}
-      {match.live_id && (
-        <LinkButton as={Link} to={`/app/directo/${match.live_id}`} icon={ChartColumn} block>
-          Ver informe
-        </LinkButton>
+      {(mvp || match.live_id) && (
+        <div className="flex flex-wrap items-start gap-2">
+          {mvp && <div className="min-w-[12rem] flex-1">{mvp}</div>}
+          {match.live_id && (
+            <LinkButton as={Link} to={`/app/directo/${match.live_id}`} icon={ChartColumn} className={mvp ? "flex-1 min-[420px]:flex-none" : "w-full"}>
+              Ver informe
+            </LinkButton>
+          )}
+        </div>
       )}
       {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
       {match.notes && <MatchNotes notes={match.notes} />}
@@ -203,7 +209,7 @@ function PlayedMatchRow({ match, onEdit, onReload }) {
 function KindTabs({ tabs, active, counts, onChange }) {
   return (
     <div data-testid="played-kinds">
-      <ChipGroup label="Tipo de partido" options={tabs.map(({ value, label }) => ({ value, label, count: counts[value] ?? 0 }))} value={active} onChange={onChange} />
+      <ChipGroup label="Tipo de partido" scroll options={tabs.map(({ value, label }) => ({ value, label, count: counts[value] ?? 0 }))} value={active} onChange={onChange} />
     </div>
   );
 }
@@ -262,13 +268,19 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
   const shown = (played ?? []).filter((match) => match.kind === active);
   const activeLabel = tabs.find(({ value }) => value === active).label;
 
+  // Pantalla fija en el móvil (Premium deportivo): arriba la cabecera, el tipo de partido y el resumen; la lista de
+  // partidos se desliza por dentro. En escritorio, dos columnas de partidos a todo el ancho.
   return (
-    <div className="space-y-6">
-      <RankingHero title="Jugados" subtitle={teamName} stacked>
-        <LinkButton as={Link} to={`/app?equipo=${teamId}&pestana=partidos`} icon={ChevronLeft} className="pl-3">
-          Partidos
-        </LinkButton>
-      </RankingHero>
+    <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
+      <PageHeader
+        title="Jugados"
+        subtitle={teamName}
+        actions={
+          <LinkButton as={Link} size="sm" to={`/app?equipo=${teamId}&pestana=partidos`} icon={ChevronLeft} className="pl-2">
+            Partidos
+          </LinkButton>
+        }
+      />
 
       {error && <Notice tone="error">{error}</Notice>}
       {!error && !played && <p role="status" className="text-ink-muted">Cargando…</p>}
@@ -280,13 +292,15 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
             <EmptyState>Todavía no hay partidos en {activeLabel}.</EmptyState>
           ) : (
             <>
-            <SeasonSummary matches={shown} label={activeLabel} />
-            {/* Dos columnas solo con sitio de verdad (ordenador ancho); en móvil y tableta, una. */}
-            <ul className="grid items-start gap-3 lg:grid-cols-2">
-              {shown.map((match) => (
-                <PlayedMatchRow key={match.id} match={match} onEdit={setEditing} onReload={load} />
-              ))}
-            </ul>
+              <SeasonSummary matches={shown} label={activeLabel} />
+              <div className="-mx-gutter min-h-0 flex-1 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:overflow-visible md:px-0" data-testid="played-scroll">
+                {/* Dos columnas solo con sitio de verdad (ordenador ancho); en móvil y tableta, una. */}
+                <ul className="grid items-start gap-3 lg:grid-cols-2">
+                  {shown.map((match) => (
+                    <PlayedMatchRow key={match.id} match={match} onEdit={setEditing} onReload={load} />
+                  ))}
+                </ul>
+              </div>
             </>
           )}
         </>

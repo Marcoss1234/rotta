@@ -85,7 +85,7 @@ export default function MatchDialog({ match, teams, defaultTeamId, onSave, onDel
   };
 
   return (
-    <Dialog title={editing ? "Editar partido" : "Nuevo partido"} onClose={onClose} busy={busy}>
+    <Dialog title={editing ? "Editar partido" : "Nuevo partido"} onClose={onClose} busy={busy} placement="auto">
       <form onSubmit={submit} className="space-y-5">
         <div className="space-y-4">
           {!editing && (
