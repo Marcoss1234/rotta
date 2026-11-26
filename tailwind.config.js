@@ -19,6 +19,9 @@ export default {
         control: "var(--radius-control)",
         // Campos de texto: las esquinas del tema, pero nunca de pastilla.
         field: "min(var(--radius-control), 0.875rem)",
+        // Premium deportivo: piezas dentro de una tarjeta y chips (cada identidad las suyas).
+        inner: "var(--radius-inner)",
+        chip: "var(--radius-chip)",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
@@ -53,6 +56,12 @@ export default {
         "rotta-text": themed("rotta-text"),
         "on-rotta": themed("on-rotta"),
         stripe: themed("stripe"),
+        // Premium deportivo: ventanas y menús (overlay) y el escenario, siempre oscuro (stage).
+        overlay: themed("overlay"),
+        stage: themed("stage"),
+        "stage-ink": themed("stage-ink"),
+        "stage-muted": themed("stage-muted"),
+        "stage-line": themed("stage-line"),
         "accent-ui": themed("accent-ui"),
         "live-club": themed("live-club"),
         "live-accent": themed("live-accent"),
@@ -86,6 +95,21 @@ export default {
       boxShadow: {
         // Sombra de las tarjetas: solo en claro (index.css); en oscuro separa el borde.
         card: "var(--shadow-card)",
+        // Premium deportivo: la profundidad de cada identidad (tarjetas) y la de ventanas y menús.
+        depth: "var(--shadow-depth)",
+        overlay: "var(--shadow-overlay)",
+      },
+      fontSize: {
+        // Escala de Premium deportivo: 12 · 14 · 16 · 20 · 24 (las de Tailwind: xs, sm, base, xl, 2xl) y estas tres.
+        title: ["2rem", { lineHeight: "1.05" }],
+        display: ["2.5rem", { lineHeight: "1" }],
+        hero: ["4rem", { lineHeight: "0.9" }],
+      },
+      spacing: {
+        // Margen de la pantalla (20 px en el móvil, 32 en escritorio), entre bloques (32) y dentro de las tarjetas (20 / 24).
+        gutter: "var(--space-gutter)",
+        section: "var(--space-section)",
+        card: "var(--space-card)",
       },
       fontFamily: {
         // Rotta: títulos con carácter (Bricolage Grotesque) y texto limpio (Instrument Sans).

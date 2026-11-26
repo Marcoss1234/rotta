@@ -48,11 +48,34 @@
   --c-rotta-text-dark: 167 186 255;
   --c-on-rotta-dark: 15 17 21;
   --c-accent-ui-dark: 34 211 238;
-  --radius-card: 18px;
+  --radius-card: 20px;
   --shadow-card: 0 0 #0000;
   --radius-control: 999px;
   --num-width: 90%;
   --num-weight: 600;
+  /* Premium deportivo (src/app/themes.js): lo mismo que Tinta oscuro hasta que arranca la app. */
+  --radius-inner: 12px;
+  --radius-chip: 999px;
+  --num-tracking: -0.02em;
+  --title-width: 88%;
+  --title-weight: 650;
+  --glow: 0.45;
+  --motion: 180ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --chart-line: 2px;
+  --c-overlay: 27 39 66;
+  --c-stage: 10 18 48;
+  --c-stage-ink: 244 246 251;
+  --c-stage-muted: 174 184 210;
+  --c-stage-line: 36 48 90;
+  --hair: rgb(255 255 255 / 0.07);
+  --shadow-depth: 0 0 #0000;
+  --shadow-overlay: 0 0 0 1px rgb(255 255 255 / 0.06), 0 24px 48px -16px rgb(0 0 0 / 0.7);
+  --card-border: rgb(var(--c-line));
+  /* Espacios comunes: margen de la pantalla, entre bloques y dentro de las tarjetas. */
+  --space-gutter: 1.25rem;
+  --space-section: 2rem;
+  --space-card: 1.25rem;
   --void: rgb(var(--c-void));
   --surface: rgb(var(--c-surface));
   --tnt: rgb(var(--c-tnt));
@@ -141,12 +164,41 @@
   --c-void: 15 17 21;
 }
 
+@media (min-width: 768px) {
+  :root {
+    --space-gutter: 2rem;
+    --space-card: 1.5rem;
+  }
+}
+
 /* Números de marcador (hora, sets, coins, notas): más estrechos o más anchos según el tema. */
 .font-score {
   font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
   font-stretch: var(--num-width);
   font-weight: var(--num-weight);
+  letter-spacing: var(--num-tracking, normal);
   font-variant-numeric: tabular-nums;
+}
+
+/* Títulos con la anchura y el peso de cada identidad (Lima estrechos, Naranja anchos y pesados, Tinta finos). */
+.font-title {
+  font-family: "Bricolage Grotesque", "Instrument Sans", sans-serif;
+  font-stretch: var(--title-width);
+  font-weight: var(--title-weight);
+  letter-spacing: -0.015em;
+}
+
+/* Transiciones con el ritmo de cada identidad; sin movimiento si la persona lo pide. */
+.transition-ui {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: var(--motion);
+  transition-timing-function: var(--ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transition-ui {
+    transition-duration: 0ms;
+  }
 }
 
 html {

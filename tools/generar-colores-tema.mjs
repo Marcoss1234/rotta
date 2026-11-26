@@ -84,8 +84,36 @@ function semantic(mode) {
     `  --c-calendar: ${triplet(meanings.calendar)};`,
     `  --c-warning: ${triplet(meanings.warning)};`,
     `  --c-warning-text: ${triplet(meanings.warningText)};`,
+    // Premium deportivo: ventanas y profundidad de las tarjetas (cada identidad a su manera). Nombres nuevos
+    // (--shadow-depth, --card-border, --hair): --shadow-card sigue siendo el de siempre hasta migrar las piezas.
+    `  --c-overlay: ${triplet(theme.overlay)};`,
+    `  --hair: ${theme.hair === "none" ? "transparent" : theme.hair};`,
+    `  --shadow-depth: ${theme.shadow === "none" ? "0 0 #0000" : theme.shadow};`,
+    `  --shadow-overlay: ${theme.overlayShadow};`,
+    `  --card-border: ${theme.cardBorder === "line" ? "rgb(var(--c-line))" : "transparent"};`,
   ];
 }
+
+// Lo que no depende del modo: la personalidad de cada identidad y el escenario (siempre oscuro).
+const personality = (theme) => [
+  `  --radius-card: ${theme.radius.card};`,
+  `  --radius-inner: ${theme.radius.inner};`,
+  `  --radius-control: ${theme.radius.control};`,
+  `  --radius-chip: ${theme.radius.chip};`,
+  `  --num-width: ${theme.numbers.width};`,
+  `  --num-weight: ${theme.numbers.weight};`,
+  `  --num-tracking: ${theme.numbers.tracking};`,
+  `  --title-width: ${theme.titles.width};`,
+  `  --title-weight: ${theme.titles.weight};`,
+  `  --glow: ${theme.glow};`,
+  `  --motion: ${theme.motion.ms}ms;`,
+  `  --ease: ${theme.motion.ease};`,
+  `  --chart-line: ${theme.chart.line}px;`,
+  `  --c-stage: ${triplet(theme.stage.bg)};`,
+  `  --c-stage-ink: ${triplet(theme.stage.text)};`,
+  `  --c-stage-muted: ${triplet(theme.stage.muted)};`,
+  `  --c-stage-line: ${triplet(theme.stage.line)};`,
+];
 const block = (selectors, lines) => `${selectors.join(",\n")} {\n${lines.join("\n")}\n}\n`;
 
 const fallback = THEMES[DEFAULT_STYLE];
@@ -108,10 +136,7 @@ for (const [style, theme] of Object.entries(THEMES)) {
     block([root], [
       ...neutrals(false, theme.dark.muted),
       ...semantic("dark")(theme.dark),
-      `  --radius-card: ${theme.shape.card};`,
-      `  --radius-control: ${theme.shape.control};`,
-      `  --num-width: ${theme.numbers.width};`,
-      `  --num-weight: ${theme.numbers.weight};`,
+      ...personality(theme),
     ]),
   );
   out.push(block([light], [...neutrals(true, theme.light.muted), ...semantic("light")(theme.light)]));
