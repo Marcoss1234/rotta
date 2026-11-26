@@ -73,7 +73,7 @@ function desktopGroups(items, user) {
 // La pizarra y el directo ocupan toda la pantalla: ahí la barra de abajo no flota encima de sus controles.
 // Pantallas ya rediseñadas con su propia distribución de escritorio (Premium deportivo): usan todo el ancho
 // (hasta 1.200 px). Las demás siguen en su columna de 768 px hasta que se rediseñen.
-const WIDE_PATHS = new Set(["/app"]);
+const WIDE_PATHS = new Set(["/app", "/app/plantillas"]);
 
 const isImmersive = (pathname) => pathname.startsWith("/app/plantillas/pizarra/") || pathname.startsWith("/app/directo/");
 

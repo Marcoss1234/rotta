@@ -19,7 +19,10 @@ const initials = (name) =>
   name.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0].toUpperCase()).join("");
 
 // `stretch`: llena el hueco aunque la pista quede algo más ancha de lo real (el directo en el móvil).
-export function CourtDrawing({ beach, horizontal = false, showZones = true, stretch = false }) {
+// `themed` (Premium deportivo): suelo y líneas con el carácter de la identidad del club (court-* en index.css, como la
+// pista de Inicio), en vez del parqué naranja. Lo usan Plantilla y el directo; la pizarra sigue con la pista realista.
+export function CourtDrawing({ beach, horizontal = false, showZones = true, stretch = false, themed = false }) {
+  if (themed) return <ThemedCourt beach={beach} horizontal={horizontal} showZones={showZones} stretch={stretch} />;
   const floor = beach ? "#e8cf95" : "#c9793f";
   const frontZone = beach ? "#e8cf95" : "#d98b4f";
   const line = beach ? "#1d4ed8" : "#ffffff";
@@ -50,6 +53,37 @@ export function CourtDrawing({ beach, horizontal = false, showZones = true, stre
       <rect x="2" y="93.4" width="96" height="3.2" fill="rgba(10,10,12,0.6)" stroke="#ffffff" strokeWidth="0.5" />
       <circle cx="2" cy="95" r="1.4" fill="#ffffff" />
       <circle cx="98" cy="95" r="1.4" fill="#ffffff" />
+      </g>
+    </svg>
+  );
+}
+
+// La misma pista (mismas medidas y zonas) dibujada con los colores de la identidad. El contenedor lleva going-court
+// (fondo del escenario) y, en playa, going-court-beach.
+function ThemedCourt({ beach, horizontal, showZones, stretch }) {
+  return (
+    <svg viewBox={horizontal ? "0 0 190 100" : "0 0 100 190"} preserveAspectRatio={stretch ? "none" : undefined} aria-hidden="true" className="absolute inset-0 h-full w-full">
+      <g transform={horizontal ? "translate(0 100) rotate(-90)" : undefined}>
+        <rect className="court-floor" x="5" y="5" width="90" height="180" />
+        {!beach && <rect className="court-front" x="5" y="65" width="90" height="60" />}
+        <rect className="court-line" x="5" y="5" width="90" height="180" />
+        {!beach && (
+          <g className="court-line">
+            <line x1="5" y1="65" x2="95" y2="65" />
+            <line x1="5" y1="125" x2="95" y2="125" />
+          </g>
+        )}
+        {!beach && showZones && (
+          <g className="court-zones" fontSize="7" fontWeight="700" textAnchor="middle">
+            <text x="20" y="38">1</text><text x="50" y="38">6</text><text x="80" y="38">5</text>
+            <text x="20" y="84">2</text><text x="50" y="84">3</text><text x="80" y="84">4</text>
+            <text x="20" y="112">4</text><text x="50" y="112">3</text><text x="80" y="112">2</text>
+            <text x="20" y="158">5</text><text x="50" y="158">6</text><text x="80" y="158">1</text>
+          </g>
+        )}
+        <line className="court-net" x1="2" y1="95" x2="98" y2="95" />
+        <circle className="court-post" cx="2" cy="95" r="1.4" />
+        <circle className="court-post" cx="98" cy="95" r="1.4" />
       </g>
     </svg>
   );
@@ -323,9 +357,9 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
   const moving = drag?.moved ? drag : null;
 
   return (
-    <section aria-labelledby="court-title" className="rounded-card bg-card p-4 shadow-card ring-1 ring-line md:p-5">
+    <section aria-labelledby="court-title" className="ui-card rounded-card bg-card p-4 md:p-5">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="court-title" className="font-display text-lg font-extrabold leading-tight">Pista</h2>
+        <h2 id="court-title" className="font-title text-lg leading-tight text-ink">Pista</h2>
         <p className="text-xs font-semibold text-ink-muted">{onCourt.length} en pista</p>
       </div>
       {canEdit && (
@@ -340,10 +374,10 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
         data-testid="court"
         // isolate: el orden de las chapas solo cuenta dentro de la pista, nunca por encima del menú.
         // force-dark: la pista, el banquillo y las gradas van siempre en oscuro (como la pizarra y el directo).
-        className="force-dark relative isolate mx-auto mt-3 w-full max-w-sm overflow-hidden rounded-lg"
+        className={`going-court force-dark relative isolate mx-auto mt-3 w-full max-w-sm overflow-hidden rounded-inner ${beach ? "going-court-beach" : ""}`}
         style={{ aspectRatio: "100 / 190" }}
       >
-        <CourtDrawing beach={beach} />
+        <CourtDrawing beach={beach} themed />
         {onCourt.map((player) => (
           <div
             key={player.id}

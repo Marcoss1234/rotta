@@ -24,8 +24,8 @@ const playersLabel = (count) => (count === 1 ? "1 jugador" : `${count} jugadores
 function Dorsal({ number }) {
   if (number === null || number === undefined) return null;
   return (
-    <span className="flex shrink-0 flex-col items-center gap-1 pr-1">
-      <span className="font-display text-3xl font-extrabold leading-none tabular-nums text-ink-muted">
+    <span className="flex w-10 shrink-0 flex-col items-center gap-1">
+      <span className="font-score text-2xl leading-none text-ink-muted">
         <span className="sr-only">Dorsal </span>{number}
       </span>
       <span aria-hidden="true" className="h-1 w-5 rounded-full bg-club" />
@@ -37,10 +37,10 @@ function PlayerCardContent({ player }) {
   const preferred = player.preferred_positions.filter((position) => position !== player.position);
   return (
     <>
-      <Avatar name={player.name} picture={player.picture} className="h-12 w-12 text-sm" />
+      <Avatar name={player.name} picture={player.picture} className="h-10 w-10 text-sm" />
       <span className="min-w-0 flex-1 text-left">
-        <span className="block break-words font-display text-lg font-extrabold leading-tight text-ink">{player.name}</span>
-        <span className="mt-1.5 flex flex-wrap items-center gap-1">
+        <span className="block break-words font-title text-base leading-tight text-ink">{player.name}</span>
+        <span className="mt-1 flex flex-wrap items-center gap-1">
           <PositionTag position={player.position} />
           {preferred.map((position) => (
             <span key={position} className="rounded-full px-2 py-0.5 text-xs font-semibold text-ink-muted ring-1 ring-inset ring-line">
@@ -49,14 +49,14 @@ function PlayerCardContent({ player }) {
           ))}
         </span>
         {/* El contacto solo llega del servidor a entrenadores y administradores. */}
-        {player.phone && (
-          <span className="mt-1.5 flex items-center gap-1.5 text-xs text-ink-muted">
-            <Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />{player.phone}
-          </span>
-        )}
-        {player.email && (
-          <span className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-muted">
-            <Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><span className="min-w-0 break-words">{player.email}</span>
+        {(player.phone || player.email) && (
+          <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-muted">
+            {player.phone && (
+              <span className="flex items-center gap-1.5"><Phone aria-hidden="true" className="h-3.5 w-3.5 shrink-0" />{player.phone}</span>
+            )}
+            {player.email && (
+              <span className="flex min-w-0 items-center gap-1.5"><Mail aria-hidden="true" className="h-3.5 w-3.5 shrink-0" /><span className="min-w-0 break-words">{player.email}</span></span>
+            )}
           </span>
         )}
       </span>
@@ -76,7 +76,7 @@ function SquadSummary({ players }) {
       {counts.map(({ position, count }) => (
         <li key={position} className="flex items-center gap-1.5 rounded-control bg-raised py-1 pl-2.5 pr-3">
           <span aria-hidden="true" className={cx("h-2 w-2 rounded-full", positionTone(position).dot)} />
-          <span className="font-display text-base font-extrabold leading-none tabular-nums text-ink">{count}</span>
+          <span className="font-score text-base leading-none text-ink">{count}</span>
           <span className="text-sm font-semibold text-ink-muted">{position}</span>
         </li>
       ))}
@@ -88,7 +88,7 @@ function PlayerList({ players, teamId, canEdit, onOpen, onAdd }) {
   return (
     <section aria-labelledby="squad-title" className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="squad-title" className="font-display text-lg font-extrabold leading-tight text-ink">Jugadores</h2>
+        <h2 id="squad-title" className="font-title text-lg leading-tight text-ink">Jugadores</h2>
         <p className="text-xs font-semibold text-ink-muted">{playersLabel(players.length)}</p>
       </div>
       <SquadSummary players={players} />
@@ -97,21 +97,22 @@ function PlayerList({ players, teamId, canEdit, onOpen, onAdd }) {
           {canEdit ? "Este equipo aún no tiene jugadores. Añade el primero." : "Este equipo aún no tiene jugadores."}
         </EmptyState>
       ) : (
-        <ul key={teamId} className="space-y-2" data-testid="roster-list">
+        // Un solo bloque con filas (Premium deportivo, compacto): no una tarjeta por jugador.
+        <ul key={teamId} className="ui-card divide-y divide-line overflow-hidden rounded-card bg-card" data-testid="roster-list">
           {players.map((player, index) => (
             <motion.li
               key={player.id}
-              initial={{ opacity: 0, y: 14 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: Math.min(index * 0.04, 0.4), duration: 0.3 }}
+              transition={{ delay: Math.min(index * 0.03, 0.3), duration: 0.25 }}
             >
               <button
                 type="button"
                 onClick={() => onOpen(player)}
                 aria-label={`Ver la ficha de ${player.name}`}
                 className={cx(
-                  "flex min-h-[4.75rem] w-full items-center gap-3 rounded-card bg-card px-3 py-3 shadow-card ring-1 ring-line transition",
-                  "hover:ring-control focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text",
+                  "flex min-h-[3.75rem] w-full items-center gap-3 px-3 py-2.5 transition-ui",
+                  "hover:bg-raised focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-rotta-text",
                 )}
               >
                 <PlayerCardContent player={player} />
@@ -127,10 +128,10 @@ function PlayerList({ players, teamId, canEdit, onOpen, onAdd }) {
 // Mientras carga: la forma de la lista, sin saltos al llegar los datos.
 function RosterLoading() {
   return (
-    <div className="space-y-2" aria-hidden="true" data-testid="roster-loading">
-      {[0, 1, 2].map((index) => (
-        <div key={index} className="flex min-h-[4.75rem] items-center gap-3 rounded-card bg-card px-3 shadow-card ring-1 ring-line">
-          <span className="h-12 w-12 shrink-0 animate-pulse rounded-full bg-raised" />
+    <div className="ui-card divide-y divide-line overflow-hidden rounded-card bg-card" aria-hidden="true" data-testid="roster-loading">
+      {[0, 1, 2, 3].map((index) => (
+        <div key={index} className="flex min-h-[3.75rem] items-center gap-3 px-3">
+          <span className="h-10 w-10 shrink-0 animate-pulse rounded-full bg-raised" />
           <span className="flex-1 space-y-2">
             <span className="block h-3.5 w-2/3 animate-pulse rounded-full bg-raised" />
             <span className="block h-3 w-1/4 animate-pulse rounded-full bg-raised" />
@@ -294,7 +295,7 @@ export default function RosterPage({ user, onAccessLost }) {
       )}
 
       {players && wide && (
-        <div className="grid grid-cols-2 items-start gap-5" data-testid="roster-columns">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] items-start gap-6" data-testid="roster-columns">
           {court}
           {list}
         </div>

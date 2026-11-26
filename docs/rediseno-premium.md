@@ -19,6 +19,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | `f6d4a84` | Inicio 2·c: pestaña Partidos con el mismo lenguaje y ajustes |
 
 | (este) | Inicio 3: sitio en una línea bajo la hora (entreno y partido), arena en la pista de playa; revisado con familia, entrenador sin ficha, playa, 360 px y tableta |
+| (este) | Plantilla: lista en filas compactas dentro de un solo bloque (contacto en una línea), pista con suelo y líneas de la identidad (`CourtDrawing themed`), escritorio a todo el ancho con pista y lista lado a lado |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -40,7 +41,7 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 ## Siguiente (por orden)
 
 1. ~~Inicio, bloque 3~~ (hecho).
-2. Plantilla y fichas de jugadores.
+2. ~~Plantilla y fichas de jugadores~~ (hecho; la nota de la ficha y el suelo del 3D se ven en Ranking y componentes).
 3. Ranking y Notas (ver `docs/ranking-y-notas.md`: «Nota global», dorado solo ≥85, Tu ficha arriba y al
    final, equipo por defecto sin `startsWith("escuela")`).
 4. Eventos y calendario.

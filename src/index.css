@@ -454,6 +454,7 @@
 .court-line { fill: none; stroke: rgb(var(--c-stage-ink) / 0.55); stroke-width: 0.8; }
 .court-net { stroke: rgb(var(--c-stage-ink) / 0.9); stroke-width: 1.4; stroke-linecap: round; }
 .court-post { fill: rgb(var(--c-stage-ink)); }
+.court-zones { fill: rgb(var(--c-stage-ink) / 0.22); }
 .court-chip {
   border-radius: 999px;
   border: 2px solid rgb(var(--c-stage-ink) / 0.85);
