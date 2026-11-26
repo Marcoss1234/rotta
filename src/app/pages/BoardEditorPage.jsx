@@ -30,6 +30,7 @@ import { COURT_HEIGHT, COURT_WIDTH, BOARD_KINDS, applyLineup, blendElements, boa
 import { recordBoardVideo, videoFileName, videoType } from "@/app/boardVideo.js";
 import { isBeachTeam } from "@/app/teams.js";
 import { Notice } from "@/app/ui/index.js";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 
 const SAVE_DELAY_MS = 900;
 const ROTATE_MS = 650;
@@ -184,6 +185,10 @@ function MenuItem({ icon: Icon, label, hint = null, danger = false, disabled = f
 
 const headerIconClass = "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-void text-zinc-200 hover:text-white disabled:opacity-40";
 const chipClass = "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-zinc-100 hover:bg-white/10";
+// En el panel del ordenador: botones grandes que llenan su casilla de la rejilla, con icono y nombre.
+const panelChipClass = "flex min-h-12 w-full items-center gap-2.5 rounded-control border border-white/10 bg-white/[0.04] px-3 text-sm font-bold text-zinc-100 transition-ui hover:border-white/25 hover:bg-white/10";
+// Título de cada parte del panel del ordenador.
+const PanelTitle = ({ children }) => <h2 className="mb-2 text-xs font-bold text-zinc-400">{children}</h2>;
 const segmentClass = (on) => `min-h-9 rounded-md px-3 text-xs font-extrabold ${on ? "ui-selected" : "text-zinc-300 hover:text-white"}`;
 
 // Botón de una opción entre dos (Se queda / Vuelve a la fila…).
@@ -241,6 +246,10 @@ export default function BoardEditorPage({ onAccessLost }) {
   // Abajo: "dibujar" (colocar y dibujar) o "jugada" (grabar y reproducir).
   const [mode, setMode] = useState(null);
   const [menu, setMenu] = useState(null);
+  // Ordenador: los controles van en un panel a la derecha de la cancha, ordenados por partes y a todo el ancho.
+  const panelQuery = useMediaQuery("(min-width: 1024px)");
+  const wide = panelQuery && !presenting;
+  const chip = wide ? panelChipClass : chipClass;
   const [arrowStyle, setArrowStyle] = useState("move");
   const [textValue, setTextValue] = useState("");
   const [selectedId, setSelectedId] = useState(null);
@@ -1089,7 +1098,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         )}
       </div>
 
-      <div className={`flex shrink-0 flex-col ${presenting ? "" : "lg:row-start-2 lg:min-h-0 lg:justify-start lg:overflow-y-auto lg:border-l lg:border-white/10 lg:bg-panel [&_.overflow-x-auto]:lg:flex-wrap"}`} data-testid="board-controls">
+      <div className={`flex shrink-0 flex-col ${presenting ? "" : "lg:row-start-2 lg:min-h-0 lg:justify-start lg:gap-5 lg:overflow-y-auto lg:border-l lg:border-white/10 lg:bg-panel lg:p-4"}`} data-testid="board-controls">
       {planner && (
         <div className="shrink-0 border-t border-white/10 bg-panel px-2 pb-[env(safe-area-inset-bottom)] pt-2">
           <p aria-live="polite" className="px-1 text-sm font-bold text-white">
@@ -1157,7 +1166,7 @@ export default function BoardEditorPage({ onAccessLost }) {
       )}
 
       {editable && !presenting && !view3d && !planner && !recording && !exporting && (
-        <div role="tablist" aria-label="Qué haces" className="flex shrink-0 gap-1 border-t border-white/10 bg-panel px-2 pt-2">
+        <div role="tablist" aria-label="Qué haces" className={`flex shrink-0 gap-1 bg-panel ${wide ? "rounded-control bg-white/[0.04] p-1 ring-1 ring-inset ring-white/10" : "border-t border-white/10 px-2 pt-2"}`}>
           {[["dibujar", "Dibujar", Pencil], ["jugada", "Jugada", Play]].map(([id, label, Icon]) => (
             <button
               key={id}
@@ -1165,7 +1174,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               role="tab"
               aria-selected={shownMode === id}
               onClick={() => chooseMode(id)}
-              className={`flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-extrabold ${
+              className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-extrabold ${wide ? "min-h-11" : "min-h-10"} ${
                 shownMode === id ? "ui-selected" : "text-zinc-300 hover:bg-white/5"
               }`}
             >
@@ -1176,8 +1185,9 @@ export default function BoardEditorPage({ onAccessLost }) {
         </div>
       )}
 
-      <div className={`shrink-0 bg-panel empty:hidden ${planner || (editable && shownMode === "dibujar") ? "hidden" : ""} ${editable && !view3d ? "" : "border-t border-white/10"} pb-[env(safe-area-inset-bottom)]`}>
+      <div className={`shrink-0 bg-panel empty:hidden ${planner || (editable && shownMode === "dibujar") ? "hidden" : ""} ${editable && !view3d || wide ? "" : "border-t border-white/10"} pb-[env(safe-area-inset-bottom)]`}>
         <RecordingBar
+          wide={wide}
           editable={editable && !presenting && !exporting}
           hasRecording={Boolean(board.recording)}
           recording={recording}
@@ -1195,21 +1205,23 @@ export default function BoardEditorPage({ onAccessLost }) {
       </div>
 
       {editable && !presenting && !view3d && !planner && shownMode === "dibujar" && (
-        <footer className="shrink-0 bg-panel pb-[env(safe-area-inset-bottom)]">
-          <div className="flex min-h-14 items-center gap-1.5 overflow-x-auto border-t border-white/5 px-2 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <footer className={`shrink-0 bg-panel ${wide ? "flex flex-col gap-5" : "pb-[env(safe-area-inset-bottom)]"}`}>
+          <section aria-label={tool === "move" ? "Añadir a la pista" : "Opciones de la herramienta"} className={wide ? "order-2" : ""}>
+          {wide && tool === "move" && <PanelTitle>{selectedId ? "Lo elegido" : "Añadir a la pista"}</PanelTitle>}
+          <div className={wide ? "grid grid-cols-2 gap-2" : "flex min-h-14 items-center gap-1.5 overflow-x-auto border-t border-white/5 px-2 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}>
             {tool === "move" && selectedId && (
-              <button type="button" onClick={removeSelected} className={`${chipClass} border-red-400/60 text-red-200`}>
+              <button type="button" onClick={removeSelected} className={`${chip} border-red-400/60 text-red-200 ${wide ? "col-span-2" : ""}`}>
                 <Trash2 aria-hidden="true" className="h-4 w-4" />
                 Quitar
               </button>
             )}
             {tool === "move" && !selectedId && (
               <>
-                <button type="button" onClick={() => setAddingPlayers(true)} className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-club px-3.5 text-xs font-extrabold text-on-club">
+                <button type="button" onClick={() => setAddingPlayers(true)} className={wide ? "ui-btn-primary col-span-2 flex min-h-12 w-full items-center justify-center gap-2 rounded-control bg-club px-3 text-sm font-extrabold text-on-club" : "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full bg-club px-3.5 text-xs font-extrabold text-on-club"}>
                   <UserPlus aria-hidden="true" className="h-4 w-4" />
                   Jugadores
                 </button>
-                <button type="button" onClick={() => setLineDialog(true)} className={chipClass}>
+                <button type="button" onClick={() => setLineDialog(true)} className={chip}>
                   <span aria-hidden="true" className="flex flex-col gap-px">
                     <span className="h-1 w-3 rounded-full bg-orange-400" />
                     <span className="h-1 w-3 rounded-full bg-orange-400" />
@@ -1217,25 +1229,25 @@ export default function BoardEditorPage({ onAccessLost }) {
                   </span>
                   Fila
                 </button>
-                <button type="button" onClick={() => addElement(rivalToken(rivals))} className={chipClass}>
+                <button type="button" onClick={() => addElement(rivalToken(rivals))} className={chip}>
                   <span aria-hidden="true" className="h-3 w-3 rounded-full bg-club ring-1 ring-white" />
                   Rival
                 </button>
-                <button type="button" onClick={() => addElement(newBall(balls))} className={chipClass}>
+                <button type="button" onClick={() => addElement(newBall(balls))} className={chip}>
                   <span aria-hidden="true" className="h-3 w-3 rounded-full bg-[conic-gradient(#0F8A3C_0_33%,#D7262E_0_66%,#fff_0)] ring-1 ring-white" />
                   Balón
                 </button>
-                <button type="button" onClick={() => addElement(newProp("cone", cones))} className={chipClass}>
+                <button type="button" onClick={() => addElement(newProp("cone", cones))} className={chip}>
                   <span aria-hidden="true" className="h-0 w-0 border-x-[6px] border-b-[11px] border-x-transparent border-b-orange-500" />
                   Cono
                 </button>
-                <button type="button" onClick={() => addElement(newProp("box"))} className={chipClass}>
+                <button type="button" onClick={() => addElement(newProp("box"))} className={chip}>
                   <span aria-hidden="true" className="h-2.5 w-3.5 rounded-[2px] bg-[#C08A4E] ring-1 ring-white" />
                   Cajón
                 </button>
                 {!board.private && (
                 <div className="relative">
-                  <button type="button" onClick={() => setMenu(menu === "lineup" ? null : "lineup")} aria-expanded={menu === "lineup"} className={chipClass}>
+                  <button type="button" onClick={() => setMenu(menu === "lineup" ? null : "lineup")} aria-expanded={menu === "lineup"} className={chip}>
                     <Users aria-hidden="true" className="h-4 w-4" />
                     Alineación
                     {lineups?.length ? <span className="rounded-full bg-club px-1.5 text-xs font-extrabold text-on-club">{lineups.length}</span> : null}
@@ -1243,17 +1255,17 @@ export default function BoardEditorPage({ onAccessLost }) {
                   </button>
                 </div>
                 )}
-                <button type="button" onClick={() => rotate("home")} className={chipClass}>
+                <button type="button" onClick={() => rotate("home")} className={chip}>
                   <RotateCw aria-hidden="true" className="h-4 w-4" />
                   Rotar
                 </button>
-                {elements.length > 0 && <button type="button" onClick={clearAll} className={`${chipClass} ml-auto border-transparent text-zinc-400`}>Vaciar</button>}
+                {elements.length > 0 && <button type="button" onClick={clearAll} className={`${chip} ml-auto border-transparent text-zinc-400 ${wide ? "col-span-2 justify-center" : ""}`}>Vaciar</button>}
               </>
             )}
             {tool === "arrow" && (
-              <div role="group" aria-label="Tipo de flecha" className="flex gap-1.5">
+              <div role="group" aria-label="Tipo de flecha" className={wide ? "col-span-2 grid grid-cols-2 gap-2" : "flex gap-1.5"}>
                 {[["move", "Movimiento"], ["pass", "Pase / balón"]].map(([value, label]) => (
-                  <button key={value} type="button" aria-pressed={arrowStyle === value} onClick={() => setArrowStyle(value)} className={`${chipClass} ${arrowStyle === value ? "border-club-ui bg-club text-on-club" : ""}`}>
+                  <button key={value} type="button" aria-pressed={arrowStyle === value} onClick={() => setArrowStyle(value)} className={`${chip} ${wide ? "justify-center" : ""} ${arrowStyle === value ? "border-club-ui bg-club text-on-club" : ""}`}>
                     {label}
                   </button>
                 ))}
@@ -1262,14 +1274,18 @@ export default function BoardEditorPage({ onAccessLost }) {
             {tool === "text" && (
               <>
                 <label htmlFor="board-text" className="sr-only">Texto para colocar en la pista</label>
-                <input id="board-text" value={textValue} maxLength={60} onChange={(event) => setTextValue(event.target.value)} placeholder="Escribe y toca la pista" className="min-h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-void px-3 text-white placeholder:text-zinc-500 focus:border-white focus:outline-none" />
+                <input id="board-text" value={textValue} maxLength={60} onChange={(event) => setTextValue(event.target.value)} placeholder="Escribe y toca la pista" className="col-span-2 min-h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-void px-3 text-white placeholder:text-zinc-500 focus:border-white focus:outline-none" />
               </>
             )}
-            {tool === "zone" && <span className="px-1 text-xs font-semibold text-zinc-300">Arrastra sobre la pista para marcar una zona.</span>}
-            {tool === "pen" && <span className="px-1 text-xs font-semibold text-zinc-300">Dibuja con el dedo sobre la pista.</span>}
+            {tool === "zone" && <span className="col-span-2 px-1 text-xs font-semibold text-zinc-300">Arrastra sobre la pista para marcar una zona.</span>}
+            {tool === "pen" && <span className="col-span-2 px-1 text-xs font-semibold text-zinc-300">Dibuja con el dedo sobre la pista.</span>}
           </div>
 
-          <div className="flex items-stretch border-t border-white/5 px-1">
+          </section>
+
+          <section aria-label="Herramientas" className={wide ? "order-1" : ""}>
+          {wide && <PanelTitle>Herramientas</PanelTitle>}
+          <div className={wide ? "flex items-stretch gap-1 rounded-control bg-white/[0.04] p-1 ring-1 ring-inset ring-white/10" : "flex items-stretch border-t border-white/5 px-1"}>
             <div role="group" aria-label="Herramientas" className="flex min-w-0 flex-1">
               {TOOLS.map(({ id, label, icon: Icon }) => (
                 <button
@@ -1280,7 +1296,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                     setTool(id);
                     setSelectedId(null);
                   }}
-                  className={`group flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 text-[10px] font-bold ${tool === id ? "text-white" : "text-zinc-500 hover:text-white"}`}
+                  className={`group flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 font-bold ${wide ? "text-xs" : "text-[10px]"} ${tool === id ? "text-white" : "text-zinc-500 hover:text-white"}`}
                 >
                   <span className={`flex h-7 w-11 items-center justify-center rounded-full ${tool === id ? "bg-club/20 text-club-ui" : ""}`}>
                     <Icon aria-hidden="true" className="h-5 w-5" />
@@ -1298,6 +1314,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               </button>
             </div>
           </div>
+          </section>
         </footer>
       )}
       </div>
