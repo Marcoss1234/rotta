@@ -68,6 +68,14 @@ export const isTeamId = (id) => structure.teams.some((team) => team.id === id);
 // El equipo que se enseña si la persona no tiene uno (o el suyo ya no existe).
 export const defaultTeamId = () => structure.teams[0].id;
 
+// El grupo del ranking de un equipo (un grupo puede juntar varios, como la Escuela), o null.
+export const groupOfTeam = (teamId) => structure.groups.find((group) => group.teams.includes(teamId))?.id ?? null;
+
+// El grupo del ranking que se abre por defecto para una persona: el de su equipo y, si no tiene (un entrenador), el
+// del primer equipo que entrena. Vale para cualquier club, sin suponer nombres de equipos.
+export const ownGroupOf = (user) =>
+  [user?.team_id, ...(user?.coached_team_ids ?? [])].map(groupOfTeam).find(Boolean) ?? null;
+
 // Vóley playa: pista de arena y sin pabellón.
 export const isBeachTeam = (id) => structure.teams.some((team) => team.id === id && team.beach);
 

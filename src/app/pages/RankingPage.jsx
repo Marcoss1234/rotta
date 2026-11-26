@@ -8,6 +8,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 import PlayerRatingHistory from "@/app/components/PlayerRatingHistory.jsx";
 import { lookOf } from "@/app/components/PlayerProfileDialog.jsx";
 import { AnimatedBar, CardTitle, GroupPicker, MovementPill, OverallNumber, PositionTag, RankingHero } from "@/app/components/RankingVisuals.jsx";
+import { ownGroupOf } from "@/app/teams.js";
 import { formatOverall, weekLabel } from "@/app/ranking.js";
 import { Notice } from "@/app/ui/index.js";
 
@@ -233,7 +234,7 @@ export default function RankingPage({ user, onAccessLost }) {
   }, [handleError]);
 
   const requested = searchParams.get("grupo");
-  const ownGroup = user.team_id?.startsWith("escuela") ? "escuela" : user.team_id;
+  const ownGroup = ownGroupOf(user);
   const group = groups?.find(({ id }) => id === requested) ?? groups?.find(({ id }) => id === ownGroup) ?? groups?.[0];
   const groupId = group?.id ?? null;
 

@@ -2,6 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useState } from "react
 import { ArrowLeft, Coins, Crown, ShoppingBag } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getProfile, getRankingHonors, listRankingGroups } from "@/app/api.js";
+import { ownGroupOf } from "@/app/teams.js";
 import { lookFromSeed, normalizeLook } from "@/app/character/looks.js";
 import Avatar from "@/app/components/Avatar.jsx";
 import HonorsBanner from "@/app/components/HonorsBanner.jsx";
@@ -172,7 +173,7 @@ export default function RewardsPage({ user, onAccessLost }) {
   }, [handleError]);
 
   const requested = searchParams.get("grupo");
-  const ownGroup = user.team_id?.startsWith("escuela") ? "escuela" : user.team_id;
+  const ownGroup = ownGroupOf(user);
   const group = groups?.find(({ id }) => id === requested) ?? groups?.find(({ id }) => id === ownGroup) ?? groups?.[0];
   const groupId = group?.id ?? null;
 
