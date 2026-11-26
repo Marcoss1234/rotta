@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 
 const PLACE_STYLE = {
   1: "bg-amber-300/15 text-amber-200 ring-amber-300/40",
-  2: "bg-zinc-200/10 text-zinc-100 ring-zinc-200/30",
+  2: "bg-zinc-200/10 text-white ring-zinc-200/30",
   3: "bg-orange-400/15 text-orange-200 ring-orange-400/40",
 };
 
@@ -54,7 +54,7 @@ export default function CoinsCard({ coins }) {
 
       {coins.honors.length > 0 && (
         <div className="relative mt-3">
-          <h3 className="text-[11px] font-bold text-zinc-400">Tus premios</h3>
+          <h3 className="text-[11px] font-bold text-ink-muted">Tus premios</h3>
           <ul className="mt-1.5 flex flex-wrap gap-1.5">
             {coins.honors.map((honor) => (
               <li
@@ -70,18 +70,18 @@ export default function CoinsCard({ coins }) {
       )}
 
       <div className="relative mt-3">
-        <h3 className="text-[11px] font-bold text-zinc-400">Últimos movimientos</h3>
+        <h3 className="text-[11px] font-bold text-ink-muted">Últimos movimientos</h3>
         {coins.entries.length === 0 ? (
-          <p className="mt-1.5 text-sm text-zinc-400">
+          <p className="mt-1.5 text-sm text-ink-muted">
             Aún no tienes coins. Se ganan quedando en el podio del ranking, siendo el mejor del mes y respondiendo a la asistencia de los entrenos.
           </p>
         ) : (
           <ul className="mt-1.5 divide-y divide-white/5">
             {coins.entries.map((entry, index) => (
               <li key={index} className="flex items-center justify-between gap-3 py-1.5 text-sm">
-                <span className="min-w-0 truncate text-zinc-200">{entry.label}</span>
+                <span className="min-w-0 truncate text-white/60">{entry.label}</span>
                 <span className="flex shrink-0 items-center gap-2">
-                  <span className="text-xs text-zinc-500">{whenLabel(entry.created_at)}</span>
+                  <span className="text-xs text-ink">{whenLabel(entry.created_at)}</span>
                   <span className={`font-extrabold tabular-nums ${entry.amount >= 0 ? "text-amber-300" : "text-red-300"}`}>
                     {entry.amount >= 0 ? "+" : ""}
                     {entry.amount}

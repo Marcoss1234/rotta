@@ -34,10 +34,10 @@ function storeDismissed() {
 
 function Switch({ label, checked, disabled, onChange }) {
   return (
-    <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-zinc-200">
+    <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 text-sm font-semibold text-white/60">
       {label}
       <input type="checkbox" checked={checked} disabled={disabled} onChange={(event) => onChange(event.target.checked)} className="peer sr-only" />
-      <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-white/15 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-tnt peer-checked:after:translate-x-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white peer-disabled:opacity-50" />
+      <span aria-hidden="true" className="relative h-6 w-11 shrink-0 rounded-full bg-white/15 transition-colors after:absolute after:left-0.5 after:top-0.5 after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-brand peer-checked:after:translate-x-5 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-white peer-disabled:opacity-50" />
     </label>
   );
 }
@@ -110,7 +110,7 @@ export default function NotificationsCard({ variant = "card" }) {
             setDismissed(true);
           }}
           aria-label="Ocultar este aviso"
-          className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-lg text-zinc-300 hover:text-white"
+          className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-lg text-white/80 hover:text-white"
         >
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
@@ -118,8 +118,8 @@ export default function NotificationsCard({ variant = "card" }) {
           <Bell aria-hidden="true" className="h-5 w-5 shrink-0 fill-tnt text-tnt" />
           Activa los avisos
         </p>
-        <p className="mt-1 text-sm text-zinc-200">Entérate de los mensajes, los partidos y el ranking aunque tengas la app cerrada.</p>
-        <button type="button" disabled={busy} onClick={activate} className="mt-3 min-h-11 w-full rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:opacity-60">
+        <p className="mt-1 text-sm text-white/60">Entérate de los mensajes, los partidos y el ranking aunque tengas la app cerrada.</p>
+        <button type="button" disabled={busy} onClick={activate} className="mt-3 min-h-11 w-full rounded-full bg-brand px-4 text-sm font-bold text-onbrand disabled:opacity-60">
           {busy ? "Activando…" : "Activar notificaciones"}
         </button>
         {error && <Notice tone="error" inline className="mt-2">{error}</Notice>}
@@ -128,13 +128,13 @@ export default function NotificationsCard({ variant = "card" }) {
   }
 
   return (
-    <section aria-labelledby="notifications-title" className="space-y-3 rounded-3xl bg-panel p-4">
+    <section aria-labelledby="notifications-title" className="space-y-3 rounded-3xl bg-card p-4">
       <h2 id="notifications-title" className="flex items-center gap-2 font-display text-lg font-bold">
         <Bell aria-hidden="true" className="h-5 w-5 text-tnt" />
         Notificaciones
       </h2>
       {availability !== "ready" && !subscribed ? (
-        <p className="text-sm text-zinc-300">{AVAILABILITY_HELP[availability]}</p>
+        <p className="text-sm text-white/80">{AVAILABILITY_HELP[availability]}</p>
       ) : (
         <>
           <Switch label="Activar en este móvil" checked={subscribed} disabled={busy} onChange={(value) => (value ? activate() : deactivate())} />

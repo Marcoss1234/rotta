@@ -125,7 +125,7 @@ function VideoDialog({ video, onClose }) {
         event.preventDefault();
         onClose();
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/80"
+      className="m-auto w-[calc(100%-2rem)] max-w-sm rounded-2xl border border-white/15 bg-card p-4 font-body text-white backdrop:bg-black/80"
     >
       <h2 id="video-title" className="font-display text-xl font-extrabold">Vídeo listo</h2>
       <video src={video.url} controls playsInline className="mx-auto mt-3 max-h-[50dvh] rounded-lg bg-black" />
@@ -141,7 +141,7 @@ function VideoDialog({ video, onClose }) {
           Descargar
         </a>
       </div>
-      <button type="button" onClick={onClose} className="mt-2 min-h-11 w-full rounded-lg text-sm font-semibold text-zinc-300 hover:bg-white/5">Cerrar</button>
+      <button type="button" onClick={onClose} className="mt-2 min-h-11 w-full rounded-lg text-sm font-semibold text-white/80 hover:bg-white/5">Cerrar</button>
     </dialog>
   );
 }
@@ -158,7 +158,7 @@ function Popover({ onClose, className = "", label, children }) {
   return (
     <>
       <button type="button" aria-label="Cerrar el menú" tabIndex={-1} onClick={onClose} className="fixed inset-0 z-40 cursor-default bg-black/40" />
-      <div role="menu" aria-label={label} className={`absolute z-50 w-64 max-w-[calc(100vw-1rem)] rounded-2xl border border-white/15 bg-panel p-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.7)] ${className}`}>
+      <div role="menu" aria-label={label} className={`absolute z-50 w-64 max-w-[calc(100vw-1rem)] rounded-2xl border border-white/15 bg-card p-1.5 shadow-[0_18px_50px_rgba(0,0,0,0.7)] ${className}`}>
         {children}
       </div>
     </>
@@ -174,26 +174,26 @@ function MenuItem({ icon: Icon, label, hint = null, danger = false, disabled = f
       disabled={disabled}
       className={`flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-sm font-semibold disabled:opacity-40 ${danger ? "text-red-200 hover:bg-red-400/10" : "text-white hover:bg-white/5"}`}
     >
-      <Icon aria-hidden="true" className={`h-5 w-5 shrink-0 ${danger ? "text-red-300" : "text-zinc-300"}`} />
+      <Icon aria-hidden="true" className={`h-5 w-5 shrink-0 ${danger ? "text-red-300" : "text-white/80"}`} />
       <span className="min-w-0 flex-1">
         {label}
-        {hint && <span className="block text-xs font-normal text-zinc-400">{hint}</span>}
+        {hint && <span className="block text-xs font-normal text-ink-muted">{hint}</span>}
       </span>
     </button>
   );
 }
 
-const headerIconClass = "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-void text-zinc-200 hover:text-white disabled:opacity-40";
-const chipClass = "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-zinc-100 hover:bg-white/10";
+const headerIconClass = "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-white/10 bg-void text-white/60 hover:text-white disabled:opacity-40";
+const chipClass = "flex min-h-11 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-white hover:bg-white/10";
 // En el panel del ordenador: botones grandes que llenan su casilla de la rejilla, con icono y nombre.
-const panelChipClass = "flex min-h-12 w-full items-center gap-2.5 rounded-control border border-white/10 bg-white/[0.04] px-3 text-sm font-bold text-zinc-100 transition-ui hover:border-white/25 hover:bg-white/10";
+const panelChipClass = "flex min-h-12 w-full items-center gap-2.5 rounded-control border border-white/10 bg-white/[0.04] px-3 text-sm font-bold text-white transition-ui hover:border-white/25 hover:bg-white/10";
 // Título de cada parte del panel del ordenador.
-const PanelTitle = ({ children }) => <h2 className="mb-2 text-xs font-bold text-zinc-400">{children}</h2>;
-const segmentClass = (on) => `min-h-9 rounded-md px-3 text-xs font-extrabold ${on ? "ui-selected" : "text-zinc-300 hover:text-white"}`;
+const PanelTitle = ({ children }) => <h2 className="mb-2 text-xs font-bold text-ink-muted">{children}</h2>;
+const segmentClass = (on) => `min-h-9 rounded-md px-3 text-xs font-extrabold ${on ? "ui-selected" : "text-white/80 hover:text-white"}`;
 
 // Botón de una opción entre dos (Se queda / Vuelve a la fila…).
 const choiceClass = (on) =>
-  `flex min-h-9 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-extrabold ${on ? "bg-club text-on-club" : "text-zinc-300"}`;
+  `flex min-h-9 flex-1 items-center justify-center gap-1 rounded-full px-2 text-xs font-extrabold ${on ? "bg-club text-on-club" : "text-white/80"}`;
 
 export default function BoardEditorPage({ onAccessLost }) {
   const { boardId } = useParams();
@@ -847,7 +847,7 @@ export default function BoardEditorPage({ onAccessLost }) {
       </div>
     );
   }
-  if (!board) return <p role="status" className="text-zinc-300">Cargando…</p>;
+  if (!board) return <p role="status" className="text-white/80">Cargando…</p>;
 
   const editable = board.can_edit;
   const rosterById = Object.fromEntries(club.players.map((player) => [player.id, player]));
@@ -903,9 +903,9 @@ export default function BoardEditorPage({ onAccessLost }) {
     <section ref={sectionRef} aria-label={`Pizarra: ${board.name}`} className={`force-dark fixed inset-0 z-50 flex flex-col bg-void pt-[env(safe-area-inset-top)] ${presenting ? "" : "md:left-[17rem] lg:grid lg:grid-cols-[minmax(0,1fr)_23rem] lg:grid-rows-[auto_minmax(0,1fr)]"}`}>
       {/* Escritorio: la cabecera arriba, la cancha a la izquierda con todo el alto y los controles en una columna a la
           derecha (antes iban debajo y la cancha quedaba pequeña). En el móvil, todo en columna como siempre. */}
-      <header className={`relative shrink-0 border-b border-white/10 bg-panel px-2 pb-2 pt-1.5 lg:col-span-2 ${presenting ? "hidden" : ""}`}>
+      <header className={`relative shrink-0 border-b border-white/10 bg-card px-2 pb-2 pt-1.5 lg:col-span-2 ${presenting ? "hidden" : ""}`}>
         <div className="flex items-center gap-1">
-          <button type="button" onClick={goBack} aria-label="Volver a la pizarra" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-zinc-200 hover:bg-white/10">
+          <button type="button" onClick={goBack} aria-label="Volver a la pizarra" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white/60 hover:bg-white/10">
             <ArrowLeft aria-hidden="true" className="h-5 w-5" />
           </button>
           {editable ? (
@@ -919,7 +919,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   onChange={(event) => changeBoard({ name: event.target.value })}
                   className="block min-h-8 w-full truncate rounded-md bg-transparent px-1.5 font-display text-lg font-extrabold leading-tight text-white hover:bg-white/5 focus:bg-white/10 focus:outline-none"
                 />
-                <p aria-live="polite" className={`truncate px-1.5 text-[11px] font-semibold ${status === "error" ? "text-red-300" : "text-zinc-500"}`}>
+                <p aria-live="polite" className={`truncate px-1.5 text-[11px] font-semibold ${status === "error" ? "text-red-300" : "text-ink"}`}>
                   {boardKindLabel(board.kind)} · {STATUS_LABEL[status] ?? (board.private ? "Solo la ves tú" : board.published ? "Publicada" : "Borrador")}
                 </p>
               </div>
@@ -949,7 +949,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             <button type="button" aria-pressed={view3d} onClick={() => !view3d && toggleView3d()} className={segmentClass(view3d)}>3D</button>
           </div>
           {editable && (
-            <span className="min-w-0 flex-1 truncate px-1 text-xs font-semibold text-zinc-400">
+            <span className="min-w-0 flex-1 truncate px-1 text-xs font-semibold text-ink-muted">
               {boardKindLabel(board.kind)} · {half ? "Media pista" : "Pista entera"}
             </span>
           )}
@@ -962,11 +962,11 @@ export default function BoardEditorPage({ onAccessLost }) {
               <Popover onClose={closeMenu} label="Más opciones" className="right-0 top-12">
                 {editable && (
                   <div className="space-y-2 border-b border-white/10 px-2 pb-3 pt-1">
-                    <label htmlFor="board-kind" className="block text-[11px] font-bold text-zinc-400">Tipo de jugada</label>
+                    <label htmlFor="board-kind" className="block text-[11px] font-bold text-ink-muted">Tipo de jugada</label>
                     <select id="board-kind" value={board.kind} onChange={(event) => changeBoard({ kind: event.target.value })} className="min-h-10 w-full rounded-lg border border-white/10 bg-void px-2 text-sm font-semibold text-white [color-scheme:dark] focus:border-white/40 focus:outline-none">
                       {BOARD_KINDS.map(({ value, label }) => <option key={value} value={value}>{label}</option>)}
                     </select>
-                    <p className="text-[11px] font-bold text-zinc-400">Pista</p>
+                    <p className="text-[11px] font-bold text-ink-muted">Pista</p>
                     <div role="group" aria-label="Tamaño de la pista" className="flex rounded-lg border border-white/10 bg-void p-0.5">
                       {[["full", "Entera"], ["half", "Media"]].map(([value, label]) => (
                         <button key={value} type="button" aria-pressed={board.court === value} onClick={() => changeBoard({ court: value })} className={`flex-1 ${segmentClass(board.court === value)}`}>
@@ -989,7 +989,7 @@ export default function BoardEditorPage({ onAccessLost }) {
 
       <div ref={courtBox} className={`relative flex min-h-0 flex-1 items-center justify-center bg-[radial-gradient(ellipse_at_center,rgb(var(--c-club-ui)/0.10),transparent_65%)] p-3 ${presenting ? "" : "lg:row-start-2"}`}>
         {view3d && HAS_WEBGL && (
-          <Suspense fallback={<p role="status" className="text-sm text-zinc-300">Cargando 3D…</p>}>
+          <Suspense fallback={<p role="status" className="text-sm text-white/80">Cargando 3D…</p>}>
             <Viewer3D
               elements={playback.shown}
               rosterById={rosterById}
@@ -1067,14 +1067,14 @@ export default function BoardEditorPage({ onAccessLost }) {
             type="button"
             onClick={togglePresenting}
             aria-label="Salir de la presentación"
-            className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-panel/80 text-white backdrop-blur hover:bg-panel"
+            className="absolute right-3 top-3 z-20 flex h-11 w-11 items-center justify-center rounded-full border border-white/15 bg-card/80 text-white backdrop-blur hover:bg-card"
           >
             <X aria-hidden="true" className="h-5 w-5" />
           </button>
         )}
 
         {exporting && (
-          <p role="status" className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-panel/90 px-3.5 py-1.5 text-xs font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,0.5)] backdrop-blur">
+          <p role="status" className="absolute left-1/2 top-3 z-20 flex -translate-x-1/2 items-center gap-2 rounded-full bg-card/90 px-3.5 py-1.5 text-xs font-bold text-white shadow-[0_6px_20px_rgba(0,0,0,0.5)] backdrop-blur">
             <span aria-hidden="true" className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500 motion-reduce:animate-none text-snow" />
             Creando vídeo… {playback.duration ? Math.min(100, Math.round((playback.time / playback.duration) * 100)) : 0}%
           </p>
@@ -1098,16 +1098,16 @@ export default function BoardEditorPage({ onAccessLost }) {
         )}
       </div>
 
-      <div className={`flex shrink-0 flex-col ${presenting ? "" : "lg:row-start-2 lg:min-h-0 lg:justify-start lg:gap-5 lg:overflow-y-auto lg:border-l lg:border-white/10 lg:bg-panel lg:p-4"}`} data-testid="board-controls">
+      <div className={`flex shrink-0 flex-col ${presenting ? "" : "lg:row-start-2 lg:min-h-0 lg:justify-start lg:gap-5 lg:overflow-y-auto lg:border-l lg:border-white/10 lg:bg-card lg:p-4"}`} data-testid="board-controls">
       {planner && (
-        <div className="shrink-0 border-t border-white/10 bg-panel px-2 pb-[env(safe-area-inset-bottom)] pt-2">
+        <div className="shrink-0 border-t border-white/10 bg-card px-2 pb-[env(safe-area-inset-bottom)] pt-2">
           <p aria-live="polite" className="px-1 text-sm font-bold text-white">
             <span className="mr-1.5 rounded-full bg-club px-2 py-0.5 text-xs font-extrabold text-on-club">Paso {planner.steps.length + 1}</span>
             {plannerStage === "player" && (planner.steps.length === 0 ? "Toca al jugador que tiene el balón" : "¿Quién juega ahora? Tócalo")}
             {plannerStage === "action" && "Elige qué hace"}
             {plannerStage === "target" && "Toca en la pista dónde manda el balón"}
           </p>
-          <p className="px-1 pt-0.5 text-xs text-zinc-400">
+          <p className="px-1 pt-0.5 text-xs text-ink-muted">
             Mantén pulsado a un jugador y arrástralo para que se coloque en este paso
             {planner.moves?.length ? ` · ${planner.moves.length} ${planner.moves.length === 1 ? "movimiento" : "movimientos"}` : ""}
           </p>
@@ -1123,7 +1123,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             <div className="mt-2 space-y-1.5 px-1">
               {planner.steps.length > 0 && (
                 <div role="group" aria-label="Qué balón juega" className="flex items-center gap-2">
-                  <span className="w-20 shrink-0 text-[11px] font-extrabold text-zinc-400">Balón</span>
+                  <span className="w-20 shrink-0 text-[11px] font-extrabold text-ink-muted">Balón</span>
                   <div className="flex flex-1 gap-0.5 rounded-full bg-void p-0.5 ring-1 ring-white/10">
                     <button type="button" aria-pressed={!planner.fresh} onClick={() => setPlanner({ ...planner, fresh: false })} className={choiceClass(!planner.fresh)}>
                       El que viene
@@ -1144,7 +1144,7 @@ export default function BoardEditorPage({ onAccessLost }) {
             </button>
           )}
           <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <button type="button" onClick={() => setPlanner(null)} className={`${chipClass} text-zinc-300`}>Cancelar</button>
+            <button type="button" onClick={() => setPlanner(null)} className={`${chipClass} text-white/80`}>Cancelar</button>
             <button type="button" onClick={undoPlanStep} disabled={planner.steps.length === 0 && !planner.playerId && !planner.moves?.length} className={`${chipClass} disabled:opacity-40`}>
               <Undo2 aria-hidden="true" className="h-4 w-4" />
               Atrás
@@ -1166,7 +1166,7 @@ export default function BoardEditorPage({ onAccessLost }) {
       )}
 
       {editable && !presenting && !view3d && !planner && !recording && !exporting && (
-        <div role="tablist" aria-label="Qué haces" className={`flex shrink-0 gap-1 bg-panel ${wide ? "rounded-control bg-white/[0.04] p-1 ring-1 ring-inset ring-white/10" : "border-t border-white/10 px-2 pt-2"}`}>
+        <div role="tablist" aria-label="Qué haces" className={`flex shrink-0 gap-1 bg-card ${wide ? "rounded-control bg-white/[0.04] p-1 ring-1 ring-inset ring-white/10" : "border-t border-white/10 px-2 pt-2"}`}>
           {[["dibujar", "Dibujar", Pencil], ["jugada", "Jugada", Play]].map(([id, label, Icon]) => (
             <button
               key={id}
@@ -1175,7 +1175,7 @@ export default function BoardEditorPage({ onAccessLost }) {
               aria-selected={shownMode === id}
               onClick={() => chooseMode(id)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg font-display text-sm font-extrabold ${wide ? "min-h-11" : "min-h-10"} ${
-                shownMode === id ? "ui-selected" : "text-zinc-300 hover:bg-white/5"
+                shownMode === id ? "ui-selected" : "text-white/80 hover:bg-white/5"
               }`}
             >
               <Icon aria-hidden="true" className="h-4 w-4" />
@@ -1185,7 +1185,7 @@ export default function BoardEditorPage({ onAccessLost }) {
         </div>
       )}
 
-      <div className={`shrink-0 bg-panel empty:hidden ${planner || (editable && shownMode === "dibujar") ? "hidden" : ""} ${editable && !view3d || wide ? "" : "border-t border-white/10"} pb-[env(safe-area-inset-bottom)]`}>
+      <div className={`shrink-0 bg-card empty:hidden ${planner || (editable && shownMode === "dibujar") ? "hidden" : ""} ${editable && !view3d || wide ? "" : "border-t border-white/10"} pb-[env(safe-area-inset-bottom)]`}>
         <RecordingBar
           wide={wide}
           editable={editable && !presenting && !exporting}
@@ -1205,7 +1205,7 @@ export default function BoardEditorPage({ onAccessLost }) {
       </div>
 
       {editable && !presenting && !view3d && !planner && shownMode === "dibujar" && (
-        <footer className={`shrink-0 bg-panel ${wide ? "flex flex-col gap-5" : "pb-[env(safe-area-inset-bottom)]"}`}>
+        <footer className={`shrink-0 bg-card ${wide ? "flex flex-col gap-5" : "pb-[env(safe-area-inset-bottom)]"}`}>
           <section aria-label={tool === "move" ? "Añadir a la pista" : "Opciones de la herramienta"} className={wide ? "order-2" : ""}>
           {wide && tool === "move" && <PanelTitle>{selectedId ? "Lo elegido" : "Añadir a la pista"}</PanelTitle>}
           <div className={wide ? "grid grid-cols-2 gap-2" : "flex min-h-14 items-center gap-1.5 overflow-x-auto border-t border-white/5 px-2 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"}>
@@ -1259,7 +1259,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                   <RotateCw aria-hidden="true" className="h-4 w-4" />
                   Rotar
                 </button>
-                {elements.length > 0 && <button type="button" onClick={clearAll} className={`${chip} ml-auto border-transparent text-zinc-400 ${wide ? "col-span-2 justify-center" : ""}`}>Vaciar</button>}
+                {elements.length > 0 && <button type="button" onClick={clearAll} className={`${chip} ml-auto border-transparent text-ink-muted ${wide ? "col-span-2 justify-center" : ""}`}>Vaciar</button>}
               </>
             )}
             {tool === "arrow" && (
@@ -1274,11 +1274,11 @@ export default function BoardEditorPage({ onAccessLost }) {
             {tool === "text" && (
               <>
                 <label htmlFor="board-text" className="sr-only">Texto para colocar en la pista</label>
-                <input id="board-text" value={textValue} maxLength={60} onChange={(event) => setTextValue(event.target.value)} placeholder="Escribe y toca la pista" className="col-span-2 min-h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-void px-3 text-white placeholder:text-zinc-500 focus:border-white focus:outline-none" />
+                <input id="board-text" value={textValue} maxLength={60} onChange={(event) => setTextValue(event.target.value)} placeholder="Escribe y toca la pista" className="col-span-2 min-h-11 min-w-0 flex-1 rounded-lg border border-white/20 bg-void px-3 text-white placeholder:text-ink focus:border-white focus:outline-none" />
               </>
             )}
-            {tool === "zone" && <span className="col-span-2 px-1 text-xs font-semibold text-zinc-300">Arrastra sobre la pista para marcar una zona.</span>}
-            {tool === "pen" && <span className="col-span-2 px-1 text-xs font-semibold text-zinc-300">Dibuja con el dedo sobre la pista.</span>}
+            {tool === "zone" && <span className="col-span-2 px-1 text-xs font-semibold text-white/80">Arrastra sobre la pista para marcar una zona.</span>}
+            {tool === "pen" && <span className="col-span-2 px-1 text-xs font-semibold text-white/80">Dibuja con el dedo sobre la pista.</span>}
           </div>
 
           </section>
@@ -1296,7 +1296,7 @@ export default function BoardEditorPage({ onAccessLost }) {
                     setTool(id);
                     setSelectedId(null);
                   }}
-                  className={`group flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 font-bold ${wide ? "text-xs" : "text-[10px]"} ${tool === id ? "text-white" : "text-zinc-500 hover:text-white"}`}
+                  className={`group flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-0.5 font-bold ${wide ? "text-xs" : "text-[10px]"} ${tool === id ? "text-white" : "text-ink hover:text-white"}`}
                 >
                   <span className={`flex h-7 w-11 items-center justify-center rounded-full ${tool === id ? "bg-club/20 text-club-ui" : ""}`}>
                     <Icon aria-hidden="true" className="h-5 w-5" />
@@ -1306,10 +1306,10 @@ export default function BoardEditorPage({ onAccessLost }) {
               ))}
             </div>
             <div className="my-2 flex shrink-0 border-l border-white/10 pl-1">
-              <button type="button" disabled={history.past.length === 0} onClick={() => restore("past", "future")} aria-label="Deshacer" className="flex w-11 items-center justify-center rounded-lg text-zinc-200 hover:bg-white/5 disabled:opacity-30">
+              <button type="button" disabled={history.past.length === 0} onClick={() => restore("past", "future")} aria-label="Deshacer" className="flex w-11 items-center justify-center rounded-lg text-white/60 hover:bg-white/5 disabled:opacity-30">
                 <Undo2 aria-hidden="true" className="h-5 w-5" />
               </button>
-              <button type="button" disabled={history.future.length === 0} onClick={() => restore("future", "past")} aria-label="Rehacer" className="flex w-11 items-center justify-center rounded-lg text-zinc-200 hover:bg-white/5 disabled:opacity-30">
+              <button type="button" disabled={history.future.length === 0} onClick={() => restore("future", "past")} aria-label="Rehacer" className="flex w-11 items-center justify-center rounded-lg text-white/60 hover:bg-white/5 disabled:opacity-30">
                 <Redo2 aria-hidden="true" className="h-5 w-5" />
               </button>
             </div>

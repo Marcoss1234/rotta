@@ -47,13 +47,13 @@ export default function TrainingStars({ teamId, onAccessLost }) {
     if (data.stars.length === 0) {
       // Aún sin elegir: se recuerda que el entrenador escoge a los mejores (y lo que ganan).
       return (
-        <section aria-label="Destacados del entreno" className="flex items-center gap-3 rounded-2xl bg-panel p-3 ring-1 ring-amber-300/20">
+        <section aria-label="Destacados del entreno" className="flex items-center gap-3 rounded-2xl bg-card p-3 ring-1 ring-amber-300/20">
           <span className="flex shrink-0 -space-x-1.5" aria-hidden="true">
             {[0, 1, 2].map((index) => (
               <Star key={index} className="h-5 w-5 fill-amber-300/25 text-amber-300/60" />
             ))}
           </span>
-          <p className="min-w-0 flex-1 text-sm text-zinc-300">
+          <p className="min-w-0 flex-1 text-sm text-white/80">
             <span className="block text-xs font-extrabold text-amber-200">Los 3 mejores del entreno {dayLabel(data.date)}</span>
             El entrenador aún no los ha elegido. Cada uno gana <span className="font-bold text-amber-200">+{data.coins} coins</span>.
           </p>
@@ -103,7 +103,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
         <Star aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 fill-amber-300 text-amber-300" />
         <div className="min-w-0 flex-1">
           <h2 id="stars-title" className="font-display text-lg font-extrabold leading-tight">Destacados del entreno {dayLabel(data.date)}</h2>
-          <p className="text-sm text-zinc-300">
+          <p className="text-sm text-white/80">
             Elige a los {data.max} que mejor lo han hecho: cada uno gana +{data.coins} Club Coins.
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
         </span>
       </div>
       {data.going.length === 0 ? (
-        <p className="text-sm text-zinc-400">Nadie dijo que iba a este entreno.</p>
+        <p className="text-sm text-ink-muted">Nadie dijo que iba a este entreno.</p>
       ) : (
         <ul className="grid grid-cols-2 gap-1.5 sm:grid-cols-3">
           {data.going.map((person) => {
@@ -126,7 +126,7 @@ export default function TrainingStars({ teamId, onAccessLost }) {
                   disabled={full}
                   onClick={() => toggle(person.id)}
                   className={`flex min-h-12 w-full items-center gap-2 rounded-xl px-2 text-left text-sm font-semibold disabled:opacity-40 ${
-                    picked ? "bg-amber-400/20 text-white ring-2 ring-amber-300" : "bg-white/[0.04] text-zinc-200 ring-1 ring-white/10"
+                    picked ? "bg-amber-400/20 text-white ring-2 ring-amber-300" : "bg-white/[0.04] text-white/60 ring-1 ring-white/10"
                   }`}
                 >
                   <span className="relative shrink-0">

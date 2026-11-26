@@ -48,9 +48,9 @@ export default function HelpCard({ help, mine, onChange, onAccessLost }) {
       </p>
       <GoingCourt teamId={help.team_id} people={help.going} currentUserId={null} />
       {help.past ? (
-        <p className="text-center text-xs font-semibold text-zinc-300">Este entreno ya pasó.</p>
+        <p className="text-center text-xs font-semibold text-white/80">Este entreno ya pasó.</p>
       ) : help.own_team ? (
-        <p className="text-center text-xs font-semibold text-zinc-300">Es tu equipo: di si vas desde el inicio.</p>
+        <p className="text-center text-xs font-semibold text-white/80">Es tu equipo: di si vas desde el inicio.</p>
       ) : (
         <span className="relative block">
           <button

@@ -5,8 +5,8 @@ const clock = (ms) => `${Math.floor(ms / 60000)}:${String(Math.floor((ms % 60000
 
 // `marks` son los momentos en que algún jugador hace una acción: se ven como puntos sobre la barra.
 // wide: en el panel del ordenador (al lado de la cancha), cada parte con su título y los botones a todo el ancho.
-const PanelTitle = ({ children }) => <h2 className="mb-2 text-xs font-bold text-zinc-400">{children}</h2>;
-const wideButton = "flex min-h-12 w-full items-center gap-2.5 rounded-control border border-white/10 bg-white/[0.04] px-3 text-sm font-bold text-zinc-100 transition-ui hover:border-white/25 hover:bg-white/10";
+const PanelTitle = ({ children }) => <h2 className="mb-2 text-xs font-bold text-ink-muted">{children}</h2>;
+const wideButton = "flex min-h-12 w-full items-center gap-2.5 rounded-control border border-white/10 bg-white/[0.04] px-3 text-sm font-bold text-white transition-ui hover:border-white/25 hover:bg-white/10";
 
 export default function RecordingBar({ editable, hasRecording, recording, overdub, countdown, elapsed, playback, marks = [], onStart, onOverdub, onStop, onDelete, onPlan, wide = false }) {
   if (recording) {
@@ -16,7 +16,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
           <Square aria-hidden="true" className="h-3.5 w-3.5 fill-void" />
           Parar y guardar
         </button>
-        <p aria-live="off" className="min-w-0 flex-1 text-xs font-semibold text-zinc-200">
+        <p aria-live="off" className="min-w-0 flex-1 text-xs font-semibold text-white/60">
           <span className="mr-1.5 inline-block h-2.5 w-2.5 animate-pulse rounded-full bg-red-500 align-baseline motion-reduce:animate-none text-snow" aria-hidden="true" />
           {countdown !== null
             ? "Prepárate: la jugada va a empezar"
@@ -43,7 +43,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
             Jugada por pasos
           </button>
         ) : (
-          <p className="min-w-0 flex-1 text-xs text-zinc-400">Graba los movimientos y luego reprodúcelos.</p>
+          <p className="min-w-0 flex-1 text-xs text-ink-muted">Graba los movimientos y luego reprodúcelos.</p>
         )}
       </div>
     );
@@ -51,13 +51,13 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
 
   const percent = playback.duration ? (playback.time / playback.duration) * 100 : 0;
 
-  const chip = wide ? wideButton : "flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-zinc-100 hover:bg-white/10";
+  const chip = wide ? wideButton : "flex min-h-10 shrink-0 items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 text-xs font-bold text-white hover:bg-white/10";
   return (
     <div className={wide ? "flex flex-col gap-5" : ""}>
     {wide && <PanelTitle>Reproducir</PanelTitle>}
     {/* Velocidad siempre a la vista: un toque y se ve más lenta o más rápida. */}
     <div role="radiogroup" aria-label="Velocidad de la jugada" className={wide ? "order-2 flex flex-col gap-2" : "flex items-center gap-1.5 px-2 pt-2"}>
-      <span className="shrink-0 text-xs font-bold text-zinc-400">Velocidad</span>
+      <span className="shrink-0 text-xs font-bold text-ink-muted">Velocidad</span>
       <div className={`flex min-w-0 flex-1 gap-1 bg-white/[0.04] p-1 ${wide ? "rounded-control ring-1 ring-inset ring-white/10" : "rounded-full"}`}>
         {PLAYBACK_SPEEDS.map((speed) => {
           const active = playback.speed === speed;
@@ -68,7 +68,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
               role="radio"
               aria-checked={active}
               onClick={() => playback.setSpeed(speed)}
-              className={`min-h-9 min-w-0 flex-1 rounded-full text-xs font-extrabold tabular-nums transition-colors ${active ? "bg-club text-on-club shadow" : "text-zinc-300 hover:bg-white/10"}`}
+              className={`min-h-9 min-w-0 flex-1 rounded-full text-xs font-extrabold tabular-nums transition-colors ${active ? "bg-club text-on-club shadow" : "text-white/80 hover:bg-white/10"}`}
             >
               {String(speed).replace(".", ",")}x
             </button>
@@ -111,7 +111,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
           />
         ))}
       </div>
-      {(playback.active || wide) && <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-zinc-300">{clock(playback.active ? playback.time : playback.duration)}</span>}
+      {(playback.active || wide) && <span className="w-9 shrink-0 text-right text-xs font-semibold tabular-nums text-white/80">{clock(playback.active ? playback.time : playback.duration)}</span>}
       {playback.active && (
         <button type="button" onClick={playback.reset} aria-label="Volver al principio" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-white hover:bg-white/5">
           <Square aria-hidden="true" className="h-4 w-4 fill-white" />
@@ -137,7 +137,7 @@ export default function RecordingBar({ editable, hasRecording, recording, overdu
             <Circle aria-hidden="true" className="h-3.5 w-3.5 fill-red-500 text-red-500" />
             Grabar de nuevo
           </button>
-          <button type="button" onClick={onDelete} className={`${chip} ml-auto border-transparent text-zinc-400 hover:text-red-200 ${wide ? "col-span-2 justify-center" : ""}`}>
+          <button type="button" onClick={onDelete} className={`${chip} ml-auto border-transparent text-ink-muted hover:text-red-200 ${wide ? "col-span-2 justify-center" : ""}`}>
             <Trash2 aria-hidden="true" className="h-4 w-4" />
             Borrar grabación
           </button>

@@ -3,7 +3,7 @@ import Avatar from "@/app/components/Avatar.jsx";
 
 const MEDAL = {
   1: { label: "Oro", ring: "ring-amber-300", text: "text-amber-200" },
-  2: { label: "Plata", ring: "ring-zinc-200", text: "text-zinc-100" },
+  2: { label: "Plata", ring: "ring-zinc-200", text: "text-white" },
   3: { label: "Bronce", ring: "ring-orange-400", text: "text-orange-200" },
 };
 
@@ -35,8 +35,8 @@ export default function HonorsBanner({ honors }) {
         </div>
       )}
       {honors.week.length > 0 && (
-        <div className="rounded-2xl bg-panel p-3 ring-1 ring-white/5">
-          <p className="text-xs font-extrabold text-zinc-400">Premios de la semana</p>
+        <div className="rounded-2xl bg-card p-3 ring-1 ring-white/5">
+          <p className="text-xs font-extrabold text-ink-muted">Premios de la semana</p>
           <ul className="mt-2 grid grid-cols-3 gap-2">
             {honors.week.map((entry) => {
               const medal = MEDAL[entry.place] ?? MEDAL[3];

@@ -4,8 +4,8 @@ import { Notice } from "@/app/ui/index.js";
 
 const selectClass =
   "min-h-11 w-full rounded-lg border border-white/20 bg-void px-3 text-sm text-white focus:border-white focus:outline-none";
-const labelClass = "mb-1.5 block text-sm font-semibold text-zinc-300";
-const primaryClass = "min-h-11 rounded-full bg-tnt px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
+const labelClass = "mb-1.5 block text-sm font-semibold text-white/80";
+const primaryClass = "min-h-11 rounded-full bg-brand px-4 text-sm font-bold text-onbrand disabled:cursor-not-allowed disabled:opacity-50";
 const secondaryClass =
   "min-h-11 rounded-full border border-white/30 px-4 text-sm font-semibold text-white hover:bg-white/5 disabled:cursor-not-allowed disabled:opacity-50";
 const dangerClass =
@@ -41,13 +41,13 @@ function TemporaryPassword({ user, onCreate }) {
   return (
     <div className="mt-4 border-t border-white/10 pt-4">
       {state === "idle" && (
-        <button type="button" onClick={() => setState("confirming")} className="min-h-11 w-full rounded-full text-sm font-semibold text-zinc-200 hover:bg-white/5">
+        <button type="button" onClick={() => setState("confirming")} className="min-h-11 w-full rounded-full text-sm font-semibold text-white/60 hover:bg-white/5">
           ¿Ha olvidado su contraseña?
         </button>
       )}
       {(state === "confirming" || state === "busy") && (
         <div className="space-y-2">
-          <p className="text-sm text-zinc-200">Se creará una contraseña temporal para {user.name}. La actual dejará de valer y se cerrarán sus sesiones.</p>
+          <p className="text-sm text-white/60">Se creará una contraseña temporal para {user.name}. La actual dejará de valer y se cerrarán sus sesiones.</p>
           <div className="grid grid-cols-2 gap-2">
             <button type="button" disabled={state === "busy"} onClick={() => setState("idle")} className={secondaryClass}>Cancelar</button>
             <button type="button" disabled={state === "busy"} onClick={create} className={primaryClass}>
@@ -58,10 +58,10 @@ function TemporaryPassword({ user, onCreate }) {
       )}
       {state === "done" && (
         <div className="space-y-2" data-testid="temporary-password">
-          <p className="text-sm font-semibold text-zinc-200">Contraseña temporal de {user.username}:</p>
+          <p className="text-sm font-semibold text-white/60">Contraseña temporal de {user.username}:</p>
           <p className="select-all break-all rounded-lg bg-void p-3 font-mono text-base">{password}</p>
           <button type="button" onClick={copy} className={`${secondaryClass} w-full`}>{copied ? "Copiada" : "Copiar"}</button>
-          <p className="text-xs leading-relaxed text-zinc-400">
+          <p className="text-xs leading-relaxed text-ink-muted">
             Pásasela solo a esa persona. No se volverá a mostrar, caduca en 48 horas y tendrá que cambiarla al entrar.
           </p>
         </div>
@@ -144,13 +144,13 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
         event.preventDefault();
         if (!busy) onClose();
       }}
-      className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/20 bg-panel p-5 font-body text-white backdrop:bg-black/70"
+      className="m-auto max-h-[92vh] w-[calc(100%-2rem)] max-w-md overflow-y-auto rounded-2xl border border-white/20 bg-card p-5 font-body text-white backdrop:bg-black/70"
     >
       <h2 id="user-dialog-title" className="break-words font-display text-2xl font-extrabold">
-        {user.name}{isSelf && <span className="font-body text-base font-normal text-zinc-400"> (tú)</span>}
+        {user.name}{isSelf && <span className="font-body text-base font-normal text-ink-muted"> (tú)</span>}
       </h2>
-      <p className="break-words text-sm text-zinc-400">{accountLabel(user)}</p>
-      <p className="mt-1 text-sm font-semibold text-zinc-200">{statusText}</p>
+      <p className="break-words text-sm text-ink-muted">{accountLabel(user)}</p>
+      <p className="mt-1 text-sm font-semibold text-white/60">{statusText}</p>
       {isPending && user.has_password && (
         <Notice tone="warning" announce={false} className="mt-3">
           Esta cuenta se ha creado con usuario y contraseña, sin un correo verificado. El nombre lo ha escrito esa persona: confirma que es quien dice antes de aprobarla.
@@ -159,7 +159,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
 
       <div className="mt-4 space-y-4">
         {isSelf ? (
-          <p className="text-sm text-zinc-300">Tu acceso solo puede cambiarlo otro administrador. Sí puedes cambiar tu equipo.</p>
+          <p className="text-sm text-white/80">Tu acceso solo puede cambiarlo otro administrador. Sí puedes cambiar tu equipo.</p>
         ) : (
           <div>
             <label htmlFor="user-role" className={labelClass}>Rol</label>
@@ -179,7 +179,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
         </div>
 
         {canBeEditor && !isSelf && (
-          <label className="flex min-h-11 items-start gap-3 py-1 text-sm text-zinc-200">
+          <label className="flex min-h-11 items-start gap-3 py-1 text-sm text-white/60">
             <input
               type="checkbox"
               checked={matchEditor}
@@ -189,13 +189,13 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
             />
             <span>
               <span className="block font-semibold">Editor de partidos</span>
-              <span className="block text-xs text-zinc-400">Puede añadir, cambiar y borrar partidos. Lo demás sigue igual que un jugador.</span>
+              <span className="block text-xs text-ink-muted">Puede añadir, cambiar y borrar partidos. Lo demás sigue igual que un jugador.</span>
             </span>
           </label>
         )}
 
         {canAlsoPlay && (
-          <label className="flex min-h-11 items-center gap-3 text-sm font-semibold text-zinc-200">
+          <label className="flex min-h-11 items-center gap-3 text-sm font-semibold text-white/60">
             <input
               type="checkbox"
               checked={alsoPlays}
@@ -210,10 +210,10 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
         {canCoach && (
           <fieldset>
             <legend className={labelClass}>Equipos que entrena</legend>
-            <p className="mb-1 text-xs text-zinc-400">Verá también el chat de estos equipos.</p>
+            <p className="mb-1 text-xs text-ink-muted">Verá también el chat de estos equipos.</p>
             <div className="grid grid-cols-1 sm:grid-cols-2">
               {teams.map((item) => (
-                <label key={item.id} className="flex min-h-11 items-center gap-3 text-sm text-zinc-200">
+                <label key={item.id} className="flex min-h-11 items-center gap-3 text-sm text-white/60">
                   <input
                     type="checkbox"
                     checked={coached.includes(item.id)}
@@ -228,7 +228,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
           </fieldset>
         )}
 
-        {rosterNote && <p data-testid="roster-note" className="text-sm text-zinc-300">{rosterNote}</p>}
+        {rosterNote && <p data-testid="roster-note" className="text-sm text-white/80">{rosterNote}</p>}
       </div>
 
       {error && <Notice tone="error" className="mt-4">{error}</Notice>}
@@ -259,7 +259,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
       )}
 
       {isPending && (
-        <button type="button" disabled={busy} onClick={onClose} className="mt-2 min-h-11 w-full text-sm font-semibold text-zinc-300 hover:text-white disabled:opacity-50">
+        <button type="button" disabled={busy} onClick={onClose} className="mt-2 min-h-11 w-full text-sm font-semibold text-white/80 hover:text-white disabled:opacity-50">
           Decidir más tarde
         </button>
       )}
@@ -268,7 +268,7 @@ export default function UserDialog({ user, isSelf, teams, onSave, onCreateTempor
         <div className="mt-4 border-t border-white/10 pt-4">
           {confirmingRemoval ? (
             <div className="space-y-2">
-              <p className="text-sm text-zinc-200">¿Quitar el acceso a {user.name}? Dejará de ver la app{wasOnRoster ? " y saldrá de la plantilla" : ""}, y podrás volver a aprobarlo.</p>
+              <p className="text-sm text-white/60">¿Quitar el acceso a {user.name}? Dejará de ver la app{wasOnRoster ? " y saldrá de la plantilla" : ""}, y podrás volver a aprobarlo.</p>
               <div className="grid grid-cols-2 gap-2">
                 <button type="button" disabled={busy} onClick={() => setConfirmingRemoval(false)} className={secondaryClass}>No</button>
                 <button type="button" disabled={busy} onClick={() => run({ status: "rejected" })} className={dangerClass}>Sí, quitar</button>

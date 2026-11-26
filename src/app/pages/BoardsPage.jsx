@@ -62,7 +62,7 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
             {canEdit && !board.private && (board.published ? (
               <span className="rounded bg-emerald-400/15 px-1.5 py-px text-emerald-300">Publicada</span>
             ) : (
-              <span className="rounded bg-white/10 px-1.5 py-px text-zinc-300">Borrador</span>
+              <span className="rounded bg-white/10 px-1.5 py-px text-white/80">Borrador</span>
             ))}
           </span>
           <span className="block break-words font-title text-base leading-tight text-ink">{board.name}</span>
@@ -99,7 +99,7 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
           onClick={onDuplicate}
           aria-label={`Duplicar ${board.name}`}
           title="Duplicar"
-          className="absolute right-1.5 top-1.5 flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 hover:bg-white/5 hover:text-white disabled:opacity-50"
+          className="absolute right-1.5 top-1.5 flex h-11 w-11 items-center justify-center rounded-lg text-ink-muted hover:bg-white/5 hover:text-white disabled:opacity-50"
         >
           <Copy aria-hidden="true" className="h-4 w-4" />
         </button>
@@ -111,7 +111,7 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
           onClick={onDelete}
           aria-label={`Borrar ${board.name}`}
           title="Borrar"
-          className="absolute bottom-1.5 right-1.5 flex h-11 w-11 items-center justify-center rounded-lg text-zinc-400 hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
+          className="absolute bottom-1.5 right-1.5 flex h-11 w-11 items-center justify-center rounded-lg text-ink-muted hover:bg-red-500/10 hover:text-red-300 disabled:opacity-50"
         >
           <Trash2 aria-hidden="true" className="h-4 w-4" />
         </button>
@@ -249,7 +249,7 @@ export default function BoardsPage({ user, onAccessLost }) {
                 <h2 className="flex items-center gap-2 px-1 font-title text-sm text-ink-muted">
                   {key === "mine" && <Lock aria-hidden="true" className="h-3.5 w-3.5 text-sky-300" />}
                   {title}
-                  {key === "mine" && <span className="font-body text-xs font-semibold normal-case not-italic tracking-normal text-zinc-500">· solo las ves tú</span>}
+                  {key === "mine" && <span className="font-body text-xs font-semibold normal-case not-italic tracking-normal text-ink">· solo las ves tú</span>}
                 </h2>
               )}
               <ul className="stagger-in grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">

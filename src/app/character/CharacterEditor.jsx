@@ -37,7 +37,7 @@ const isLocked = (option, owned) => Boolean(option.shop) && !owned.has(option.sh
 function Group({ title, children }) {
   return (
     <fieldset className="space-y-2">
-      <legend className="mb-2 text-xs font-bold text-zinc-400">{title}</legend>
+      <legend className="mb-2 text-xs font-bold text-ink-muted">{title}</legend>
       {children}
     </fieldset>
   );
@@ -56,7 +56,7 @@ function Chips({ options, value, onChange }) {
             aria-pressed={value === option.id}
             onClick={() => (locked ? onLocked(option) : onChange(option.id))}
             className={`flex min-h-11 items-center gap-1.5 rounded-full border px-3.5 text-sm font-semibold transition-colors ${
-              value === option.id ? "border-tnt bg-tnt text-onbrand" : locked ? "border-amber-300/30 text-zinc-400" : "border-white/15 text-zinc-200 hover:bg-white/5"
+              value === option.id ? "border-tnt bg-brand text-onbrand" : locked ? "border-amber-300/30 text-ink-muted" : "border-white/15 text-white/60 hover:bg-white/5"
             }`}
           >
             {locked && <Lock aria-label="De la tienda" className="h-3.5 w-3.5 text-amber-300" />}
@@ -94,7 +94,7 @@ function Swatches({ options, value, onChange, label }) {
               </span>
             )}
             {selected && option.hex && (
-              <Check aria-hidden="true" className={`h-5 w-5 ${["#f4f4f5", "#facc15", "#e7dcc0", "#f2d2bb", "#d9d2cb", "#e0b28c"].includes(option.hex) ? "text-zinc-900" : "text-white"}`} />
+              <Check aria-hidden="true" className={`h-5 w-5 ${["#f4f4f5", "#facc15", "#e7dcc0", "#f2d2bb", "#d9d2cb", "#e0b28c"].includes(option.hex) ? "text-ink" : "text-white"}`} />
             )}
           </button>
         );
@@ -117,7 +117,7 @@ function Slider({ label, value, onChange, low, high }) {
         onChange={(event) => onChange(Number(event.target.value))}
         className="h-11 w-full cursor-pointer accent-tnt"
       />
-      <span aria-hidden="true" className="flex justify-between text-xs font-semibold text-zinc-400">
+      <span aria-hidden="true" className="flex justify-between text-xs font-semibold text-ink-muted">
         <span>{low}</span>
         <span>{high}</span>
       </span>
@@ -131,7 +131,7 @@ function Toggle({ label, value, onChange }) {
       type="button"
       aria-pressed={value}
       onClick={() => onChange(!value)}
-      className={`min-h-11 rounded-full border px-3.5 text-sm font-semibold ${value ? "border-tnt bg-tnt text-onbrand" : "border-white/15 text-zinc-200 hover:bg-white/5"}`}
+      className={`min-h-11 rounded-full border px-3.5 text-sm font-semibold ${value ? "border-tnt bg-brand text-onbrand" : "border-white/15 text-white/60 hover:bg-white/5"}`}
     >
       {label}
     </button>
@@ -172,7 +172,7 @@ export default function CharacterEditor({ look, onChange, onTabChange, owned = [
             aria-selected={tab === item.id}
             onClick={() => setTab(item.id)}
             className={`min-h-11 shrink-0 rounded-lg px-3.5 font-display text-sm font-extrabold ${
-              tab === item.id ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
+              tab === item.id ? "bg-brand text-onbrand" : "text-white/80 hover:bg-white/5 hover:text-white"
             }`}
           >
             {item.label}
@@ -186,7 +186,7 @@ export default function CharacterEditor({ look, onChange, onTabChange, owned = [
             <Group title="Complexión"><Chips options={BUILDS} value={look.build} onChange={set("build")} /></Group>
             <Group title="Peso"><Slider label="Peso" value={look.weight} onChange={set("weight")} low="Delgado" high="Grueso" /></Group>
             <Group title="Músculo"><Slider label="Músculo" value={look.muscle} onChange={set("muscle")} low="Poco" high="Mucho" /></Group>
-            <p className="text-xs text-zinc-400">La estatura se pone más abajo, en «En la pista».</p>
+            <p className="text-xs text-ink-muted">La estatura se pone más abajo, en «En la pista».</p>
             <Group title="Piel"><Swatches label="Piel" options={skinOptions} value={look.skin} onChange={set("skin")} /></Group>
           </>
         )}
@@ -229,7 +229,7 @@ export default function CharacterEditor({ look, onChange, onTabChange, owned = [
             <Group title="Qué hace cuando lo tocas">
               <Chips options={CELEBRATIONS} value={look.celebration} onChange={set("celebration")} />
             </Group>
-            <p className="text-xs text-zinc-400">Efectos que salen en la pizarra 3D cuando tu jugador hace esa acción:</p>
+            <p className="text-xs text-ink-muted">Efectos que salen en la pizarra 3D cuando tu jugador hace esa acción:</p>
             <Group title="Remate"><Chips options={FX_REMATE} value={look.fx_remate ?? "none"} onChange={set("fx_remate")} /></Group>
             <Group title="Recepción"><Chips options={FX_RECEPCION} value={look.fx_recepcion ?? "none"} onChange={set("fx_recepcion")} /></Group>
             <Group title="Colocación"><Chips options={FX_COLOCACION} value={look.fx_colocacion ?? "none"} onChange={set("fx_colocacion")} /></Group>

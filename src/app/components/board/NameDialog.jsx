@@ -27,11 +27,11 @@ export default function NameDialog({ title, label, initialName, confirmLabel, bu
         event.preventDefault();
         if (!busy) onCancel();
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/70"
+      className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-card p-4 font-body text-white backdrop:bg-black/70"
     >
       <form onSubmit={submit}>
         <h2 id="name-dialog-title" className="font-display text-lg font-extrabold">{title}</h2>
-        <label htmlFor="name-dialog-input" className="mt-3 block text-xs font-semibold text-zinc-400">{label}</label>
+        <label htmlFor="name-dialog-input" className="mt-3 block text-xs font-semibold text-ink-muted">{label}</label>
         <input
           ref={inputRef}
           id="name-dialog-input"
@@ -44,7 +44,7 @@ export default function NameDialog({ title, label, initialName, confirmLabel, bu
         {error && <Notice tone="error" inline className="mt-2">{error}</Notice>}
         <div className="mt-4 grid grid-cols-2 gap-2">
           <button type="button" disabled={busy} onClick={onCancel} className="min-h-11 rounded-lg border border-white/30 text-sm font-semibold hover:bg-white/5 disabled:opacity-50">Cancelar</button>
-          <button type="submit" disabled={busy || !name.trim()} className="min-h-11 rounded-lg bg-tnt text-sm font-bold text-onbrand disabled:opacity-50">
+          <button type="submit" disabled={busy || !name.trim()} className="min-h-11 rounded-lg bg-brand text-sm font-bold text-onbrand disabled:opacity-50">
             {busy ? "Guardando…" : confirmLabel}
           </button>
         </div>

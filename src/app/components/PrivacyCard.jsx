@@ -27,26 +27,26 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
   };
 
   return (
-    <section aria-labelledby="privacy-title" className="space-y-3 rounded-3xl bg-panel p-4">
+    <section aria-labelledby="privacy-title" className="space-y-3 rounded-3xl bg-card p-4">
       <h2 id="privacy-title" className="flex items-center gap-2 font-display text-xl font-extrabold">
         <ShieldCheck aria-hidden="true" className="h-5 w-5 text-tnt" />
         Privacidad
       </h2>
       <ul className="space-y-1.5 text-sm">
-        <li className="flex items-center gap-2 text-zinc-300">
+        <li className="flex items-center gap-2 text-white/80">
           <ShieldCheck aria-hidden="true" className="h-4 w-4 text-emerald-400" />
           {consent.adult === false ? "Permiso dado por su madre, padre o tutor" : "Política aceptada"}
         </li>
-        <li className="flex items-center gap-2 text-zinc-300">
-          {consent.photos === false ? <CameraOff aria-hidden="true" className="h-4 w-4 text-zinc-400" /> : <Camera aria-hidden="true" className="h-4 w-4 text-emerald-400" />}
+        <li className="flex items-center gap-2 text-white/80">
+          {consent.photos === false ? <CameraOff aria-hidden="true" className="h-4 w-4 text-ink-muted" /> : <Camera aria-hidden="true" className="h-4 w-4 text-emerald-400" />}
           {consent.photos === false ? "Sin foto: salen tus iniciales" : "Se puede ver tu foto"}
         </li>
       </ul>
       <div className="grid gap-2 sm:grid-cols-2">
-        <button type="button" onClick={() => setEditing(true)} className="min-h-11 rounded-full text-sm font-bold text-zinc-100 ring-1 ring-white/15 hover:bg-white/5">
+        <button type="button" onClick={() => setEditing(true)} className="min-h-11 rounded-full text-sm font-bold text-white ring-1 ring-white/15 hover:bg-white/5">
           Cambiar permisos
         </button>
-        <a href="/app/privacidad" target="_blank" rel="noreferrer" className="flex min-h-11 items-center justify-center gap-1.5 rounded-full text-sm font-bold text-zinc-100 ring-1 ring-white/15 hover:bg-white/5">
+        <a href="/app/privacidad" target="_blank" rel="noreferrer" className="flex min-h-11 items-center justify-center gap-1.5 rounded-full text-sm font-bold text-white ring-1 ring-white/15 hover:bg-white/5">
           <FileText aria-hidden="true" className="h-4 w-4" />
           Política de privacidad
         </a>
@@ -61,7 +61,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
         ) : (
           <div className="space-y-3 rounded-lg border border-red-400/40 bg-red-500/10 p-3">
             <p className="text-sm font-bold text-red-200">Se borrará todo y no se puede deshacer:</p>
-            <p className="text-sm text-zinc-300">
+            <p className="text-sm text-white/80">
               tu cuenta, tu ficha en la plantilla, tus notas y premios del ranking, tus coins y compras, tus mensajes e imágenes del chat y
               si ibas a entrenar. Si vuelves, empezarás de cero.
             </p>
@@ -83,7 +83,7 @@ export default function PrivacyCard({ user, onUserChanged, onSignedOut }) {
                   setDeleting(false);
                   setTyped("");
                 }}
-                className="min-h-11 rounded-full text-sm font-bold text-zinc-200 ring-1 ring-white/15"
+                className="min-h-11 rounded-full text-sm font-bold text-white/60 ring-1 ring-white/15"
               >
                 Cancelar
               </button>

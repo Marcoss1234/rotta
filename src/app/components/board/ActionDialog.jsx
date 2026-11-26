@@ -27,12 +27,12 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
         event.preventDefault();
         onClose();
       }}
-      className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-panel p-4 font-body text-white backdrop:bg-black/70"
+      className="m-auto w-[calc(100%-2rem)] max-w-xs rounded-2xl border border-white/15 bg-card p-4 font-body text-white backdrop:bg-black/70"
     >
       <div className="flex items-start justify-between gap-2">
         <div>
           <h2 id="action-title" className="font-display text-lg font-extrabold leading-tight">¿Qué hace {name}?</h2>
-          {time !== null && <p className="text-xs text-zinc-400">En el segundo {seconds(time)} de la jugada</p>}
+          {time !== null && <p className="text-xs text-ink-muted">En el segundo {seconds(time)} de la jugada</p>}
         </div>
         <button type="button" onClick={onClose} aria-label="Cerrar" className="-mr-2 -mt-1 flex h-11 w-11 shrink-0 items-center justify-center rounded-lg hover:bg-white/10">
           <X aria-hidden="true" className="h-5 w-5" />
@@ -41,7 +41,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
 
       {setting ? (
         <div className="mt-3 space-y-2">
-          <p className="text-sm font-bold text-zinc-200">¿A qué tiempo coloca?</p>
+          <p className="text-sm font-bold text-white/60">¿A qué tiempo coloca?</p>
           {SET_TEMPOS.map((tempo) => (
             <button
               key={tempo.value}
@@ -49,14 +49,14 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
               onClick={() => onChoose("colocacion", tempo.value)}
               className="flex min-h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-void/70 px-3 text-left hover:border-tnt"
             >
-              <span className="flex h-9 w-11 shrink-0 items-center justify-center rounded-lg bg-tnt font-display text-base font-extrabold text-onbrand">{tempo.short}</span>
+              <span className="flex h-9 w-11 shrink-0 items-center justify-center rounded-lg bg-brand font-display text-base font-extrabold text-onbrand">{tempo.short}</span>
               <span>
                 <span className="block text-sm font-bold">{tempo.label}</span>
-                <span className="block text-xs text-zinc-400">{tempo.hint}</span>
+                <span className="block text-xs text-ink-muted">{tempo.hint}</span>
               </span>
             </button>
           ))}
-          <button type="button" onClick={() => setSetting(false)} className="min-h-11 w-full rounded-lg text-sm font-semibold text-zinc-300 hover:bg-white/5">
+          <button type="button" onClick={() => setSetting(false)} className="min-h-11 w-full rounded-lg text-sm font-semibold text-white/80 hover:bg-white/5">
             Volver
           </button>
         </div>
@@ -69,7 +69,7 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
               key={value}
               type="button"
               onClick={() => (value === "colocacion" ? setSetting(true) : onChoose(value))}
-              className="flex min-h-[4.5rem] flex-col items-center justify-center gap-1 rounded-xl border border-white/10 bg-void/70 text-xs font-bold hover:border-tnt hover:text-ember"
+              className="flex min-h-[4.5rem] flex-col items-center justify-center gap-1 rounded-xl border border-white/10 bg-void/70 text-xs font-bold hover:border-tnt hover:text-club-ui"
             >
               <Icon aria-hidden="true" className="h-5 w-5" />
               {label}
@@ -81,16 +81,16 @@ export default function ActionDialog({ name, time, actions, onChoose, onRemove, 
 
       {actions.length > 0 && (
         <div className="mt-4 border-t border-white/10 pt-3">
-          <h3 className="text-[11px] font-bold text-zinc-500">Sus acciones en esta jugada</h3>
+          <h3 className="text-[11px] font-bold text-ink">Sus acciones en esta jugada</h3>
           <ul className="mt-1.5 space-y-1">
             {actions.map((item) => {
               const Icon = ICONS[item.action];
               return (
                 <li key={`${item.t}-${item.action}`} className="flex min-h-11 items-center gap-2 rounded-lg bg-void/60 pl-3">
-                  <Icon aria-hidden="true" className="h-4 w-4 text-ember" />
+                  <Icon aria-hidden="true" className="h-4 w-4 text-club-ui" />
                   <span className="flex-1 text-sm font-semibold">{actionLabel(item.action, item.tempo)}</span>
-                  <span className="text-xs tabular-nums text-zinc-400">{seconds(item.t)}</span>
-                  <button type="button" onClick={() => onRemove(item)} aria-label={`Quitar ${actionLabel(item.action)} del segundo ${seconds(item.t)}`} className="flex h-11 w-11 items-center justify-center text-zinc-400 hover:text-red-200">
+                  <span className="text-xs tabular-nums text-ink-muted">{seconds(item.t)}</span>
+                  <button type="button" onClick={() => onRemove(item)} aria-label={`Quitar ${actionLabel(item.action)} del segundo ${seconds(item.t)}`} className="flex h-11 w-11 items-center justify-center text-ink-muted hover:text-red-200">
                     <Trash2 aria-hidden="true" className="h-4 w-4" />
                   </button>
                 </li>
