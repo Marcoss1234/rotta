@@ -29,6 +29,8 @@ Rotta es la versión general de la app del C.V. TNT Almería, para venderla a ot
 
 - Entrada y primera experiencia (25-11-2026, rama `claude/amazing-euler-emy9p1`): marco común `components/auth/AuthShell.jsx` (el club primero y la firma «con Rotta»; pantalla partida desde 1024 px), `ui/PasswordInput`, entrar y crear cuenta, contraseña temporal, permisos (radios nativos; desde Perfil igual que antes), pendiente (se comprueba solo al volver a la app, como mucho cada 30 s), rechazado, cargando y sin conexión, Solicitudes, aviso de Inicio, bienvenida de una vez (`components/WelcomeCard.jsx`, `src/app/welcome.js`) y privacidad (mismo texto). Sin cambios en el servidor. Pendiente: el TODO multi-club de la política.
 
+- Cuenta de administrador con usuario y contraseña (para entrar desde el móvil sin Google): `python tools/crear-admin.py usuario "Nombre" [--club codigo]`. Crea una contraseña temporal (se enseña una vez, caduca en 48 h, la app pide cambiarla). Tests en `backend/tests/test_crear_admin.py`.
+
 ## Siguiente
 Fase 4 (pantalla para dar de alta clubs y editar sus equipos; hoy se hace con `tools/crear-club.py` y `tools/estructura-club.py`).
 
