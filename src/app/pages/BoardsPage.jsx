@@ -9,6 +9,7 @@ import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
 import { boardKindLabel, emptyBoard, loadClubPlayers } from "@/app/boards.js";
 import { isBeachTeam } from "@/app/teams.js";
 import { Button, Notice, PageHeader } from "@/app/ui/index.js";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 
 // "Hoy", "Ayer", "Hace 3 días" o la fecha.
 function updatedLabel(iso) {
@@ -121,6 +122,7 @@ function BoardCard({ board, rosterById, beach, canEdit, canDuplicate, busy, onOp
 
 export default function BoardsPage({ user, onAccessLost }) {
   const navigate = useNavigate();
+  const phone = useMediaQuery("(max-width: 767px)");
   const [searchParams, setSearchParams] = useSearchParams();
   const [teams, setTeams] = useState(null);
   const [data, setData] = useState(null);
@@ -201,13 +203,14 @@ export default function BoardsPage({ user, onAccessLost }) {
   // equipo arriba; las jugadas se deslizan por dentro. En escritorio, a todo el ancho y en tres columnas.
   return (
     <div className="flex h-full min-h-0 flex-col gap-2.5 md:h-auto md:gap-4">
+      {/* En el móvil, Plantilla | Pizarra van en la línea de la cabecera (el equipo ya se ve en sus botones). */}
       <PageHeader
         title="Pizarra"
-        subtitle={team?.name}
+        subtitle={phone ? <RosterTabs compact active="pizarra" teamId={teamId} /> : team?.name}
         actions={data?.can_create && <Button size="sm" icon={Plus} disabled={busy} onClick={() => create(emptyBoard(teamId))}>Nueva</Button>}
       />
 
-      <RosterTabs active="pizarra" teamId={teamId} />
+      {!phone && <RosterTabs active="pizarra" teamId={teamId} />}
 
       {teams && <GroupPicker groups={teams} groupId={teamId} onChange={(id) => setSearchParams({ equipo: id }, { replace: true })} />}
 

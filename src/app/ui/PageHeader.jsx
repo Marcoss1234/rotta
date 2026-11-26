@@ -30,7 +30,8 @@ export function PageHeader({ title, subtitle, actions, stacked = false, classNam
     <header className={cx("app-page-header gap-x-3 gap-y-2 md:gap-y-3", stacked ? "flex flex-col" : "grid grid-cols-[minmax(0,1fr)_auto] items-center justify-between md:items-end", className)}>
       <div className="min-w-0">
         <h1 className="sr-only font-title text-title text-ink md:not-sr-only md:text-display">{title}</h1>
-        {subtitle && <p className="text-xs text-ink-muted md:mt-1.5 md:text-sm">{subtitle}</p>}
+        {/* El subtítulo puede ser un texto o algo más (unas pestañas): entonces va en un <div>. */}
+        {subtitle && (typeof subtitle === "string" ? <p className="text-xs text-ink-muted md:mt-1.5 md:text-sm">{subtitle}</p> : <div className="md:mt-1.5">{subtitle}</div>)}
       </div>
       {actions && <div className={stacked ? "flex min-h-11 items-center" : "shrink-0"}>{actions}</div>}
     </header>

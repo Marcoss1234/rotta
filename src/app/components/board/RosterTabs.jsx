@@ -10,9 +10,10 @@ const TABS = [
 // Plantilla y Pizarra son dos pantallas: enlaces (con aria-current), con aspecto de navegación (texto con una raya
 // debajo, la del color del club en la elegida). Así no se confunden con las pestañas de dentro de una pantalla
 // (Tabs de src/app/ui, en forma de interruptor), como Pista / Jugadores.
-export default function RosterTabs({ active, teamId }) {
+// compact: dentro de la línea de la cabecera en el móvil (sin la raya de abajo de toda la fila).
+export default function RosterTabs({ active, teamId, compact = false }) {
   return (
-    <nav aria-label="Plantilla y pizarra" className="flex gap-6 border-b border-line">
+    <nav aria-label="Plantilla y pizarra" className={compact ? "flex gap-4" : "flex gap-6 border-b border-line"}>
       {TABS.map(({ id, label, icon: Icon, path }) => {
         const current = active === id;
         return (

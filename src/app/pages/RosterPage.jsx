@@ -300,11 +300,12 @@ export default function RosterPage({ user, onAccessLost }) {
   // desliza por dentro. En escritorio, cancha y lista lado a lado.
   return (
     <div className={phone ? "flex h-full min-h-0 flex-col gap-2.5" : "space-y-5"}>
-      <RankingHero title="Plantilla" subtitle={team ? `${team.name}${players ? ` · ${playersLabel(players.length)}` : ""}` : undefined}>
+      {/* En el móvil, Plantilla | Pizarra van en la línea de la cabecera (el equipo ya se ve en sus botones). */}
+      <RankingHero title="Plantilla" subtitle={phone && teams ? <RosterTabs compact active="plantilla" teamId={teamId} /> : team ? `${team.name}${players ? ` · ${playersLabel(players.length)}` : ""}` : undefined}>
         {canEdit && teams && <Button size="sm" icon={UserPlus} onClick={openAdd}>Añadir</Button>}
       </RankingHero>
 
-      {teams && <RosterTabs active="plantilla" teamId={teamId} />}
+      {teams && !phone && <RosterTabs active="plantilla" teamId={teamId} />}
 
       {teams && <GroupPicker groups={teams} groupId={teamId} onChange={setTeamId} />}
 
