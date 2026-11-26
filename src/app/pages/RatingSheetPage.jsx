@@ -19,10 +19,12 @@ function WeekState({ published }) {
 }
 
 // Elegir la semana: flechas a los lados y, en medio, cuál es y su estado.
-function WeekStepper({ week, published, onChange }) {
+// children: en el móvil, el progreso y «Publicar» van dentro del mismo bloque (todo lo de la semana junto).
+function WeekStepper({ week, published, onChange, children }) {
   const isCurrent = week === currentMonday();
   return (
-    <div className="ui-card flex items-center gap-1 rounded-card bg-card p-1">
+    <div className="ui-card rounded-card bg-card">
+    <div className="flex items-center gap-1 p-1">
       <IconButton icon={ChevronLeft} label="Semana anterior" onClick={() => onChange(shiftWeek(week, -1))} />
       <p className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-2 gap-y-0.5 text-center" aria-live="polite">
         <span className="font-title text-base text-ink">{isCurrent ? "Esta semana" : "Semana"}</span>
@@ -30,6 +32,8 @@ function WeekStepper({ week, published, onChange }) {
         {published !== null && <WeekState published={published} />}
       </p>
       <IconButton icon={ChevronRight} label="Semana siguiente" disabled={isCurrent} onClick={() => onChange(shiftWeek(week, 1))} className="disabled:opacity-30" />
+    </div>
+    {children && <div className="border-t border-line lg:hidden">{children}</div>}
     </div>
   );
 }
@@ -39,7 +43,7 @@ function Progress({ sheet, rated, onPublish, compact }) {
   const total = sheet.rows.length;
   const canPublish = !sheet.published && rated > 0;
   return (
-    <section aria-label="Estado de la semana" className={`ui-card rounded-card bg-card ${compact ? "p-3" : "space-y-3 p-card"}`}>
+    <section aria-label="Estado de la semana" className={compact ? "p-3" : "ui-card space-y-3 rounded-card bg-card p-card"}>
       <div className="flex items-center gap-3">
         <div className="min-w-0 flex-1">
           <p className="text-sm text-ink-muted">
@@ -216,12 +220,14 @@ export default function RatingSheetPage({ onAccessLost }) {
       />
 
       {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} />}
-      {groups?.length > 0 && <WeekStepper week={week} published={sheet ? sheet.published : null} onChange={setWeek} />}
-
-      {sheet && sheet.rows.length > 0 && (
-        <div className="lg:hidden">
-          <Progress sheet={sheet} rated={rated} compact onPublish={() => setConfirming(true)} />
-        </div>
+      {groups?.length > 0 && (
+        <WeekStepper week={week} published={sheet ? sheet.published : null} onChange={setWeek}>
+          {sheet && sheet.rows.length > 0 && (
+            <div className="lg:hidden">
+              <Progress sheet={sheet} rated={rated} compact onPublish={() => setConfirming(true)} />
+            </div>
+          )}
+        </WeekStepper>
       )}
 
       {error && <Notice tone="error">{error}</Notice>}

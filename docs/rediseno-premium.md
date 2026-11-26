@@ -37,6 +37,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Editor de la pizarra en escritorio: el panel de la derecha ordenado por partes con título (Dibujar/Jugada arriba; en Dibujar, «Herramientas» y «Añadir a la pista» con botones grandes en rejilla de dos; en Jugada, «Reproducir» con el play y la línea de tiempo, «Velocidad» y «Cambiar la jugada»). Antes eran las tiras del móvil amontonadas abajo. Móvil y tableta, igual |
 | (este) | Componentes sin degradados de marca: «Partido en directo» (Inicio y vista previa de Apariencia) en rojo liso de directo; aviso de notificaciones con el tono del club; premios, destacados del entreno y coins en dorado liso (`bg-gold/10`) con texto oscuro fijo sobre el dorado; botón de ayuda del chat en azul liso |
 | (este) | Inicio con pantalla fija en el móvil: saludo con coins y equipo fijos; lo demás se desliza con las pestañas Entrenamientos/Partidos pegadas arriba al bajar; orden nuevo: avisos de acceso, directo y la agenda primero, y los avisos de instalar, notificaciones y la bienvenida al final (antes empujaban el entreno). Escritorio igual |
+| (este) | Repaso: Notas con la semana, su estado, el progreso y «Publicar» en un solo bloque en el móvil; Jugados con el resumen en una sola tira (cada dato con su ancho) |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -67,7 +68,7 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 7. ~~Chat~~ (hecho).
 8. ~~Perfil, apariencia y configuración~~ (hecho; falta repasar la vista previa de Apariencia, que aún pinta un degradado en «Partido en directo»).
 9. ~~Pizarra y editor 3D~~ (hecho).
-10. ~~Componentes~~ (degradados quitados). **Siguiente paso:** repasar Inicio (pantalla fija, bienvenida más pequeña), Notas (estado y progreso en un bloque) y Jugados (resumen en una tira).
+10. ~~Componentes~~ (degradados quitados) y ~~repaso de Inicio, Notas y Jugados~~ (hecho). **Siguiente paso:** revisión responsive (11) y limpieza (12).
 10b. Componentes y gráficas comunes (`ui/charts`, `Dialog` con hoja, `Segmented`, `ListRow`), según se necesiten.
 11. Revisión responsive y de accesibilidad (360, 390, tableta, escritorio; claro y oscuro).
 12. Limpieza: estilos y alias antiguos sin uso (`bg-panel`, `text-zinc-…`, `bg-tnt`, `text-ember`, `buildTheme`),

@@ -45,7 +45,7 @@ export function summarize(matches) {
 function Stat({ label, value, className }) {
   return (
     <div className="min-w-0">
-      <dt className="truncate text-xs font-semibold text-ink-muted">{label}</dt>
+      <dt className="whitespace-nowrap text-xs font-semibold text-ink-muted">{label}</dt>
       <dd className={cx("font-score text-xl leading-tight text-ink md:text-2xl", className)}>{value}</dd>
     </div>
   );
@@ -57,7 +57,8 @@ function SeasonSummary({ matches, label }) {
   const missing = totals.played - totals.withResult;
   return (
     <Card as="section" aria-label={`Resumen de ${label}`} padding="sm" className="space-y-1.5" data-testid="played-summary">
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-2 min-[420px]:grid-cols-4">
+      {/* En una sola tira: cada dato ocupa lo que necesita (así cabe hasta en un móvil pequeño). */}
+      <dl className="flex flex-wrap items-end justify-between gap-x-3 gap-y-2">
         <Stat label="Partidos" value={totals.played} />
         {totals.withResult > 0 ? (
           <>
@@ -66,7 +67,7 @@ function SeasonSummary({ matches, label }) {
             <Stat label="Sets (favor–contra)" value={`${totals.setsFor}–${totals.setsAgainst}`} />
           </>
         ) : (
-          <p className="col-span-1 self-end text-sm text-ink-muted min-[420px]:col-span-3">Sin resultados apuntados todavía.</p>
+          <p className="flex-1 self-end text-right text-sm text-ink-muted">Sin resultados apuntados todavía.</p>
         )}
       </dl>
       {totals.withResult > 0 && missing > 0 && (
