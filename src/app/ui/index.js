@@ -8,4 +8,5 @@ export { Field, Input, Textarea, Select } from "./Field.jsx";
 export { PasswordInput } from "./PasswordInput.jsx";
 export { Dialog } from "./Dialog.jsx";
 export { Notice, EmptyState, Badge } from "./Notice.jsx";
+export { PageHeader } from "./PageHeader.jsx";
 export { cx } from "./cx.js";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CalendarDays, CircleUser, ClipboardList, History, House, Menu, MessagesSquare, Presentation, ShoppingBag, Trophy, UserCog, UserPlus, Users } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { listChatChannels } from "@/app/api.js";
 import Avatar from "@/app/components/Avatar.jsx";
 import MenuHint from "@/app/components/MenuHint.jsx";
@@ -10,6 +10,7 @@ import usePolling from "@/app/usePolling.js";
 import ClubCrest from "@/app/components/ClubCrest.jsx";
 import { useClubIdentity } from "@/app/clubIdentity.js";
 import { useWelcomeVisible } from "@/app/welcome.js";
+import { roleLabel } from "@/app/roles.js";
 
 const UNREAD_POLL_MS = 30000;
 const CHAT_PATH = "/app/chat";
@@ -45,6 +46,32 @@ function menuGroups(items, user) {
     { title: "Más", items: more },
   ];
 }
+
+// En escritorio caben todas las secciones a la vista, agrupadas (Perfil va abajo, con tu cara).
+function desktopGroups(items, user) {
+  const staff = user.role === "admin" || user.role === "entrenador";
+  const find = (to) => items.find((item) => item.to === to);
+  const team = ["/app", "/app/plantillas", "/app/ranking", "/app/eventos"].map(find).filter(Boolean);
+  const club = [
+    find(CHAT_PATH),
+    { to: "/app/tienda", label: "Tienda Club", icon: ShoppingBag },
+    ...(user.role === "familia" ? [] : [{ to: "/app/plantillas/pizarra", label: "Pizarra", icon: Presentation }]),
+    { to: "/app/partidos/jugados", label: "Partidos jugados", icon: History },
+  ].filter(Boolean);
+  const manage = [
+    ...(staff ? [{ to: "/app/ranking/notas", label: "Notas del ranking", icon: ClipboardList }] : []),
+    ...(staff ? [{ to: "/app/solicitudes", label: "Solicitudes de acceso", icon: UserPlus }] : []),
+    find("/app/usuarios"),
+  ].filter(Boolean);
+  return [
+    { title: "Equipo", items: team },
+    { title: "Club", items: club },
+    ...(manage.length ? [{ title: "Gestión", items: manage }] : []),
+  ];
+}
+
+// La pizarra y el directo ocupan toda la pantalla: ahí la barra de abajo no flota encima de sus controles.
+const isImmersive = (pathname) => pathname.startsWith("/app/plantillas/pizarra/") || pathname.startsWith("/app/directo/");
 
 // Hasta que alguien abre el menú por primera vez, el botón llama la atención y sale un aviso.
 const MENU_SEEN_KEY = "tnt-menu-visto";
@@ -94,7 +121,7 @@ function UnreadDot({ to, unread }) {
   if (to !== CHAT_PATH || !unread) return null;
   return (
     <>
-      <span aria-hidden="true" className="absolute h-2.5 w-2.5 rounded-full bg-tnt ring-2 ring-surface text-onbrand" />
+      <span aria-hidden="true" className="absolute h-2.5 w-2.5 rounded-full bg-club ring-2 ring-canvas" />
       <span className="sr-only"> (mensajes sin leer)</span>
     </>
   );
@@ -156,74 +183,103 @@ export default function AppLayout({ isAdmin, user, children }) {
 
   // Cada pantalla entra con su animación. La pizarra no: ocupa toda la pantalla y se mide al abrirse.
   const animated = !pathname.startsWith("/app/plantillas/pizarra/") && !pathname.startsWith("/app/directo/");
+  const immersive = isImmersive(pathname);
+  // En escritorio se marca la sección más concreta que coincida (Pizarra y no también Plantillas; Notas y no
+  // también Ranking). Inicio, como siempre, también con partidos jugados y solicitudes si no tienen la suya.
+  const sideGroups = desktopGroups(items, user);
+  const sideActive = sideGroups
+    .flatMap((group) => group.items.map((item) => item.to))
+    .filter((to) => (to === "/app" ? pathname === "/app" : pathname === to || pathname.startsWith(`${to}/`)))
+    .sort((a, b) => b.length - a.length)[0] ?? (pathname.startsWith("/app/perfil") ? null : "/app");
 
+  // Premium deportivo: el marco (app-frame, app-topbar, app-nav, app-sidebar en index.css) tiene la misma
+  // estructura en Lima, Naranja y Tinta; cambia su carácter: Lima barra recta pegada abajo con raya en lo elegido
+  // y fondo con rejilla sutil; Naranja pastilla flotante; Tinta barra de cristal translúcida.
   return (
-    <div className="fixed inset-0 flex flex-col bg-void font-body text-white md:static md:min-h-screen md:flex-row">
+    <div className="app-frame fixed inset-0 flex flex-col bg-canvas font-body text-ink md:static md:min-h-screen md:flex-row">
       <TapSplash disabled={pathname.startsWith("/app/plantillas/pizarra/")} />
       <SideMenu open={menuOpen} onClose={closeMenu} user={user} groups={menuGroups(items, user)} unread={unread} />
       {showHint && <MenuHint hidden={hiddenLabels} onOpen={openMenu} onDismiss={() => setHintDismissed(true)} />}
-      <aside className="hidden w-60 shrink-0 flex-col gap-8 border-r border-white/10 bg-surface p-5 md:flex">
-        <div className="flex items-center gap-3">
+
+      {/* Escritorio: el club arriba, las secciones agrupadas y tu perfil abajo. */}
+      <aside className="app-sidebar hidden w-[17rem] shrink-0 flex-col gap-7 px-4 py-6 md:sticky md:top-0 md:flex md:h-screen">
+        <div className="flex items-center gap-3 px-2">
           <ClubCrest className="h-10 w-10 shrink-0" />
-          <span className="font-display text-lg font-extrabold leading-tight">{club.name}</span>
+          <span className="min-w-0">
+            <span className="block truncate font-title text-lg leading-tight text-ink">{club.name}</span>
+            <span className="block text-xs text-ink-muted">con Rotta</span>
+          </span>
         </div>
-        <nav aria-label="Secciones" className="flex flex-col gap-1">
-          {items.map(({ to, end, label, icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                `flex min-h-11 items-center gap-3 rounded-full px-3 text-sm font-semibold transition-colors ${
-                  isActive ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
-                }`
-              }
-            >
-              <span className="relative flex">
-                <NavIcon to={to} icon={icon} user={user} className="h-5 w-5" />
-                <span className="absolute -right-1 -top-1 flex"><UnreadDot to={to} unread={unread} /></span>
-              </span>
-              {label}
-            </NavLink>
+        <nav aria-label="Secciones" className="flex flex-1 flex-col gap-5 overflow-y-auto">
+          {sideGroups.map((group) => (
+            <div key={group.title}>
+              <p className="px-3 pb-1.5 text-xs font-semibold text-ink-muted">{group.title}</p>
+              <ul className="flex flex-col gap-0.5">
+                {group.items.map(({ to, label, icon }) => (
+                  <li key={to}>
+                    <Link
+                      to={to}
+                      aria-current={sideActive === to ? "page" : undefined}
+                      className={`app-sidebar-item flex min-h-10 items-center gap-3 rounded-control px-3 text-sm font-semibold transition-ui ${
+                        sideActive === to ? "ui-selected" : "text-ink-muted hover:bg-raised hover:text-ink"
+                      }`}
+                    >
+                      <span className="relative flex">
+                        <NavIcon to={to} icon={icon} user={user} className="h-[18px] w-[18px]" />
+                        <span className="absolute -right-1 -top-1 flex"><UnreadDot to={to} unread={unread} /></span>
+                      </span>
+                      {label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
           ))}
         </nav>
+        <NavLink
+          to="/app/perfil"
+          className={({ isActive: active }) =>
+            `flex items-center gap-3 rounded-card p-2.5 transition-ui ${active ? "ui-selected" : "hover:bg-raised"}`
+          }
+        >
+          <Avatar name={user.name} picture={user.picture} className="h-10 w-10 shrink-0 text-sm" />
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold text-ink">{user.name}</span>
+            <span className="block text-xs text-ink-muted">{roleLabel(user.role)} · Perfil</span>
+          </span>
+        </NavLink>
       </aside>
+
+      {/* Móvil: el club arriba, compacto (no en la pizarra ni en el directo, que ocupan toda la pantalla). */}
+      {!immersive && (
+        <header className="app-topbar flex shrink-0 items-center gap-3 px-gutter pb-2 pt-[calc(0.75rem+env(safe-area-inset-top))] md:hidden">
+          <ClubCrest className="h-8 w-8 shrink-0" rottaClassName="rounded-[30%] object-cover" />
+          <span className="min-w-0 flex-1 truncate font-title text-base leading-tight text-ink">{club.name}</span>
+          <Link to="/app/perfil" aria-label="Tu perfil" className="rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text">
+            <Avatar name={user.name} picture={user.picture} className="h-9 w-9 text-xs" />
+          </Link>
+        </header>
+      )}
 
       <main
         ref={mainRef}
-        className="mx-auto min-h-0 w-full max-w-3xl flex-1 overflow-y-auto overscroll-contain px-5 pb-6 pt-6 md:overflow-visible md:px-8 md:pb-10 md:pt-8"
+        className={`app-main mx-auto min-h-0 w-full max-w-3xl flex-1 overflow-y-auto overscroll-contain px-gutter pt-4 md:overflow-visible md:pb-12 md:pt-10 ${
+          immersive ? "pb-6" : "app-main-under-nav"
+        }`}
       >
         <div key={animated ? pathname : "sin-animacion"} className={animated ? "page-enter h-full" : "h-full"}>
           {children}
         </div>
       </main>
 
-      <nav
-        aria-label="Secciones"
-        data-bottom-menu
-        className="flex shrink-0 border-t border-white/10 bg-surface pb-[env(safe-area-inset-bottom)] md:hidden"
-      >
+      <nav aria-label="Secciones" data-bottom-menu className={`app-nav md:hidden ${immersive ? "app-nav-static" : ""}`}>
         {bottomItems.map(({ to, end, label, icon }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              `relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs ${
-                isActive ? "font-bold text-white" : "font-medium text-zinc-400"
-              }`
-            }
-          >
-            {({ isActive }) => (
-              <>
-                {isActive && <span aria-hidden="true" className="nav-bar-in absolute inset-x-3 top-0 h-[3px] rounded-b bg-tnt text-onbrand" />}
-                <span className={`relative flex ${isActive ? "nav-pop" : ""}`}>
-                  <NavIcon to={to} icon={icon} user={user} className="h-[22px] w-[22px]" />
-                  <span className="absolute -right-1 -top-1 flex"><UnreadDot to={to} unread={unread} /></span>
-                </span>
-                {label}
-              </>
-            )}
+          <NavLink key={to} to={to} end={end} className="app-nav-item">
+            <span className="app-nav-icon relative flex">
+              <NavIcon to={to} icon={icon} user={user} className="h-[22px] w-[22px]" />
+              <span className="absolute -right-1 -top-1 flex"><UnreadDot to={to} unread={unread} /></span>
+            </span>
+            <span className="app-nav-label">{label}</span>
           </NavLink>
         ))}
         <button
@@ -231,17 +287,15 @@ export default function AppLayout({ isAdmin, user, children }) {
           onClick={openMenu}
           aria-expanded={menuOpen}
           aria-haspopup="true"
-          className={`relative flex min-h-16 flex-1 flex-col items-center justify-center gap-1 text-xs ${
-            !inBottom ? "font-bold text-white" : "font-medium text-zinc-400"
-          }`}
+          data-active={!inBottom || undefined}
+          className="app-nav-item"
         >
-          {!inBottom && <span aria-hidden="true" className="nav-bar-in absolute inset-x-3 top-0 h-[3px] rounded-b bg-tnt text-onbrand" />}
-          <span className="relative flex">
+          <span className="app-nav-icon relative flex">
             {!menuSeen && <span aria-hidden="true" className="menu-attention absolute -inset-2 rounded-full" />}
             <Menu aria-hidden="true" className="relative h-[22px] w-[22px]" />
-            {!menuSeen && <span aria-hidden="true" className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-tnt ring-2 ring-surface text-onbrand" />}
+            {!menuSeen && <span aria-hidden="true" className="absolute -right-1.5 -top-1 h-2.5 w-2.5 rounded-full bg-club ring-2 ring-canvas" />}
           </span>
-          Menú
+          <span className="app-nav-label">Menú</span>
           {!menuSeen && <span className="sr-only"> (nuevo)</span>}
         </button>
       </nav>

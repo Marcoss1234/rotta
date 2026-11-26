@@ -263,6 +263,163 @@
   }
 }
 
+/* ---------- Marco de la app (components/AppLayout.jsx): misma estructura, carácter de cada identidad ----------
+   - Lima (pista técnica): barra recta pegada abajo con una raya sobre lo elegido; fondo con una rejilla muy sutil.
+   - Naranja (pabellón): barra en forma de pastilla que flota, con lo elegido relleno del color del club.
+   - Tinta (acta): barra de cristal translúcida; lo elegido con el icono en su color sobre un tono suave.
+   La pizarra y el directo (app-nav-static) la llevan pegada y sin flotar, como siempre. */
+.app-frame {
+  --nav-space: 4.5rem;
+}
+:root[data-rotta="naranja"] .app-frame {
+  --nav-space: 5.75rem;
+}
+/* Lima: rejilla de pista muy suave en el fondo (el color del texto al 3,5 %), en claro y en oscuro. */
+:root[data-rotta="lima"] .app-frame {
+  background-image:
+    linear-gradient(rgb(var(--c-white) / 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--c-white) / 0.035) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+.app-main-under-nav {
+  padding-bottom: calc(var(--nav-space) + 1.5rem + env(safe-area-inset-bottom));
+}
+
+.app-topbar {
+  background-color: rgb(var(--c-void));
+}
+:root[data-rotta="lima"] .app-topbar {
+  box-shadow: 0 1px 0 rgb(var(--c-line));
+  background-color: rgb(var(--c-void) / 0.92);
+}
+:root[data-rotta="tinta"] .app-topbar {
+  box-shadow: 0 1px 0 rgb(var(--c-line) / 0.7);
+}
+
+.app-nav {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  padding-bottom: env(safe-area-inset-bottom);
+  background-color: rgb(var(--c-surface));
+  box-shadow: 0 -1px 0 rgb(var(--c-line));
+}
+.app-nav.app-nav-static {
+  position: relative;
+}
+.app-nav-item {
+  position: relative;
+  display: flex;
+  min-height: 3.75rem;
+  flex: 1 1 0;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgb(var(--c-muted));
+  transition: color var(--motion) var(--ease), background-color var(--motion) var(--ease);
+}
+.app-nav-item:focus-visible {
+  outline: 2px solid rgb(var(--c-rotta-text));
+  outline-offset: -4px;
+}
+.app-nav-item[aria-current="page"],
+.app-nav-item[data-active] {
+  color: rgb(var(--c-white));
+  font-weight: 700;
+}
+
+/* Lima: la raya arriba de lo elegido, recta. */
+:root[data-rotta="lima"] .app-nav-item[aria-current="page"]::before,
+:root[data-rotta="lima"] .app-nav-item[data-active]::before {
+  content: "";
+  position: absolute;
+  inset-inline: 22%;
+  top: 0;
+  height: 2px;
+  background-color: rgb(var(--c-club-ui));
+}
+
+/* Naranja: pastilla flotante, separada del borde, y lo elegido con el color del club entero. */
+:root[data-rotta="naranja"] .app-nav:not(.app-nav-static) {
+  inset-inline: 0.75rem;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  padding: 0.375rem;
+  border-radius: 999px;
+  background-color: rgb(var(--c-overlay));
+  box-shadow: var(--shadow-overlay);
+}
+:root[data-rotta="naranja"] .app-nav:not(.app-nav-static) .app-nav-item {
+  min-height: 3.5rem;
+  border-radius: 999px;
+}
+:root[data-rotta="naranja"] .app-nav-item[aria-current="page"],
+:root[data-rotta="naranja"] .app-nav-item[data-active] {
+  background-color: rgb(var(--c-club));
+  color: rgb(var(--c-on-club));
+  box-shadow: inset 0 0 0 1px rgb(var(--c-club-ui));
+}
+
+/* Tinta: cristal translúcido (el contenido pasa por detrás, desenfocado) y lo elegido con el icono sobre un tono
+   suave. Si el móvil no sabe desenfocar, la barra va opaca. */
+:root[data-rotta="tinta"] .app-nav:not(.app-nav-static) {
+  background-color: rgb(var(--c-overlay) / 0.97);
+  box-shadow: 0 -1px 0 rgb(var(--c-line) / 0.8);
+}
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  :root[data-rotta="tinta"] .app-nav:not(.app-nav-static) {
+    background-color: rgb(var(--c-overlay) / 0.78);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
+  }
+}
+/* El tono suave va detrás del icono (sin cambiar su tamaño: el punto de «sin leer» sigue en su sitio). */
+:root[data-rotta="tinta"] .app-nav-item .app-nav-icon {
+  isolation: isolate;
+}
+:root[data-rotta="tinta"] .app-nav-item .app-nav-icon::before {
+  content: "";
+  position: absolute;
+  inset: -0.25rem -1rem;
+  z-index: -1;
+  border-radius: 999px;
+  transition: background-color var(--motion) var(--ease);
+}
+:root[data-rotta="tinta"] .app-nav-item[aria-current="page"] .app-nav-icon,
+:root[data-rotta="tinta"] .app-nav-item[data-active] .app-nav-icon {
+  color: rgb(var(--c-rotta-text));
+}
+:root[data-rotta="tinta"] .app-nav-item[aria-current="page"] .app-nav-icon::before,
+:root[data-rotta="tinta"] .app-nav-item[data-active] .app-nav-icon::before {
+  background-color: rgb(var(--c-club-soft));
+}
+
+/* Escritorio: la barra lateral con el borde o la sombra de cada identidad. */
+.app-sidebar {
+  background-color: rgb(var(--c-surface));
+  box-shadow: 1px 0 0 rgb(var(--c-line));
+}
+
+/* Cabecera de pantalla (ui/PageHeader). Lima: una marca corta en el color de la identidad encima del título.
+   Tinta: una línea fina debajo. Naranja: sin adornos. */
+:root[data-rotta="lima"] .app-page-header h1::before {
+  content: "";
+  display: block;
+  width: 1.5rem;
+  height: 3px;
+  margin-bottom: 0.625rem;
+  background-color: rgb(var(--c-rotta-text));
+}
+:root[data-rotta="tinta"] .app-page-header {
+  padding-bottom: 1rem;
+  box-shadow: 0 1px 0 rgb(var(--c-line));
+}
+
 /* Transiciones con el ritmo de cada identidad; sin movimiento si la persona lo pide. */
 .transition-ui {
   transition-property: color, background-color, border-color, box-shadow, opacity, transform;
@@ -732,11 +889,11 @@ dialog[open]::backdrop {
   }
 }
 
-/* Botón "Menú" mientras nadie lo ha abierto: una onda naranja que late. Y el aviso entra con un rebote. */
+/* Botón "Menú" mientras nadie lo ha abierto: una onda del color del club que late. Y el aviso entra con un rebote. */
 @keyframes menu-attention {
-  0% { box-shadow: 0 0 0 0 rgba(255, 56, 0, 0.55); }
-  70% { box-shadow: 0 0 0 12px rgba(255, 56, 0, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(255, 56, 0, 0); }
+  0% { box-shadow: 0 0 0 0 rgb(var(--c-club) / 0.55); }
+  70% { box-shadow: 0 0 0 12px rgb(var(--c-club) / 0); }
+  100% { box-shadow: 0 0 0 0 rgb(var(--c-club) / 0); }
 }
 .menu-attention { animation: menu-attention 1.8s ease-out infinite; }
 @keyframes menu-hint-in {

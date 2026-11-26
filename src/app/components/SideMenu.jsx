@@ -53,40 +53,40 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
         aria-label="Cerrar el menú"
         onClick={onClose}
         data-no-press
-        className={`absolute inset-0 h-full w-full cursor-default bg-black/60 backdrop-blur-[2px] ${closing ? "side-menu-backdrop-out" : "side-menu-backdrop-in"}`}
+        className={`absolute inset-0 h-full w-full cursor-default bg-canvas/75 backdrop-blur-[2px] ${closing ? "side-menu-backdrop-out" : "side-menu-backdrop-in"}`}
       />
       <nav
         ref={panelRef}
         tabIndex={-1}
         aria-label="Menú"
-        className={`absolute inset-y-0 left-0 flex w-[82%] max-w-xs flex-col overflow-y-auto bg-surface pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] shadow-[8px_0_40px_rgba(0,0,0,0.6)] outline-none ${
+        className={`absolute inset-y-0 left-0 flex w-[82%] max-w-xs flex-col overflow-y-auto bg-overlay pb-[env(safe-area-inset-bottom)] pt-[env(safe-area-inset-top)] text-ink shadow-overlay outline-none ${
           closing ? "side-menu-out" : "side-menu-in"
         }`}
       >
-        <div className="relative overflow-hidden bg-tnt p-4 pb-5 text-onbrand">
+        <div className="relative overflow-hidden p-4 pb-3">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
               <ClubCrest className="h-8 w-8 shrink-0" rottaClassName="rounded-[30%] object-cover" />
-              <span className="font-display text-sm font-extrabold">{club.name}</span>
+              <span className="font-title text-base text-ink">{club.name}</span>
             </span>
-            <button type="button" onClick={onClose} aria-label="Cerrar el menú" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-lg hover:bg-white/10">
+            <button type="button" onClick={onClose} aria-label="Cerrar el menú" className="-mr-2 flex h-11 w-11 items-center justify-center rounded-control text-ink-muted hover:bg-raised hover:text-ink">
               <X aria-hidden="true" className="h-6 w-6" />
             </button>
           </div>
-          <NavLink to="/app/perfil" onClick={onClose} className="mt-4 flex items-center gap-3 rounded-2xl bg-black/20 p-2.5 hover:bg-black/30">
-            <Avatar name={user.name} picture={user.picture} className="h-12 w-12 text-base ring-2 ring-white/40" />
+          <NavLink to="/app/perfil" onClick={onClose} className="mt-4 flex items-center gap-3 rounded-card bg-raised p-2.5 transition-ui hover:bg-card">
+            <Avatar name={user.name} picture={user.picture} className="h-12 w-12 text-base" />
             <span className="min-w-0 flex-1">
-              <span className="block truncate font-display text-lg font-extrabold leading-tight">{user.name}</span>
-              <span className="block text-xs font-semibold text-white/80">{roleLabel(user.role)} · Ver perfil</span>
+              <span className="block truncate font-title text-lg leading-tight text-ink">{user.name}</span>
+              <span className="block text-xs font-semibold text-ink-muted">{roleLabel(user.role)} · Ver perfil</span>
             </span>
-            <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-white/70" />
+            <ChevronRight aria-hidden="true" className="h-5 w-5 shrink-0 text-ink-muted" />
           </NavLink>
         </div>
 
         <div className="side-menu-items flex-1 space-y-4 p-3">
           {groups.map((group) => (
             <div key={group.title}>
-              <p className="px-3 pb-1 text-[11px] font-bold text-zinc-500">{group.title}</p>
+              <p className="px-3 pb-1 text-xs font-semibold text-ink-muted">{group.title}</p>
               <ul className="space-y-0.5">
                 {group.items.map(({ to, end, label, icon: Icon }) => (
                   <li key={to}>
@@ -95,14 +95,14 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
                       end={end}
                       onClick={onClose}
                       className={({ isActive }) =>
-                        `flex min-h-12 items-center gap-3 rounded-full px-4 text-[15px] font-semibold ${
-                          isActive ? "bg-tnt text-onbrand" : "text-zinc-200 hover:bg-white/5"
+                        `flex min-h-12 items-center gap-3 rounded-control px-4 text-[15px] font-semibold transition-ui ${
+                          isActive ? "ui-selected" : "text-ink hover:bg-raised"
                         }`
                       }
                     >
                       <span className="relative flex">
                         <Icon aria-hidden="true" className="h-5 w-5" />
-                        {to === "/app/chat" && unread && <span aria-hidden="true" className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-tnt ring-2 ring-surface text-onbrand" />}
+                        {to === "/app/chat" && unread && <span aria-hidden="true" className="absolute -right-1 -top-1 h-2.5 w-2.5 rounded-full bg-club ring-2 ring-overlay" />}
                       </span>
                       <span className="flex-1">{label}</span>
                       {to === "/app/chat" && unread && <span className="sr-only">(mensajes sin leer)</span>}
@@ -120,12 +120,12 @@ export default function SideMenu({ open, onClose, user, groups, unread }) {
               setSoundEnabled(!sound);
               setSound(!sound);
             }}
-            className="flex min-h-12 w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] font-semibold text-zinc-200 hover:bg-white/5"
+            className="flex min-h-12 w-full items-center gap-3 rounded-control px-4 text-left text-[15px] font-semibold text-ink transition-ui hover:bg-raised"
           >
             {sound ? <Volume2 aria-hidden="true" className="h-5 w-5" /> : <VolumeX aria-hidden="true" className="h-5 w-5" />}
             <span className="flex-1">Sonidos</span>
-            <span className={`relative h-6 w-11 rounded-full transition-colors ${sound ? "bg-tnt text-onbrand" : "bg-white/15"}`}>
-              <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${sound ? "left-[1.375rem]" : "left-0.5"}`} />
+            <span className={`relative h-6 w-11 rounded-full ring-1 ring-inset transition-colors ${sound ? "bg-club ring-club-edge" : "bg-raised ring-control"}`}>
+              <span className={`absolute top-0.5 h-5 w-5 rounded-full shadow transition-all ${sound ? "left-[1.375rem] bg-on-club" : "left-0.5 bg-ink-muted"}`} />
             </span>
           </button>
         </div>

@@ -48,6 +48,8 @@ export default {
         "ink-muted": themed("muted"),
         club: themed("club"),
         "club-ui": themed("club-ui"),
+        // Borde del botón principal y de lo relleno con el color del club (theme.js, clubEdge).
+        "club-edge": themed("club-edge"),
         "club-text": themed("club-text"),
         "club-label": themed("club-label"),
         "club-soft": themed("club-soft"),
