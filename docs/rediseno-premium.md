@@ -36,6 +36,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Pizarra: lista con pantalla fija, «Nueva» al lado del título, tarjetas del tema y tres columnas en escritorio. Editor: en escritorio la cancha ocupa todo el alto y los controles van en una columna a la derecha (antes debajo, con la cancha pequeña y los botones estirados); móvil y tableta igual que antes. Sin el naranja ni los degradados del TNT; lo elegido (2D/3D, Dibujar/Jugada, tamaño de pista) con el estilo de la identidad. La cancha de la pizarra sigue realista, como estaba decidido |
 | (este) | Editor de la pizarra en escritorio: el panel de la derecha ordenado por partes con título (Dibujar/Jugada arriba; en Dibujar, «Herramientas» y «Añadir a la pista» con botones grandes en rejilla de dos; en Jugada, «Reproducir» con el play y la línea de tiempo, «Velocidad» y «Cambiar la jugada»). Antes eran las tiras del móvil amontonadas abajo. Móvil y tableta, igual |
 | (este) | Componentes sin degradados de marca: «Partido en directo» (Inicio y vista previa de Apariencia) en rojo liso de directo; aviso de notificaciones con el tono del club; premios, destacados del entreno y coins en dorado liso (`bg-gold/10`) con texto oscuro fijo sobre el dorado; botón de ayuda del chat en azul liso |
+| (este) | Inicio con pantalla fija en el móvil: saludo con coins y equipo fijos; lo demás se desliza con las pestañas Entrenamientos/Partidos pegadas arriba al bajar; orden nuevo: avisos de acceso, directo y la agenda primero, y los avisos de instalar, notificaciones y la bienvenida al final (antes empujaban el entreno). Escritorio igual |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -74,7 +75,7 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 
 **Norma nueva (26-11-2026, pedida por Marcos): pantalla fija en el móvil.** La página no se desplaza entera: arriba lo
 fijo (cabecera, filtros, lo importante) y las listas largas en una zona que se desliza por dentro; lo secundario se
-abre en hoja desde abajo. Hecho en Ranking, Notas, Eventos, Partidos jugados y Plantilla. Pendiente de aplicar a Inicio (fase de revisión responsive) y
+abre en hoja desde abajo. Hecho en todas las pantallas (Inicio incluido) (fase de revisión responsive) y
 a todas las pantallas nuevas. Cómo se hace: la página es `flex h-full min-h-0 flex-col md:h-auto`; lo fijo va arriba y
 la zona que se desliza es `min-h-0 flex-1 overflow-y-auto overscroll-contain` (en escritorio, `md:overflow-visible`);
 la ruta se añade a `WIDE_PATHS` en `AppLayout.jsx` si tiene distribución de escritorio propia.

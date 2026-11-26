@@ -944,7 +944,7 @@ function HomeHeader({ user, coins, shownCoins, coinBurst }) {
           aria-label={`Tienes ${coins.balance} Club Coins. Ir a la tienda`}
           className={`${coinBurst ? "coin-pill-pop " : ""}ui-card relative inline-flex min-h-11 items-center gap-2 rounded-control bg-card py-1 pl-1 pr-4 text-ink transition-ui hover:bg-raised`}
         >
-          <span aria-hidden="true" className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950">
+          <span aria-hidden="true" className="flex h-9 w-9 items-center justify-center rounded-full bg-gold text-[#2A1A00]">
             <Coins className="h-4 w-4" />
           </span>
           <span className="font-score text-xl leading-none">{(shownCoins ?? coins.balance).toLocaleString("es-ES")}</span>
@@ -1157,8 +1157,12 @@ export default function HomePage({ user, onAccessLost }) {
     }
   };
 
+  // Pantalla fija en el móvil (Premium deportivo): arriba el saludo con tus coins y el equipo; debajo se desliza lo
+  // demás, con las pestañas Entrenamientos / Partidos pegadas arriba al bajar. Primero lo del día (avisos de acceso,
+  // partido en directo y la agenda) y después los avisos de instalar, notificaciones y la bienvenida (antes iban
+  // arriba del todo y empujaban el entreno hacia abajo). En escritorio, como siempre: la página entera.
   return (
-    <div className="space-y-6">
+    <div className="flex h-full min-h-0 flex-col gap-3 md:block md:h-auto md:space-y-6">
       {askingHelp && (
         <ConfirmDialog
           message="Se enviará un mensaje al chat general diciendo que no sois suficientes para este entreno. Quien le dé a «Voy» vendrá a entrenar con vosotros ese día."
@@ -1167,6 +1171,11 @@ export default function HomePage({ user, onAccessLost }) {
           onCancel={() => setAskingHelp(false)}
         />
       )}
+      <HomeHeader user={user} coins={coins} shownCoins={shownCoins} coinBurst={coinBurst} />
+
+      <TeamPicker teams={teams} teamId={teamId} onChange={setTeamId} />
+
+      <div className="-mx-gutter min-h-0 flex-1 space-y-4 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:space-y-6 md:overflow-visible md:px-0" data-testid="home-scroll">
       {pendingCount > 0 && (
         // Aviso para entrenadores y administradores: una tarjeta del tema, con el número y a dónde lleva.
         <Link
@@ -1186,17 +1195,7 @@ export default function HomePage({ user, onAccessLost }) {
         </Link>
       )}
 
-      <WelcomeCard user={user} />
-
       <LiveNow />
-
-      <InstallCard variant="banner" />
-
-      <NotificationsCard variant="banner" />
-
-      <HomeHeader user={user} coins={coins} shownCoins={shownCoins} coinBurst={coinBurst} />
-
-      <TeamPicker teams={teams} teamId={teamId} onChange={setTeamId} />
 
       {/* Escritorio: la agenda a la izquierda y tus números y el próximo partido a la derecha. En el móvil, uno debajo
           de otro (primero la agenda, que es lo que se viene a mirar). */}
@@ -1205,6 +1204,7 @@ export default function HomePage({ user, onAccessLost }) {
         <Tabs
           id={tabsId}
           label="Qué quieres ver"
+          className="sticky top-0 z-10 shadow-[0_0_0_6px_rgb(var(--c-void))] md:static md:shadow-none"
           value={shownTab}
           onChange={setTab}
           items={[
@@ -1273,6 +1273,13 @@ export default function HomePage({ user, onAccessLost }) {
           {showPeek && <NextMatchPeek match={nextMatch} onOpen={() => setTab("matches")} />}
         </aside>
       )}
+      </div>
+
+      <InstallCard variant="banner" />
+
+      <NotificationsCard variant="banner" />
+
+      <WelcomeCard user={user} />
       </div>
     </div>
   );
