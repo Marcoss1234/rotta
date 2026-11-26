@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
-import { Check } from "lucide-react";
+import { Check, Info } from "lucide-react";
 import CourtStands from "@/app/components/CourtStands.jsx";
 import { positionTone } from "@/app/components/RankingVisuals.jsx";
 import { POSITIONS } from "@/app/roles.js";
-import { Button, cx } from "@/app/ui/index.js";
+import { Button, IconButton, cx } from "@/app/ui/index.js";
 
 const DRAG_THRESHOLD = 4;
 // Con el dedo la chapa sube un poco para que se vea; con ratón va justo debajo del puntero.
@@ -91,12 +91,13 @@ function ThemedCourt({ beach, horizontal, showZones, stretch }) {
 
 // La chapa: el aro del color de su puesto (el mismo de PositionTag); el líbero, rellena de su color.
 // Debajo, el nombre y el puesto a 12 px, el puesto en su color. La pista va siempre en oscuro (force-dark).
-function Badge({ player, lifted = false }) {
+// compact: algo más estrecha (la cancha del móvil, que va al lado del banquillo).
+function Badge({ player, lifted = false, compact = false }) {
   const role = player.position && player.position !== "Sin definir" ? player.position : "";
   const tone = positionTone(player.position);
   const libero = player.position === "Líbero";
   return (
-    <span className="flex w-20 select-none flex-col items-center gap-0.5">
+    <span className={`flex select-none flex-col items-center gap-0.5 ${compact ? "w-[4.5rem]" : "w-20"}`}>
       <span
         className={`relative flex h-11 w-11 items-center justify-center rounded-full border-[3px] text-sm font-extrabold shadow-[0_3px_8px_rgba(0,0,0,0.55)] motion-safe:transition-transform ${
           libero ? tone.chip : `${tone.chip} bg-zinc-950 text-white`
@@ -129,12 +130,12 @@ function Badge({ player, lifted = false }) {
   );
 }
 
-function Token({ player, canEdit, hidden, onPointerDown, onPointerUp, onKeyDown }) {
+function Token({ player, canEdit, hidden, onPointerDown, onPointerUp, onKeyDown, compact = false }) {
   const label = `${player.name}${player.number !== null ? `, dorsal ${player.number}` : ""}, ${player.position}`;
   const dimmed = hidden ? "opacity-30" : "";
 
   if (!canEdit) {
-    return <div role="img" aria-label={label} title={player.name}><Badge player={player} /></div>;
+    return <div role="img" aria-label={label} title={player.name}><Badge player={player} compact={compact} /></div>;
   }
   return (
     <button
@@ -150,7 +151,7 @@ function Token({ player, canEdit, hidden, onPointerDown, onPointerUp, onKeyDown 
       // touch-none y sin menú de "guardar imagen": en el móvil, mantener pulsada la chapa no debe abrir nada.
       className={`cursor-grab touch-none select-none rounded-lg [-webkit-touch-callout:none] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rotta-text active:cursor-grabbing ${dimmed}`}
     >
-      <Badge player={player} />
+      <Badge player={player} compact={compact} />
     </button>
   );
 }
@@ -217,13 +218,18 @@ function PositionPicker({ player, onPick, onClose }) {
   );
 }
 
-export default function CourtBoard({ players, family = [], canEdit, beach, onMove, onChangePosition }) {
+// fit (móvil, pantalla fija): la cancha entera, con sus medidas de verdad, a la izquierda y tan alta como quepa; el
+// banquillo a la derecha, en una columna que se desliza hacia abajo; las gradas, más abajo, deslizando la tarjeta.
+// action: un botón al lado del título (en el móvil, abrir la lista de jugadores).
+export default function CourtBoard({ players, family = [], canEdit, beach, onMove, onChangePosition, fit = false, action = null }) {
   const courtRef = useRef(null);
   const dragRef = useRef(null);
   const [drag, setDrag] = useState(null);
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
   const [picking, setPicking] = useState(null);
+  // En el móvil la explicación se abre con ⓘ (para dejarle sitio a la cancha); en el resto se ve siempre.
+  const [helpOpen, setHelpOpen] = useState(false);
   const draggingId = drag?.player.id;
 
   useEffect(() => {
@@ -357,25 +363,47 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
   const moving = drag?.moved ? drag : null;
 
   return (
-    <section aria-labelledby="court-title" className="ui-card rounded-card bg-card p-4 md:p-5">
-      <div className="flex items-baseline justify-between gap-3">
+    <section
+      aria-labelledby="court-title"
+      className={fit ? "ui-card h-full min-h-0 overflow-y-auto overscroll-contain rounded-card bg-card p-3" : "ui-card rounded-card bg-card p-4 md:p-5"}
+      data-testid="court-panel"
+    >
+      <div className={fit ? "flex h-full min-h-[26rem] flex-col" : undefined}>
+      <div className={`flex shrink-0 justify-between gap-3 ${fit ? "items-center" : "items-baseline"}`}>
         <h2 id="court-title" className="font-title text-lg leading-tight text-ink">Pista</h2>
-        <p className="text-xs font-semibold text-ink-muted">{onCourt.length} en pista</p>
+        <span className="flex items-center gap-1">
+          <p className="text-xs font-semibold text-ink-muted">{onCourt.length} en pista</p>
+          {action && <span className="ml-1">{action}</span>}
+          {fit && canEdit && (
+            <IconButton
+              icon={Info}
+              size="sm"
+              label={helpOpen ? "Ocultar cómo se usa" : "Cómo se usa la pista"}
+              aria-expanded={helpOpen}
+              aria-controls="court-help"
+              onClick={() => setHelpOpen((open) => !open)}
+              className="-my-2 -mr-2"
+            />
+          )}
+        </span>
       </div>
       {canEdit && (
-        <p id="court-help" className="mt-1 text-xs text-ink-muted">
+        <p id="court-help" className={cx("mt-1 shrink-0 text-xs text-ink-muted", fit && !helpOpen && "sr-only")}>
           Arrastra cada chapa a donde quieras. Se guarda sola, y si la sacas de la pista vuelve al banquillo. Tócala para cambiar su puesto.
           <span className="sr-only"> Con el teclado: flechas para mover, Intro para cambiar el puesto y Suprimir para devolverla al banquillo.</span>
         </p>
       )}
 
+      {/* fit: la cancha a la izquierda con sus medidas de verdad (tan alta como quepa) y el banquillo a la derecha. */}
+      <div className={fit ? "mt-2 flex min-h-0 flex-1 gap-2" : undefined} style={fit ? { containerType: "size" } : undefined}>
       <div
         ref={courtRef}
         data-testid="court"
         // isolate: el orden de las chapas solo cuenta dentro de la pista, nunca por encima del menú.
         // force-dark: la pista, el banquillo y las gradas van siempre en oscuro (como la pizarra y el directo).
-        className={`going-court force-dark relative isolate mx-auto mt-3 w-full max-w-sm overflow-hidden rounded-inner ${beach ? "going-court-beach" : ""}`}
-        style={{ aspectRatio: "100 / 190" }}
+        className={`going-court force-dark relative isolate overflow-hidden rounded-inner ${fit ? "shrink-0" : "mx-auto mt-3 w-full max-w-sm"} ${beach ? "going-court-beach" : ""}`}
+        // Con fit: 100 de ancho por 190 de largo, del alto que haya, dejando sitio al banquillo (6,5 rem) a la derecha.
+        style={fit ? { aspectRatio: "100 / 190", height: "min(100cqh, (100cqw - 7rem) * 190 / 100)" } : { aspectRatio: "100 / 190" }}
       >
         <CourtDrawing beach={beach} themed />
         {onCourt.map((player) => (
@@ -391,6 +419,7 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
             <Token
               player={player}
               canEdit={canEdit}
+              compact={fit}
               hidden={moving?.player.id === player.id}
               onPointerDown={startDrag}
               onPointerUp={endTap}
@@ -400,19 +429,23 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
         ))}
       </div>
 
-      <div className="force-dark mx-auto mt-3 max-w-sm rounded-card bg-raised p-3 text-ink" data-testid="court-bench">
-        <h3 className="flex items-baseline justify-between font-display text-sm font-extrabold text-ink">
+      <div
+        className={`force-dark rounded-card bg-raised text-ink ${fit ? "flex min-h-0 min-w-0 flex-1 flex-col p-2" : "mx-auto mt-3 max-w-sm p-3"}`}
+        data-testid="court-bench"
+      >
+        <h3 className="flex shrink-0 items-baseline justify-between gap-1 font-display text-sm font-extrabold text-ink">
           Banquillo <span className="font-body text-xs font-semibold text-ink-muted">{onBench.length}</span>
         </h3>
         {onBench.length === 0 ? (
           <p className="mt-1 text-sm text-ink-muted">No hay nadie en el banquillo.</p>
         ) : (
-          <div className="mt-2 flex flex-wrap gap-x-1.5 gap-y-2">
+          <div className={fit ? "no-scrollbar -mx-2 mt-1.5 flex min-h-0 flex-1 flex-col items-center gap-2 overflow-y-auto overscroll-contain px-2 pb-1" : "mt-2 flex flex-wrap gap-x-1.5 gap-y-2"}>
             {onBench.map((player) => (
               <Token
                 key={player.id}
                 player={player}
                 canEdit={canEdit}
+                compact={fit}
                 hidden={moving?.player.id === player.id}
                 onPointerDown={startDrag}
                 onPointerUp={endTap}
@@ -421,6 +454,9 @@ export default function CourtBoard({ players, family = [], canEdit, beach, onMov
             ))}
           </div>
         )}
+      </div>
+      </div>
+
       </div>
 
       <CourtStands family={family} />

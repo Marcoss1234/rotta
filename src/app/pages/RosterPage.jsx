@@ -12,11 +12,13 @@ import { GroupPicker, PositionTag, positionTone, RankingHero } from "@/app/compo
 import { isStaff, POSITIONS } from "@/app/roles.js";
 import { isBeachTeam } from "@/app/teams.js";
 import { useMediaQuery } from "@/app/useMediaQuery.js";
-import { Button, cx, EmptyState, Notice, TabPanel, Tabs } from "@/app/ui/index.js";
+import { Button, cx, Dialog, EmptyState, Notice, TabPanel, Tabs } from "@/app/ui/index.js";
 
 // En el ordenador (desde 1024 px) la pista y los jugadores van en dos columnas; en el móvil y la tableta, en dos
 // vistas para no tener que bajar por toda la pista, el banquillo y las gradas hasta llegar a la lista.
 const WIDE = "(min-width: 1024px)";
+// En el móvil la pantalla es fija (la cancha se ajusta al alto); en tableta, la página se desplaza como siempre.
+const PHONE = "(max-width: 767px)";
 
 const playersLabel = (count) => (count === 1 ? "1 jugador" : `${count} jugadores`);
 
@@ -84,10 +86,11 @@ function SquadSummary({ players }) {
   );
 }
 
-function PlayerList({ players, teamId, canEdit, onOpen, onAdd }) {
+// inSheet: dentro de la hoja del móvil, que ya lleva su título.
+function PlayerList({ players, teamId, canEdit, onOpen, onAdd, inSheet = false }) {
   return (
-    <section aria-labelledby="squad-title" className="space-y-3">
-      <div className="flex items-baseline justify-between gap-3">
+    <section aria-labelledby={inSheet ? undefined : "squad-title"} aria-label={inSheet ? "Jugadores" : undefined} className="space-y-3">
+      <div className={cx("flex items-baseline justify-between gap-3", inSheet && "hidden")}>
         <h2 id="squad-title" className="font-title text-lg leading-tight text-ink">Jugadores</h2>
         <p className="text-xs font-semibold text-ink-muted">{playersLabel(players.length)}</p>
       </div>
@@ -152,8 +155,11 @@ export default function RosterPage({ user, onAccessLost }) {
   const [editing, setEditing] = useState(null);
   const [viewing, setViewing] = useState(null);
   const [view, setView] = useState("pista");
+  // Móvil: la lista de jugadores se abre en una hoja desde abajo (la pantalla es para la cancha y el banquillo).
+  const [listOpen, setListOpen] = useState(false);
   const viewsId = useId();
   const wide = useMediaQuery(WIDE);
+  const phone = useMediaQuery(PHONE);
   const canEdit = isStaff(user);
   const [searchParams] = useSearchParams();
   const requestedTeam = searchParams.get("equipo") ?? user.team_id;
@@ -272,12 +278,28 @@ export default function RosterPage({ user, onAccessLost }) {
 
   const openAdd = () => setEditing({ player: null });
   const court = players && (
-    <CourtBoard players={players} family={family} canEdit={canEdit} beach={isBeachTeam(teamId)} onMove={moveOnCourt} onChangePosition={changePosition} />
+    <CourtBoard
+      players={players}
+      family={family}
+      canEdit={canEdit}
+      beach={isBeachTeam(teamId)}
+      onMove={moveOnCourt}
+      onChangePosition={changePosition}
+      fit={phone}
+      action={phone && (
+        <Button variant="secondary" size="sm" icon={Users} onClick={() => setListOpen(true)}>
+          Jugadores <span className="ui-count rounded-full bg-club px-1.5 text-xs font-bold leading-5 text-on-club">{players.length}</span>
+        </Button>
+      )}
+    />
   );
   const list = players && <PlayerList players={players} teamId={teamId} canEdit={canEdit} onOpen={setViewing} onAdd={openAdd} />;
 
+  // Pantalla fija en el móvil (Premium deportivo): arriba la cabecera, Plantilla o Pizarra, el equipo y Pista o
+  // Jugadores; debajo, la cancha entera ajustada al alto que queda (con el banquillo debajo) o la lista, que se
+  // desliza por dentro. En escritorio, cancha y lista lado a lado.
   return (
-    <div className="space-y-5">
+    <div className={phone ? "flex h-full min-h-0 flex-col gap-3" : "space-y-5"}>
       <RankingHero title="Plantilla" subtitle={team ? `${team.name}${players ? ` · ${playersLabel(players.length)}` : ""}` : undefined}>
         {canEdit && teams && <Button icon={UserPlus} onClick={openAdd}>Añadir</Button>}
       </RankingHero>
@@ -301,7 +323,28 @@ export default function RosterPage({ user, onAccessLost }) {
         </div>
       )}
 
-      {players && !wide && (
+      {players && phone && <div className="min-h-0 flex-1">{court}</div>}
+
+      {players && phone && listOpen && (
+        <Dialog title="Jugadores" description={playersLabel(players.length)} placement="auto" onClose={() => setListOpen(false)}>
+          <PlayerList
+            players={players}
+            teamId={teamId}
+            canEdit={canEdit}
+            inSheet
+            onOpen={(player) => {
+              setListOpen(false);
+              setViewing(player);
+            }}
+            onAdd={() => {
+              setListOpen(false);
+              openAdd();
+            }}
+          />
+        </Dialog>
+      )}
+
+      {players && !wide && !phone && (
         <div className="space-y-4">
           <Tabs
             id={viewsId}

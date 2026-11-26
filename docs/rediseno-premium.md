@@ -26,6 +26,7 @@ puntuaciones, coins ni asistencia; los problemas de backend se apuntan aquí y s
 | (este) | Eventos: pantalla fija en el móvil (cabecera con «Añadir» al lado y el mes fijos; calendario y agenda se deslizan por dentro); días más bajos; agenda en filas dentro de un solo bloque; escritorio a todo el ancho con el calendario a la izquierda y la agenda fija a la derecha; formulario de evento en hoja (`placement="auto"`) |
 | (este) | Partidos jugados: pantalla fija en el móvil (cabecera con «Partidos» al lado, tipo de partido y resumen fijos; la lista se desliza por dentro); resultado y sets más compactos; MVP e informe en una misma franja; formulario de partido en hoja |
 | (este) | Móvil compacto (pedido por Marcos): en el móvil todo un poco más pequeño en la misma proporción que en el ordenador (raíz de 15 px en `html.app-shell` por debajo de 768 px; letra mínima 12 px con `text-xs`; campos de texto en 16 px; relleno de tarjetas 16 px; títulos de pantalla 28 px en el móvil). Afecta a todas las pantallas a la vez |
+| (este) | Plantilla en el móvil: pantalla fija; la cancha entera con sus medidas de verdad a la izquierda (tan alta como quepa, `CourtBoard fit`) y el banquillo a la derecha en una columna que se desliza hacia abajo; la lista completa de jugadores en hoja con el botón «Jugadores»; la explicación de la pista tras ⓘ. En móviles muy bajos (667 px) la tarjeta se desliza un poco para no montar las chapas. Tableta y escritorio, como estaban |
 | `ce4f0fc` | Este documento maestro |
 | `163d4b3` | Herramienta `tools/crear-admin.py` (cuenta de administrador con usuario y contraseña; fuera del rediseño) |
 
@@ -63,7 +64,7 @@ Pruebas al cerrar `f6d4a84`: web 228, servidor 637, temas sin fallos. Con `163d4
 
 **Norma nueva (26-11-2026, pedida por Marcos): pantalla fija en el móvil.** La página no se desplaza entera: arriba lo
 fijo (cabecera, filtros, lo importante) y las listas largas en una zona que se desliza por dentro; lo secundario se
-abre en hoja desde abajo. Hecho en Ranking, Notas y Eventos. Pendiente de aplicar a Inicio y Plantilla (fase de revisión responsive) y
+abre en hoja desde abajo. Hecho en Ranking, Notas, Eventos, Partidos jugados y Plantilla. Pendiente de aplicar a Inicio (fase de revisión responsive) y
 a todas las pantallas nuevas. Cómo se hace: la página es `flex h-full min-h-0 flex-col md:h-auto`; lo fijo va arriba y
 la zona que se desliza es `min-h-0 flex-1 overflow-y-auto overscroll-contain` (en escritorio, `md:overflow-visible`);
 la ruta se añade a `WIDE_PATHS` en `AppLayout.jsx` si tiene distribución de escritorio propia.
@@ -74,7 +75,9 @@ escritorio) sin quitar información.
 **Norma nueva (26-11-2026, pedida por Marcos): móvil compacto.** En el móvil todo puede ser algo más pequeño para que
 se vea como en el ordenador y no parezca que no cabe. Está hecho en general (raíz de 15 px en el móvil), así que no hay
 que bajar tamaños pantalla a pantalla. Límites: letra de 12 px como mínimo, campos de texto en 16 px y zonas de toque
-de unos 40 px. Sustituye a «sin bajar el tamaño de letra ni de los controles».
+de unos 40 px. Sustituye a «sin bajar el tamaño de letra ni de los controles». Nunca estirar ni aplastar una pista
+o un dibujo para que quepa: se mantienen sus proporciones y se reparte el sitio (por ejemplo, la cancha a un lado y la
+lista al otro).
 
 ## Pendiente aparte (backend, no se toca en el rediseño)
 
