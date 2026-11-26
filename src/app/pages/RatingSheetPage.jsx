@@ -1,4 +1,5 @@
 import { Fragment, useCallback, useEffect, useState } from "react";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 import { ChevronLeft, ChevronRight, MessageSquareText, PenLine, Trophy, Zap } from "lucide-react";
 import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { getRatingSheet, listRankingGroups, publishRatingWeek, saveRating } from "@/app/api.js";
@@ -121,7 +122,13 @@ const FILTERS = [
   { value: "rated", label: "Con nota" },
 ];
 
+// Los equipos en la cabecera del móvil: pastillas que caben en una línea (sin deslizar).
+function TeamChips({ groups, groupId, onChange }) {
+  return <ChipGroup label="Elegir equipo" value={groupId} onChange={onChange} options={groups.map((group) => ({ value: group.id, label: group.name.replace(/^Club (Senior )?/, "") }))} />;
+}
+
 export default function RatingSheetPage({ onAccessLost }) {
+  const phone = useMediaQuery("(max-width: 767px)");
   const [searchParams, setSearchParams] = useSearchParams();
   const [groups, setGroups] = useState(null);
   const [week, setWeek] = useState(currentMonday);
@@ -209,17 +216,18 @@ export default function RatingSheetPage({ onAccessLost }) {
   // una hoja desde abajo. En escritorio: la lista a la izquierda y el estado de la semana fijo a la derecha.
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
+      {/* En el móvil, los equipos van en la línea de la cabecera y «Ranking» queda como icono: una fila menos. */}
       <PageHeader
         title="Notas"
-        subtitle={group ? group.name : undefined}
+        subtitle={phone && groups?.length > 1 ? <TeamChips groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} /> : group ? group.name : undefined}
         actions={
-          <LinkButton as={Link} size="sm" variant="secondary" icon={Trophy} to={`/app/ranking${groupId ? `?grupo=${groupId}` : ""}`}>
-            Ranking
+          <LinkButton as={Link} size="sm" variant="secondary" icon={Trophy} className={phone ? "w-10 px-0" : undefined} title="Ranking" to={`/app/ranking${groupId ? `?grupo=${groupId}` : ""}`}>
+            {phone ? <span className="sr-only">Ranking</span> : "Ranking"}
           </LinkButton>
         }
       />
 
-      {groups && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} />}
+      {groups && !phone && <GroupPicker groups={groups} groupId={groupId} onChange={(id) => setSearchParams({ grupo: id }, { replace: true })} />}
       {groups?.length > 0 && (
         <WeekStepper week={week} published={sheet ? sheet.published : null} onChange={setWeek}>
           {sheet && sheet.rows.length > 0 && (

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 import { ChevronLeft, ChevronRight, Pencil, Plus } from "lucide-react";
 import { createEvent, deleteEvent, getCalendar, updateEvent } from "@/app/api.js";
 import EventDialog from "@/app/components/EventDialog.jsx";
@@ -107,6 +108,7 @@ function AgendaRow({ item, canManage, onEdit }) {
 }
 
 export default function EventsPage({ onAccessLost }) {
+  const phone = useMediaQuery("(max-width: 767px)");
   const [month, setMonth] = useState(() => localToday().slice(0, 7));
   const [calendar, setCalendar] = useState(null);
   const [selected, setSelected] = useState(null);
@@ -162,7 +164,7 @@ export default function EventsPage({ onAccessLost }) {
   const monthStepper = (
     <>
       <IconButton icon={ChevronLeft} label="Mes anterior" onClick={() => goToMonth(shiftMonth(month, -1))} />
-      <h2 className="font-display text-lg font-extrabold text-ink md:text-xl" aria-live="polite">{monthTitle(month)}</h2>
+      <h2 className="min-w-[9.5rem] text-center font-display text-base font-extrabold text-ink md:text-xl" aria-live="polite">{monthTitle(month)}</h2>
       <IconButton icon={ChevronRight} label="Mes siguiente" onClick={() => goToMonth(shiftMonth(month, 1))} />
     </>
   );
@@ -186,15 +188,18 @@ export default function EventsPage({ onAccessLost }) {
   // agenda a la derecha, fija mientras se baja.
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
+      {/* En el móvil, el mes va en la línea de la cabecera (en lugar de «Calendario del club»): una fila menos. */}
       <PageHeader
         title="Eventos"
-        subtitle="Calendario del club"
+        subtitle={phone ? <div className="-ml-2 flex items-center gap-0.5">{monthStepper}</div> : "Calendario del club"}
         actions={canManage && <Button size="sm" icon={Plus} onClick={() => setEditing({ event: null })}>Añadir</Button>}
       />
 
-      <Card as="div" padding="none" className="flex shrink-0 items-center justify-between gap-2 p-1 lg:hidden">
-        {monthStepper}
-      </Card>
+      {!phone && (
+        <Card as="div" padding="none" className="flex shrink-0 items-center justify-between gap-2 p-1 lg:hidden">
+          {monthStepper}
+        </Card>
+      )}
 
       <div
         className="-mx-gutter min-h-0 flex-1 space-y-3 overflow-y-auto overscroll-contain px-gutter pb-2 md:mx-0 md:overflow-visible md:px-0 lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-start lg:gap-6 lg:space-y-0"

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useMediaQuery } from "@/app/useMediaQuery.js";
 import { ChartColumn, Check, ChevronLeft, Pencil, Trophy } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { changeLiveMvp, deleteMatch, listPlayedMatches, listTeams, updateMatch } from "@/app/api.js";
@@ -210,12 +211,13 @@ function PlayedMatchRow({ match, onEdit, onReload }) {
 function KindTabs({ tabs, active, counts, onChange }) {
   return (
     <div data-testid="played-kinds">
-      <ChipGroup label="Tipo de partido" scroll options={tabs.map(({ value, label }) => ({ value, label, count: counts[value] ?? 0 }))} value={active} onChange={onChange} />
+      <ChipGroup label="Tipo de partido" options={tabs.map(({ value, label }) => ({ value, label, count: counts[value] ?? 0 }))} value={active} onChange={onChange} />
     </div>
   );
 }
 
 export default function PlayedMatchesPage({ user, onAccessLost }) {
+  const phone = useMediaQuery("(max-width: 767px)");
   const [searchParams] = useSearchParams();
   const requested = searchParams.get("equipo");
   const teamId = isTeamId(requested) ? requested : isTeamId(user.team_id) ? user.team_id : defaultTeamId();
@@ -273,12 +275,13 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
   // partidos se desliza por dentro. En escritorio, dos columnas de partidos a todo el ancho.
   return (
     <div className="flex h-full min-h-0 flex-col gap-3 md:h-auto">
+      {/* En el móvil, los tipos de partido van en la línea de la cabecera y «Partidos» queda como flecha. */}
       <PageHeader
         title="Jugados"
-        subtitle={teamName}
+        subtitle={phone && played ? <KindTabs tabs={tabs} active={active} counts={counts} onChange={setSelected} /> : teamName}
         actions={
-          <LinkButton as={Link} size="sm" to={`/app?equipo=${teamId}&pestana=partidos`} icon={ChevronLeft} className="pl-2">
-            Partidos
+          <LinkButton as={Link} size="sm" to={`/app?equipo=${teamId}&pestana=partidos`} icon={ChevronLeft} className={phone ? "w-10 px-0" : "pl-2"} title="Partidos">
+            {phone ? <span className="sr-only">Partidos</span> : "Partidos"}
           </LinkButton>
         }
       />
@@ -288,7 +291,7 @@ export default function PlayedMatchesPage({ user, onAccessLost }) {
 
       {played && (
         <>
-          <KindTabs tabs={tabs} active={active} counts={counts} onChange={setSelected} />
+          {!phone && <KindTabs tabs={tabs} active={active} counts={counts} onChange={setSelected} />}
           {shown.length === 0 ? (
             <EmptyState>Todavía no hay partidos en {activeLabel}.</EmptyState>
           ) : (
