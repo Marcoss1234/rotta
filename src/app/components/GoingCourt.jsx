@@ -46,12 +46,12 @@ function CourtPlayer({ person, spot, mine }) {
   return (
     <span
       title={person.name}
-      style={{ left: `${spot.x * 100}%`, top: `${spot.y * 100}%`, width: "22%", fontSize: "3.2cqw" }}
+      style={{ left: `${spot.x * 100}%`, top: `${spot.y * 100}%`, width: "22%", fontSize: "3.4cqw" }}
       className="absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
       data-mine={mine || undefined}
     >
-      <span className="relative block w-[44%]">
-        <span style={{ fontSize: "3.6cqw" }} className={`court-chip flex aspect-square items-center justify-center overflow-hidden font-extrabold text-ink ${mine ? "court-chip-mine" : ""}`}>
+      <span className="relative block w-[54%]">
+        <span style={{ fontSize: "4.2cqw" }} className={`court-chip flex aspect-square items-center justify-center overflow-hidden font-extrabold text-ink ${mine ? "court-chip-mine" : ""}`}>
           {person.picture ? (
             <img src={person.picture} alt="" referrerPolicy="no-referrer" className="h-full w-full object-cover" />
           ) : (

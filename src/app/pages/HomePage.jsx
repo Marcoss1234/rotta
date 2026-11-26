@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Check, ChevronDown, ChevronRight, CircleCheck, CircleHelp, CircleX, Coins, Crown, Dumbbell, LifeBuoy, History, Pencil, Plus, Trophy, UserPlus, Volleyball, X, Zap } from "lucide-react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
@@ -10,6 +10,8 @@ import {
   deleteMatch,
   getAttendance,
   getCoins,
+  getPlayerProfile,
+  getProfile,
   listLive,
   getSchedules,
   listMatches,
@@ -33,10 +35,10 @@ import ScheduleDialog from "@/app/components/ScheduleDialog.jsx";
 import { GroupPicker } from "@/app/components/RankingVisuals.jsx";
 import { localToday, matchDayLabel, matchKindLabel, placeInfo } from "@/app/matches.js";
 import { nextTraining, trainingAfter } from "@/app/nextTraining.js";
-import { roleLabel } from "@/app/roles.js";
 import { TEAM_SCHEDULES, defaultTeamId, isBeachTeam, isTeamId, sessionsToSchedules, shareMatches } from "@/app/teams.js";
 import { TRAINING_VENUE_ADDRESS, TRAINING_VENUE_URL } from "../../../data/groups.js";
-import { Notice } from "@/app/ui/index.js";
+import { Notice, Stage, StatTile, TabPanel, Tabs } from "@/app/ui/index.js";
+import ClubCrest from "@/app/components/ClubCrest.jsx";
 
 const STORAGE_KEY = "tnt-equipo-visto";
 
@@ -45,20 +47,6 @@ function greeting(hour = new Date().getHours()) {
   if (hour >= 6 && hour < 14) return "Buenos días";
   if (hour >= 14 && hour < 21) return "Buenas tardes";
   return "Buenas noches";
-}
-
-// El fondo de la cabecera: una pista de vóley vista desde arriba, girada, con su balón.
-function CourtBackdrop() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10">
-      <div className="absolute -bottom-24 -right-28 h-72 w-[30rem] rotate-[-18deg] rounded-sm border-[3px] border-white/20 bg-white/[0.06]">
-        <span className="absolute inset-y-0 left-1/2 w-1.5 -translate-x-1/2 bg-white/30" />
-        <span className="absolute inset-y-0 left-[33.3%] w-[3px] bg-white/20" />
-        <span className="absolute inset-y-0 left-[66.6%] w-[3px] bg-white/20" />
-      </div>
-      <Volleyball className="absolute bottom-4 right-5 h-20 w-20 rotate-12 text-white/30" strokeWidth={1.4} />
-    </div>
-  );
 }
 
 function readStoredTeam() {
@@ -185,18 +173,19 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
   const [ref, hold] = useStayInPlace();
   return (
     <div data-testid="attendance-answer">
-      <p className="font-display text-lg font-bold">{question}</p>
-      {hint && <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-amber-200/90"><Coins aria-hidden="true" className="h-3.5 w-3.5" />{hint}</p>}
+      <p className="font-title text-lg text-ink">{question}</p>
+      {hint && <p className="mt-0.5 flex items-center gap-1 text-xs font-semibold text-gold-text"><Coins aria-hidden="true" className="h-3.5 w-3.5" />{hint}</p>}
       <div ref={ref} className="mt-3 grid grid-cols-2 gap-2">
         {[["going", "Voy", Check], ["not_going", "No voy", X]].map(([status, label, Icon]) => {
           const chosen = mine === status;
+          // Voy en el verde de siempre; No voy, neutro. Van dentro del escenario (siempre oscuro).
           const tone = chosen
             ? status === "going"
               ? "bg-voy text-snow shadow-[0_8px_24px_-8px_rgb(var(--c-success)/0.6)]"
-              : "bg-zinc-200 text-zinc-900"
+              : "bg-ink text-canvas"
             : status === "going"
-              ? "bg-voy/10 text-voy-text ring-1 ring-inset ring-voy/40 hover:bg-voy/20"
-              : "bg-white/5 text-zinc-200 ring-1 ring-inset ring-white/15 hover:bg-white/10";
+              ? "bg-voy/15 text-voy-text ring-1 ring-inset ring-voy/45 hover:bg-voy/25"
+              : "bg-ink/[0.07] text-ink ring-1 ring-inset ring-ink/25 hover:bg-ink/[0.12]";
           return (
             <span key={status} className="relative">
               <button
@@ -209,7 +198,7 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
                   hold();
                   onAnswer(status);
                 }}
-                className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl font-display text-xl font-bold transition-colors aria-disabled:opacity-60 ${tone}`}
+                className={`flex min-h-14 w-full items-center justify-center gap-2 rounded-control font-title text-xl transition-ui aria-disabled:opacity-60 ${tone}`}
               >
                 <Icon aria-hidden="true" className="h-5 w-5" strokeWidth={3} />
                 {label}
@@ -228,11 +217,11 @@ function AnswerButtons({ question, mine, busy, error, onAnswer, burst = null, hi
 function FollowingTraining({ following, mine, followingMine, busy, onAnswer, onAnswerBoth }) {
   const bothGoing = mine === "going" && followingMine === "going";
   return (
-    <div className="space-y-2 rounded-xl bg-void/60 p-3" data-testid="following-training">
+    <div className="space-y-2 rounded-inner bg-ink/[0.06] p-3" data-testid="following-training">
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 text-sm">
-          <span className="block text-xs font-bold uppercase tracking-wide text-zinc-400">Y el siguiente</span>
-          <span className="block truncate font-semibold text-white">{following.label}</span>
+          <span className="block text-xs font-semibold text-ink-muted">Y el siguiente</span>
+          <span className="block truncate font-semibold text-ink">{following.label}</span>
         </p>
         <div className="flex shrink-0 gap-1.5">
           {[["going", "Voy"], ["not_going", "No voy"]].map(([status, label]) => (
@@ -243,12 +232,12 @@ function FollowingTraining({ following, mine, followingMine, busy, onAnswer, onA
               aria-pressed={followingMine === status}
               aria-label={`${label} el ${following.shortDay}`}
               onClick={() => !busy && onAnswer(status)}
-              className={`min-h-10 rounded-lg px-3 text-sm font-bold aria-disabled:opacity-60 ${
+              className={`min-h-10 rounded-control px-3 text-sm font-bold transition-ui aria-disabled:opacity-60 ${
                 followingMine === status
                   ? status === "going"
                     ? "bg-voy text-snow"
-                    : "bg-red-600 text-snow"
-                  : "border border-white/20 text-white hover:bg-white/5"
+                    : "bg-ink text-canvas"
+                  : "text-ink ring-1 ring-inset ring-ink/25 hover:bg-ink/10"
               }`}
             >
               {label}
@@ -261,7 +250,7 @@ function FollowingTraining({ following, mine, followingMine, busy, onAnswer, onA
           type="button"
           aria-disabled={busy}
           onClick={() => !busy && onAnswerBoth()}
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg border border-emerald-400/50 bg-emerald-500/15 text-sm font-extrabold text-emerald-100 hover:bg-emerald-500/25 aria-disabled:opacity-60"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-control bg-voy/15 text-sm font-bold text-voy-text ring-1 ring-inset ring-voy/45 transition-ui hover:bg-voy/25 aria-disabled:opacity-60"
         >
           <CircleCheck aria-hidden="true" className="h-4 w-4" />
           Voy a los dos
@@ -272,30 +261,30 @@ function FollowingTraining({ following, mine, followingMine, busy, onAnswer, onA
 }
 
 const ATTENDANCE_GROUPS = [
-  { key: "going", title: "Van", icon: CircleCheck, tint: "text-emerald-400", empty: "Nadie todavía" },
-  { key: "not_going", title: "No van", icon: CircleX, tint: "text-zinc-200", empty: "Nadie" },
-  { key: "no_answer", title: "Sin responder", icon: CircleHelp, tint: "text-zinc-400", empty: "Han respondido todos" },
+  { key: "going", title: "Van", icon: CircleCheck, tint: "text-voy-text", empty: "Nadie todavía" },
+  { key: "not_going", title: "No van", icon: CircleX, tint: "text-ink", empty: "Nadie" },
+  { key: "no_answer", title: "Sin responder", icon: CircleHelp, tint: "text-ink-muted", empty: "Han respondido todos" },
 ];
 
 function AttendanceGroup({ group, people, currentUserId }) {
   const Icon = group.icon;
   return (
-    <div className="rounded-xl border border-white/5 bg-void/60 p-3">
-      <h3 className={`flex items-center gap-2 font-display text-sm font-extrabold ${group.tint}`}>
+    <div className="rounded-inner bg-ink/[0.05] p-3 ring-1 ring-inset ring-ink/10">
+      <h3 className={`flex items-center gap-2 text-sm font-bold ${group.tint}`}>
         <Icon aria-hidden="true" className="h-[18px] w-[18px]" />
         {group.title}
-        <span className="ml-auto font-display text-2xl font-extrabold leading-none tabular-nums text-white">{people.length}</span>
+        <span className="ml-auto font-score text-2xl leading-none text-ink">{people.length}</span>
       </h3>
       {people.length === 0 ? (
-        <p className="mt-2 text-sm text-zinc-500">{group.empty}</p>
+        <p className="mt-2 text-sm text-ink-muted">{group.empty}</p>
       ) : (
         <ul className="mt-2 space-y-1.5">
           {people.map((person) => (
-            <li key={person.id} className="flex min-w-0 items-center gap-2 text-sm text-zinc-100">
+            <li key={person.id} className="flex min-w-0 items-center gap-2 text-sm text-ink">
               <Avatar name={person.name} picture={person.picture} className="h-7 w-7 text-[11px]" />
               <span className="min-w-0 break-words">
                 {person.name}
-                {person.id === currentUserId && <span className="text-zinc-400"> (tú)</span>}
+                {person.id === currentUserId && <span className="text-ink-muted"> (tú)</span>}
                 {person.guest && <span className="ml-1 rounded bg-sky-400/15 px-1.5 py-px text-[10px] font-bold text-sky-300">Ayuda</span>}
               </span>
             </li>
@@ -310,9 +299,9 @@ function AttendanceGroup({ group, people, currentUserId }) {
 function WhoIsGoing({ lists, currentUserId }) {
   const [open, setOpen] = useState(false);
   const going = lists.going ?? [];
-  const shown = going.slice(0, 5);
+  const shown = going.slice(0, 4);
   return (
-    <div className="rounded-2xl bg-void/50 p-3" data-testid="attendance-panel">
+    <div className="rounded-inner bg-ink/[0.06] p-3" data-testid="attendance-panel">
       <button
         type="button"
         aria-expanded={open}
@@ -321,24 +310,24 @@ function WhoIsGoing({ lists, currentUserId }) {
       >
         <span className="flex shrink-0 -space-x-2.5" aria-hidden="true">
           {shown.length === 0 ? (
-            <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-white/20 text-zinc-500">?</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-dashed border-ink/25 text-ink-muted">?</span>
           ) : (
-            shown.map((person) => <Avatar key={person.id} name={person.name} picture={person.picture} className="h-9 w-9 text-[11px] ring-2 ring-panel" />)
+            shown.map((person) => <Avatar key={person.id} name={person.name} picture={person.picture} className="h-9 w-9 text-[11px] ring-2 ring-stage" />)
           )}
           {going.length > shown.length && (
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-700 text-xs font-bold text-white ring-2 ring-panel">+{going.length - shown.length}</span>
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-ink/15 text-xs font-bold text-ink ring-2 ring-stage">+{going.length - shown.length}</span>
           )}
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block font-display text-lg font-bold leading-tight">
-            <span className="text-emerald-300">{going.length}</span> {going.length === 1 ? "va" : "van"}
+          <span className="block font-title text-lg leading-tight text-ink">
+            <span className="font-score text-voy-text">{going.length}</span> {going.length === 1 ? "va" : "van"}
           </span>
-          <span className="block text-xs text-zinc-400">
+          <span className="block text-xs text-ink-muted">
             {lists.not_going?.length ?? 0} no {(lists.not_going?.length ?? 0) === 1 ? "va" : "van"} · {lists.no_answer?.length ?? 0} sin responder
           </span>
         </span>
-        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-zinc-300">
-          {open ? "Ocultar" : "Ver lista"}
+        <span className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ink-muted">
+          <span className="sr-only sm:not-sr-only">{open ? "Ocultar" : "Ver lista"}</span>
           <ChevronDown aria-hidden="true" className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
         </span>
       </button>
@@ -393,8 +382,9 @@ function startsInText(ms) {
   return hours < 24 ? `en ${hours} h` : null;
 }
 
-// Día y hora en grande, con cuánto falta, y debajo la pista con quien va.
-function EventWhen({ iso, time, until, spoken, subtitle, teamId, people, titleId, currentUserId, aside = null, startsIn = null, before = null }) {
+// Día y hora en grande, con cuánto falta. La hora es el número protagonista del escenario (letra de marcador de la
+// identidad). La pista con quien va se pone aparte (GoingCourt), al lado en escritorio y debajo en el móvil.
+function EventWhen({ iso, time, until, spoken, subtitle, titleId, aside = null, startsIn = null, before = null }) {
   const day = dayText(iso);
   const short = String(time ?? "").length <= 5;
   return (
@@ -403,20 +393,24 @@ function EventWhen({ iso, time, until, spoken, subtitle, teamId, people, titleId
       <div className="flex items-end gap-3">
         <div className="min-w-0 flex-1">
           {(day || startsIn) && (
-            <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-zinc-300">
+            <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink-muted">
               {day && <span className="first-letter:uppercase">{day}</span>}
-              {startsIn && <span className="rounded-full bg-amber-300 px-2 py-0.5 text-xs font-bold text-amber-950">{startsIn}</span>}
+              {startsIn && (
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-ink/10 px-2.5 py-0.5 text-xs font-bold text-ink">
+                  <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-rotta-on-stage" />
+                  {startsIn}
+                </span>
+              )}
             </p>
           )}
-          <p id={titleId} className={`mt-1 font-display font-extrabold leading-[0.9] tracking-tight tabular-nums ${short ? "text-6xl" : "text-3xl"}`}>
+          <p id={titleId} className={`mt-1 font-score leading-[0.85] text-ink ${short ? "text-hero md:text-[5.5rem]" : "text-3xl"}`}>
             <span className="sr-only">{spoken} </span>
             {time}
           </p>
-          {(until || subtitle) && <p className="mt-2 text-sm font-medium text-zinc-300">{until ? `Hasta las ${until}` : subtitle}</p>}
+          {(until || subtitle) && <p className="mt-2 text-sm font-medium text-ink-muted">{until ? `Hasta las ${until}` : subtitle}</p>}
         </div>
         {aside}
       </div>
-      <GoingCourt teamId={teamId} people={people} currentUserId={currentUserId} />
     </div>
   );
 }
@@ -459,7 +453,7 @@ function HelpButton({ attendance, onAsk }) {
     return (
       <Link
         to="/app/chat?canal=general"
-        className="flex min-h-11 shrink-0 flex-col items-center justify-center rounded-xl border border-sky-400/40 bg-sky-400/10 px-2.5 py-1 text-center text-sky-200 hover:bg-sky-400/20"
+        className="flex min-h-11 shrink-0 flex-col items-center justify-center rounded-inner border border-sky-400/40 bg-sky-400/10 px-2.5 py-1 text-center text-sky-200 transition-ui hover:bg-sky-400/20"
       >
         <span className="flex items-center gap-1 text-xs font-extrabold">
           <LifeBuoy aria-hidden="true" className="h-3.5 w-3.5" />
@@ -475,15 +469,15 @@ function HelpButton({ attendance, onAsk }) {
     <button
       type="button"
       onClick={onAsk}
-      className={`flex min-h-11 shrink-0 flex-col items-center justify-center rounded-xl px-2.5 py-1 text-center ${
-        few ? "bg-gradient-to-br from-red-500 to-tnt text-snow shadow-[0_4px_14px_rgba(239,68,68,0.35)]" : "border border-white/20 text-zinc-200 hover:bg-white/5"
+      className={`flex min-h-11 shrink-0 flex-col items-center justify-center rounded-inner px-2.5 py-1 text-center transition-ui ${
+        few ? "bg-danger text-snow shadow-[0_6px_18px_-6px_rgb(var(--c-danger)/0.6)] hover:brightness-110" : "text-ink ring-1 ring-inset ring-ink/25 hover:bg-ink/10"
       }`}
     >
       <span className="flex items-center gap-1 text-xs font-extrabold">
         <LifeBuoy aria-hidden="true" className="h-3.5 w-3.5" />
         Pedir ayuda
       </span>
-      <span className={`text-[11px] font-semibold ${few ? "text-white/85" : "text-zinc-400"}`}>{few ? "Somos pocos" : "A otros equipos"}</span>
+      <span className={`text-[11px] font-semibold ${few ? "text-snow/90" : "text-ink-muted"}`}>{few ? "Somos pocos" : "A otros equipos"}</span>
     </button>
   );
 }
@@ -513,51 +507,70 @@ function TrainingCard({
       type="button"
       onClick={onEditSchedule}
       aria-label="Editar el horario de entrenamiento"
-      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold text-white hover:bg-white/10"
+      className="-mr-2 flex min-h-11 items-center gap-1.5 rounded-control px-3 text-sm font-semibold text-ink transition-ui hover:bg-ink/10"
     >
       <Pencil aria-hidden="true" className="h-4 w-4" />
       Editar horario
     </button>
   );
+  const when = training.known ? (
+    <EventWhen
+      iso={training.date}
+      time={training.start}
+      until={training.end}
+      startsIn={training.inProgress ? null : startsInText(training.startsAt)}
+      spoken={training.title}
+      titleId="training-title"
+      aside={helpButton}
+    />
+  ) : (
+    <EventWhen iso={training.date} time={training.title} spoken="" subtitle={training.detail} titleId="training-title" aside={helpButton} />
+  );
 
+  // El escenario de Inicio (Premium deportivo). En el móvil, por orden: la hora, Voy / No voy, la pista con quien
+  // va, el entreno siguiente y el sitio. En escritorio, la pista grande a la derecha y lo demás a la izquierda.
   return (
-    <EventCard icon={Dumbbell} label="Próximo entrenamiento" status={training.inProgress ? "Ahora" : null} action={editButton} testId="training-card">
-      {training.known ? (
-        <EventWhen
-          iso={training.date}
-          time={training.start}
-          until={training.end}
-          startsIn={training.inProgress ? null : startsInText(training.startsAt)}
-          spoken={training.title}
-          teamId={teamId}
-          people={attendance?.going ?? []}
-          titleId="training-title"
-          currentUserId={currentUserId}
-          aside={helpButton}
-        />
-      ) : (
-        <EventWhen iso={training.date} time={training.title} spoken="" subtitle={training.detail} teamId={teamId} people={attendance?.going ?? []} titleId="training-title" currentUserId={currentUserId} aside={helpButton} />
-      )}
-      {hasVenue ? (
-        <EventPlace place={TRAINING_VENUE_ADDRESS} url={TRAINING_VENUE_URL} />
-      ) : (
-        <p className="rounded-xl bg-void/60 p-3 text-sm text-zinc-300">Consulta el lugar y las plazas con el club antes de ir.</p>
-      )}
-      {attendance?.can_respond && (
-        <AnswerButtons question={trainingQuestion(training)} mine={attendance.mine} busy={answerBusy} error={answerError} onAnswer={onAnswer} burst={coinBurst} hint={attendance.mine === "going" ? "Vas: +10 coins conseguidos" : attendance.mine === "not_going" ? "Contestado: no pierdes coins" : "Voy: +10 coins · Si no contestas: −10 coins"} />
-      )}
-      {attendance?.can_respond && following && followingAttendance?.can_respond && (
-        <FollowingTraining
-          following={following}
-          mine={attendance.mine}
-          followingMine={followingAttendance.mine}
-          busy={answerBusy}
-          onAnswer={onAnswerFollowing}
-          onAnswerBoth={onAnswerBoth}
-        />
-      )}
-      {attendance && <WhoIsGoing lists={attendance} currentUserId={currentUserId} />}
-    </EventCard>
+    <Stage as="article" aria-labelledby="training-title" data-testid="training-card" className="p-5 md:p-7">
+      <div className="mb-4 flex min-h-11 items-center justify-between gap-2">
+        <span className="flex items-center gap-2 text-sm font-semibold text-ink-muted">
+          <Dumbbell aria-hidden="true" className="h-4 w-4 text-rotta-on-stage" />
+          Próximo entrenamiento
+          {training.inProgress && <span className="rounded-full bg-voy px-2 py-0.5 text-[11px] font-bold text-snow">Ahora</span>}
+        </span>
+        {editButton}
+      </div>
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-x-8">
+        <div className="lg:col-start-1">{when}</div>
+        {attendance?.can_respond && (
+          <div className="lg:col-start-1">
+            <AnswerButtons question={trainingQuestion(training)} mine={attendance.mine} busy={answerBusy} error={answerError} onAnswer={onAnswer} burst={coinBurst} hint={attendance.mine === "going" ? "Vas: +10 coins conseguidos" : attendance.mine === "not_going" ? "Contestado: no pierdes coins" : "Voy: +10 coins · Si no contestas: −10 coins"} />
+          </div>
+        )}
+        <div className="space-y-3 lg:col-start-2 lg:row-span-4 lg:row-start-1">
+          <GoingCourt teamId={teamId} people={attendance?.going ?? []} currentUserId={currentUserId} />
+          {attendance && <WhoIsGoing lists={attendance} currentUserId={currentUserId} />}
+        </div>
+        {attendance?.can_respond && following && followingAttendance?.can_respond && (
+          <div className="lg:col-start-1">
+            <FollowingTraining
+              following={following}
+              mine={attendance.mine}
+              followingMine={followingAttendance.mine}
+              busy={answerBusy}
+              onAnswer={onAnswerFollowing}
+              onAnswerBoth={onAnswerBoth}
+            />
+          </div>
+        )}
+        <div className="lg:col-start-1">
+          {hasVenue ? (
+            <EventPlace place={TRAINING_VENUE_ADDRESS} url={TRAINING_VENUE_URL} />
+          ) : (
+            <p className="rounded-inner bg-ink/[0.06] p-3 text-sm text-ink-muted">Consulta el lugar y las plazas con el club antes de ir.</p>
+          )}
+        </div>
+      </div>
+    </Stage>
   );
 }
 
@@ -640,10 +653,8 @@ function MatchCard({ match, teamName, currentUserId, busy, onAnswer, onEdit, onE
         spoken={`${matchDayLabel(match.date)} contra ${match.opponent}`}
         startsIn={startsInText(matchStart(match) - Date.now())}
         before={<Versus teamName={teamName || "Nosotros"} opponent={match.opponent} />}
-        teamId={match.team_id}
-        people={match.going}
-        currentUserId={currentUserId}
       />
+      <GoingCourt teamId={match.team_id} people={match.going} currentUserId={currentUserId} />
       <LiveMatchButton match={match} onError={onError} />
       {match.location && <EventPlace place={placeInfo(match.location).label} url={placeInfo(match.location).url} />}
       {match.notes && <MatchNotes notes={match.notes} />}
@@ -890,26 +901,92 @@ function firstTab(training, matches, now = Date.now()) {
   return matchStart(match) - now < training.startsAt ? "matches" : "training";
 }
 
-function TabButton({ id, selected, icon: Icon, label, badge, onSelect }) {
+// Cabecera de Inicio: el saludo con tu nombre y tus coins. Sin la tarjeta de color: el protagonista es el escenario.
+function HomeHeader({ user, coins, shownCoins, coinBurst }) {
+  return (
+    <header className="flex flex-wrap items-end justify-between gap-x-4 gap-y-3">
+      <div className="min-w-0">
+        <p className="text-sm font-semibold text-ink-muted">{greeting()},</p>
+        <h1 className="break-words font-title text-title text-ink md:text-display">{user.name.split(" ")[0]}</h1>
+      </div>
+      {coins && (
+        <Link
+          key={coinBurst?.key ?? "coins"}
+          to="/app/tienda"
+          aria-label={`Tienes ${coins.balance} Club Coins. Ir a la tienda`}
+          className={`${coinBurst ? "coin-pill-pop " : ""}ui-card relative inline-flex min-h-11 items-center gap-2 rounded-control bg-card py-1 pl-1 pr-4 text-ink transition-ui hover:bg-raised`}
+        >
+          <span aria-hidden="true" className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950">
+            <Coins className="h-4 w-4" />
+          </span>
+          <span className="font-score text-xl leading-none">{(shownCoins ?? coins.balance).toLocaleString("es-ES")}</span>
+          <span className="text-xs font-semibold text-ink-muted">Club Coins</span>
+          {coins.crown && <Crown aria-hidden="true" className="h-4 w-4 fill-gold text-gold-text" />}
+        </Link>
+      )}
+    </header>
+  );
+}
+
+// Tus números (solo si tienes ficha de jugador): puesto y nota global del ranking y asistencia de los últimos días.
+// Son datos que la app ya tiene (tu perfil y tu ficha); si no cargan, no salen. Dorado solo para 85 o más.
+function MyNumbers({ user }) {
+  const [numbers, setNumbers] = useState(null);
+  useEffect(() => {
+    if (user.role === "familia") return undefined;
+    let cancelled = false;
+    getProfile()
+      .then(async (profile) => {
+        if (!profile.player) return;
+        const card = await getPlayerProfile(profile.player.id).catch(() => null);
+        if (!cancelled) setNumbers({ stats: profile.stats, ranking: card?.ranking ?? null });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [user.id, user.role]);
+  if (!numbers) return null;
+  const { stats, ranking } = numbers;
+  const answered = stats.going + stats.not_going;
+  const attendance = answered ? Math.round((stats.going / answered) * 100) : null;
+  const overall = ranking ? Math.round(ranking.overall) : null;
+  return (
+    <section aria-label="Tus números" className="grid grid-cols-3 gap-2 lg:grid-cols-1 lg:gap-3">
+      <Link to="/app/ranking" className="rounded-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text">
+        <StatTile label="Ranking" value={ranking ? `${ranking.rank}º` : "–"} caption={ranking ? `de ${ranking.of}` : "Sin puesto"} className="h-full transition-ui hover:bg-raised" />
+      </Link>
+      <StatTile label="Nota global" value={overall ?? "–"} caption={ranking ? "Semana" : "Sin notas"} emphasis={overall !== null && overall >= 85 ? "gold" : undefined} />
+      <StatTile label="Asistencia" value={attendance ?? "–"} suffix={attendance !== null ? "%" : undefined} caption={`${stats.days} días`} />
+    </section>
+  );
+}
+
+// Después del entreno: el próximo partido, cara a cara. Un toque y se abre la pestaña de Partidos.
+function NextMatchPeek({ match, onOpen }) {
+  if (!match) return null;
   return (
     <button
       type="button"
-      role="tab"
-      id={`tab-${id}`}
-      aria-selected={selected}
-      aria-controls={`panel-${id}`}
-      onClick={() => onSelect(id)}
-      className={`relative flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full text-sm font-semibold transition-colors ${
-        selected ? "bg-tnt text-onbrand" : "text-zinc-300 hover:bg-white/5 hover:text-white"
-      }`}
+      onClick={onOpen}
+      className="ui-card ui-card-interactive w-full rounded-card bg-card p-4 text-left transition-ui focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rotta-text"
     >
-      <Icon aria-hidden="true" className="h-5 w-5" />
-      {label}
-      {badge && (
-        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${selected ? "bg-white text-tnt" : "bg-tnt text-onbrand"}`}>
-          {badge}
+      <span className="flex items-center justify-between gap-2 text-xs font-semibold text-ink-muted">
+        <span className="flex items-center gap-1.5"><Trophy aria-hidden="true" className="h-3.5 w-3.5" />Próximo partido · {matchKindLabel(match.kind)}</span>
+        <ChevronRight aria-hidden="true" className="h-4 w-4" />
+      </span>
+      <span className="mt-3 grid grid-cols-[auto_1fr] items-center gap-3">
+        <span className="relative flex">
+          <ClubCrest className="h-11 w-11" rottaClassName="rounded-[30%] object-cover" />
+          <span aria-hidden="true" className="absolute -bottom-1 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-raised text-[10px] font-bold text-ink-muted ring-2 ring-card">vs</span>
         </span>
-      )}
+        <span className="min-w-0">
+          <span className="block truncate font-title text-lg leading-tight text-ink">{match.opponent}</span>
+          <span className="block text-sm text-ink-muted">
+            <span className="first-letter:uppercase">{matchDayLabel(match.date)}</span> · {match.time}
+          </span>
+        </span>
+      </span>
     </button>
   );
 }
@@ -974,6 +1051,9 @@ export default function HomePage({ user, onAccessLost }) {
   }, [teamId]);
 
   const shownTab = tab ?? (matches === null ? null : firstTab(training, matches));
+  const tabsId = useId();
+  // El próximo partido que aún no ha terminado (para enseñarlo al lado del entreno).
+  const nextMatch = (matches ?? []).find((item) => matchStart(item) > Date.now() - MATCH_LENGTH_MS) ?? null;
   const matchToday = (matches ?? []).some((item) => matchDayLabel(item.date) === "Hoy");
   // Aunque se abra en Entrenamientos, la pestaña dice cuántos partidos hay por delante.
   const matchBadge = matchToday ? "Hoy" : matches?.length ? String(matches.length) : null;
@@ -1078,100 +1158,84 @@ export default function HomePage({ user, onAccessLost }) {
 
       <NotificationsCard variant="banner" />
 
-      <header className="relative isolate overflow-hidden rounded-3xl bg-tnt px-5 pb-5 pt-6 text-onbrand">
-        <CourtBackdrop />
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-white/80">{greeting()},</p>
-            <h1 className="mt-1 break-words font-display text-5xl font-extrabold leading-[0.9] tracking-tight md:text-6xl">{user.name.split(" ")[0]}</h1>
-            <p className="mt-2 text-sm font-medium text-white/80">{roleLabel(user.role)}</p>
-          </div>
-          <Link to="/app/perfil" aria-label="Ir a tu perfil" className="shrink-0 rounded-full">
-            <Avatar name={user.name} picture={user.picture} className="h-16 w-16 text-lg ring-4 ring-white/30" />
-          </Link>
-        </div>
-        {coins && (
-          <Link
-            key={coinBurst?.key ?? "coins"}
-            to="/app/tienda"
-            aria-label={`Tienes ${coins.balance} Club Coins. Ir a la tienda`}
-            className={`${coinBurst ? "coin-pill-pop " : ""}relative mt-5 inline-flex min-h-10 items-center gap-2 rounded-full bg-black/35 py-1 pl-1 pr-4 text-white ring-1 ring-amber-300/50 backdrop-blur-sm hover:bg-black/45`}
-          >
-            <span aria-hidden="true" className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-amber-200 via-amber-400 to-amber-600 text-amber-950">
-              <Coins className="h-4 w-4" />
-            </span>
-            <span className="font-display text-lg font-bold tabular-nums">{(shownCoins ?? coins.balance).toLocaleString("es-ES")}</span>
-            <span className="text-xs font-semibold text-amber-200">Club Coins</span>
-            {coins.crown && <Crown aria-hidden="true" className="h-4 w-4 fill-amber-300 text-amber-400" />}
-          </Link>
-        )}
-      </header>
+      <HomeHeader user={user} coins={coins} shownCoins={shownCoins} coinBurst={coinBurst} />
 
       <TeamPicker teams={teams} teamId={teamId} onChange={setTeamId} />
 
-      <section aria-label="Agenda del equipo" className="space-y-4">
-        <div role="tablist" aria-label="Qué quieres ver" className="flex gap-1 rounded-full bg-panel p-1 ring-1 ring-white/10">
-          <TabButton id="training" selected={shownTab === "training"} icon={Dumbbell} label="Entrenamientos" onSelect={setTab} />
-          <TabButton id="matches" selected={shownTab === "matches"} icon={Trophy} label="Partidos" badge={matchBadge} onSelect={setTab} />
-        </div>
+      {/* Escritorio: la agenda a la izquierda y tus números y el próximo partido a la derecha. En el móvil, uno debajo
+          de otro (primero la agenda, que es lo que se viene a mirar). */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_19rem] lg:items-start xl:grid-cols-[minmax(0,1fr)_21rem]">
+      <section aria-label="Agenda del equipo" className="min-w-0 space-y-4">
+        <Tabs
+          id={tabsId}
+          label="Qué quieres ver"
+          value={shownTab}
+          onChange={setTab}
+          items={[
+            { id: "training", label: "Entrenamientos", icon: Dumbbell },
+            { id: "matches", label: "Partidos", icon: Trophy, count: matchBadge },
+          ]}
+        />
 
-        {shownTab === null && <p role="status" className="px-2 text-zinc-300">Cargando…</p>}
+        {shownTab === null && <p role="status" className="px-2 text-ink-muted">Cargando…</p>}
 
-        {shownTab === "training" && (
-          <div role="tabpanel" id="panel-training" aria-labelledby="tab-training" className="stagger-in">
-            <TrainingCard
-              teamId={teamId}
-              training={training}
-              attendance={attendance}
-              currentUserId={user.id}
-              answerBusy={answerBusy}
-              answerError={answerError}
-              onAnswer={answerTraining}
-              following={following}
-              followingAttendance={followingAttendance}
-              onAnswerFollowing={answerFollowing}
-              onAnswerBoth={answerBoth}
-              coinBurst={coinBurst}
-              onAskHelp={() => setAskingHelp(true)}
-              onEditSchedule={schedules?.[teamId]?.can_edit ? () => setEditingSchedule(true) : null}
-            />
-            <TrainingStars teamId={teamId} onAccessLost={onAccessLost} />
-            {editingSchedule && schedules?.[teamId] && (
-              <ScheduleDialog
-                teamName={teams.find((team) => team.id === teamId)?.name ?? ""}
-                sessions={schedules[teamId].sessions}
-                onClose={() => setEditingSchedule(false)}
-                onSave={async (sessions) => {
-                  const saved = await saveSchedule(teamId, sessions);
-                  setSchedules((current) => ({ ...current, [teamId]: saved }));
-                  setEditingSchedule(false);
-                }}
-              />
-            )}
-          </div>
-        )}
-
-        {shownTab === "matches" && (
-          <div role="tabpanel" id="panel-matches" aria-labelledby="tab-matches" className="stagger-in">
-            <MatchesSection
-              teamId={teamId}
-              teams={teams}
-              user={user}
-              canManage={canManage}
-              onAccessLost={onAccessLost}
-              onChange={setMatches}
-              onCoins={(delta) => {
-                setCoinBurst({ amount: delta, status: null, key: Date.now() });
-                setCoins((current) => current && { ...current, balance: current.balance + delta });
-              }}
-              onTeamChange={(id) => {
-                stayOnMatches.current = true;
-                setTeamId(id);
+        <TabPanel tabsId={tabsId} tab="training" value={shownTab} className="stagger-in space-y-4">
+          <TrainingCard
+            teamId={teamId}
+            training={training}
+            attendance={attendance}
+            currentUserId={user.id}
+            answerBusy={answerBusy}
+            answerError={answerError}
+            onAnswer={answerTraining}
+            following={following}
+            followingAttendance={followingAttendance}
+            onAnswerFollowing={answerFollowing}
+            onAnswerBoth={answerBoth}
+            coinBurst={coinBurst}
+            onAskHelp={() => setAskingHelp(true)}
+            onEditSchedule={schedules?.[teamId]?.can_edit ? () => setEditingSchedule(true) : null}
+          />
+          <TrainingStars teamId={teamId} onAccessLost={onAccessLost} />
+          {editingSchedule && schedules?.[teamId] && (
+            <ScheduleDialog
+              teamName={teams.find((team) => team.id === teamId)?.name ?? ""}
+              sessions={schedules[teamId].sessions}
+              onClose={() => setEditingSchedule(false)}
+              onSave={async (sessions) => {
+                const saved = await saveSchedule(teamId, sessions);
+                setSchedules((current) => ({ ...current, [teamId]: saved }));
+                setEditingSchedule(false);
               }}
             />
-          </div>
-        )}
+          )}
+        </TabPanel>
+
+        <TabPanel tabsId={tabsId} tab="matches" value={shownTab} className="stagger-in">
+          <MatchesSection
+            teamId={teamId}
+            teams={teams}
+            user={user}
+            canManage={canManage}
+            onAccessLost={onAccessLost}
+            onChange={setMatches}
+            onCoins={(delta) => {
+              setCoinBurst({ amount: delta, status: null, key: Date.now() });
+              setCoins((current) => current && { ...current, balance: current.balance + delta });
+            }}
+            onTeamChange={(id) => {
+              stayOnMatches.current = true;
+              setTeamId(id);
+            }}
+          />
+        </TabPanel>
       </section>
+
+      <aside aria-label="Tu resumen" className="space-y-3 lg:sticky lg:top-8">
+        <MyNumbers user={user} />
+        {shownTab === "training" && <NextMatchPeek match={nextMatch} onOpen={() => setTab("matches")} />}
+      </aside>
+      </div>
     </div>
   );
 }

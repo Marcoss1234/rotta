@@ -421,13 +421,16 @@
 }
 
 /* ---------- Escenario (ui/Stage): el adorno de cada identidad, muy suave ---------- */
+/* Solo en la esquina del resplandor (arriba a la derecha) y desvaneciéndose hacia el texto: adorno, no rejilla. */
 .stage-decoration svg {
   position: absolute;
   inset: 0;
   display: none;
   width: 100%;
   height: 100%;
-  opacity: 0.9;
+  opacity: 0.55;
+  -webkit-mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(120% 90% at 100% 0%, #000 0%, transparent 70%);
 }
 :root[data-rotta="lima"] .stage-deco-lineas,
 :root[data-rotta="naranja"] .stage-deco-balon,
